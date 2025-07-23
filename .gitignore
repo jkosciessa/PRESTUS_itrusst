@@ -2,6 +2,7 @@
 !*.*
 !*/
 **/data
+!*/data/configs/
 **/figures
 
 *.DS_STORE

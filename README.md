@@ -6,3 +6,13 @@ Different sequences and parameter setups are specified either via dedicated conf
 Analyses are run a GPU-supported HPC cluster hosted at the Donders Institute.
 
 For an overview of the goals and ongoing results (*access restricted*), see [here](https://docs.google.com/document/d/16yBCTZDG966979RLcoQdo9XqpzFn1oSb-pxK2KgR4dM/edit?pli=1&tab=t.0).
+
+There are two stimulation goals here:
+
+[1] Impact of individual parameter variation on outcomes (all else being equal)
+
+Relevant scripts are called ```PRESTUS_paramvar```.
+
+[2] Intercomparison of different tools 
+
+Relevant scripts are called ```PRESTUS_pipeline```.
