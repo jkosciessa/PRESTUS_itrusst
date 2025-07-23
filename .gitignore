@@ -7,11 +7,10 @@
 # Do not ignore folders
 !*/
 
-# Exclude all /data directories recursively
-**/data/
-
-# Allow /data/configs/ and its files recursively
-!*/data/configs/
+# Exclude all /data directories, but allow /data/configs/
+/data/*
+!/data/configs/
+!/data/configs/**
 
 # Exclude all /figures directories
 **/figures
