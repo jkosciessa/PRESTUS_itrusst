@@ -16,3 +16,5 @@ Relevant scripts are called ```PRESTUS_paramvar```.
 [2] Intercomparison of different tools 
 
 Relevant scripts are called ```PRESTUS_pipeline```.
+
+Benchmark phantoms are created using PRESTUS examples, see [here](https://github.com/Donders-Institute/PRESTUS/blob/6e52a11136ebf242bbbe97b4a4a7922d7f2c575a/examples/createPhantom.m). The code uses PRESTUS' ```phantom``` implementation (see [here](https://github.com/Donders-Institute/PRESTUS/blob/6e52a11136ebf242bbbe97b4a4a7922d7f2c575a/documentation/doc_medium.md)). 
