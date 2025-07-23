@@ -1,10 +1,22 @@
+# Ignore everything by default
 *
+
+# Do not ignore files (allow tracking files, not just folders)
 !*.*
+
+# Do not ignore folders
 !*/
-**/data
+
+# Exclude all /data directories recursively
+**/data/
+
+# Allow /data/configs/ and its files recursively
 !*/data/configs/
+
+# Exclude all /figures directories
 **/figures
 
+# Ignore temporary files
 *.DS_STORE
 *.m~
 *.asv
