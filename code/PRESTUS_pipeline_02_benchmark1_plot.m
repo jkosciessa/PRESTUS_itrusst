@@ -50,7 +50,7 @@ for i = 1:2
     subplot(1,2,i);
     bar(maxT_mat(i,:), 'FaceColor', [.2 .5 .7]);
     set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
-    xlabel('Setup', 'FontSize', 14);
+    xlabel('Default Setup', 'FontSize', 14);
     ylabel('Maximum Temperature (°C)', 'FontSize', 14);
     title(['benchmark ', num2str(i)], 'FontSize', 14);
     ylim([min(maxT_mat(:))-0.5, max(maxT_mat(:))+0.5]);
@@ -69,7 +69,7 @@ for i = 1:2
     subplot(1,2,i);
     bar(isppa_mat(i,:), 'FaceColor', [.7 .2 .2]);
     set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
-    xlabel('Setup', 'FontSize', 14);
+    xlabel('Default Setup', 'FontSize', 14);
     ylabel('Target Intensity', 'FontSize', 14);
     title(['benchmark ', num2str(i)], 'FontSize', 14);
     grid on;
