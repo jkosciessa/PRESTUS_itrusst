@@ -1,0 +1,9 @@
+*
+!*.*
+!*/
+**/data
+**/figures
+
+*.DS_STORE
+*.m~
+*.asv
