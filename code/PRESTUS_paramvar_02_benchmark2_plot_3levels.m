@@ -53,10 +53,14 @@ for t = 1:length(tissue_labels)
 
             if isfile(filename)
                 T = readtable(filename);
-                if all(ismember({'isppa_at_target','maxT'}, T.Properties.VariableNames))
+                if all(ismember({'isppa_at_target'}, T.Properties.VariableNames))
                     isppa_vec(v) = T.isppa_at_target(1);
-                    maxT_vec(v) = T.maxT(1);
                     maxIsppa_vec(v) = T.max_Isppa_brain(1);
+                else
+                    warning('File %s does not contain required columns.', filename);
+                end
+                if all(ismember({'maxT'}, T.Properties.VariableNames))
+                    maxT_vec(v) = T.maxT(1);
                     riseT_vec(v) = T.riseT_brain(1);
                 else
                     warning('File %s does not contain required columns.', filename);

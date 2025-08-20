@@ -225,13 +225,15 @@ for subject_id = all_subjects
                                 
                 % Loop over sweep values for the current property
                 for v = 1:numel(magnitude)
-                    % Set all properties to 100% (baseline)
-                    for pp = 1:length(property_labels)
-                        parameters.medium.(tissue).(property_labels{pp}) = ...
-                            params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,'mid')));
+                    % Set all properties to mid setting (baseline)
+                    for tissue_bl = 1:length(tissue_labels)
+                        for pp = 1:length(property_labels)
+                            parameters.medium.(tissue_labels{tissue_bl}).(property_labels{pp}) = ...
+                                params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue_labels{tissue_bl}) & strcmp(params_table.level,'mid')));
+                        end
                     end
                     
-                    % Vary only the current property
+                    % Vary only the current property to BOTTOM/TOP
                     parameters.medium.(tissue).(property) = ...
                         params_table.(property_labels{p})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,magnitude{v})));
                 
