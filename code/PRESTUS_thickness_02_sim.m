@@ -25,21 +25,22 @@ pn.minimize = fullfile(pn.tuSIM_tools, 'FEX-minimize'); addpath(pn.minimize);
 pn.configs = fullfile(rootpath, 'data', 'configs');
 pn.data_path = fullfile(rootpath, 'data', 'bids');
 pn.data_seg = fullfile(rootpath, 'data', 'simnibs');
+pn.data = fullfile(rootpath, 'data');
 pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
 
 %% define variables to loop
 
-transducer_list = {['itrusst_protocol1']};
+setup_list = {['itrusst_protocol1']};
 
-all_subjects = [001:002];
+all_subjects = 301:312;
 intensities = 60;
 copy_positions = 1;
 
 for subject_id = all_subjects
 
-    for i_transducer = 1:length(transducer_list)
+    for i_setup = 1:length(setup_list)
     for i_intensity = 1:length(intensities)
-        transducer_name = transducer_list{i_transducer};
+        transducer_name = setup_list{i_setup};
         desired_intensity = intensities(i_intensity);
 
         %% load parameter file and adjust paths if necessary
@@ -173,82 +174,48 @@ for subject_id = all_subjects
             parameters.using_donders_hpc = 1;
         end
         
-        single_subject_pipeline(subject_id, parameters);
+%         single_subject_pipeline(subject_id, parameters);
 
         %% iterate over tissue parameters
-        % benchmark sub-001: brain
-        % benchmark sub-002: brain & skull
-
-        % iterate over multiple parameters:
-        % [1] the tissue labels "brain" and "skull", create either a suffix "_b_" or "_s_"
-        % [2] for each of these tissues, there are multiple property labels: "sound_speed", "density", "alpha_0_true", "alpha_power_true", "thermal_conductivity", "specific_heat_capacity", create a short suffix 
-        % 
-        % For each of these combinations:
-        % - specify a "parameters.results_filename_affix" as a combination of these suffixes
-        % - vary "parameters_baseline.medium.<<brain>>.<<sound_speed>>" from 10% to 200% in steps of 10 %, set the other parameters to their respective 100% value.
-
-        parameters_baseline = load_parameters(['config_',transducer_name,'.yaml']);
 
         % Define tissue labels and suffixes
         tissue_labels = {'brain', 'skull'};
         tissue_suffixes = {'_b', '_s'};
         
         % Define property labels and short suffixes
-        property_labels = {'sound_speed', 'density', 'alpha_0_true', ...
-                           'alpha_power_true', 'thermal_conductivity', ...
+        property_labels = {'sound_speed', 'density', 'alpha_0_true','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
                            'absorption_fraction'};
-        property_suffixes = {'_c_', '_rho_', '_a0_', '_y_', '_k_', '_heatc_', '_perf_', '_abs_'};
+        property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+
+        % define loops
+        magnitude = {'mid'};
         
+        % load ranges
+        opts = detectImportOptions(fullfile(pn.data, 'tissue_parameters.csv'));
+        params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'), opts); clear opts;
+
         % Loop over tissues
         for t = 1:length(tissue_labels)
-
-            % Define sweep values: low, intermediate, high
-            if t==1
-                sweep_values = [1500 1520 1568;...
-                    1040 1041 1050; ...
-                    0.24*2 0.59];
-            end
-        
-            % no skull exists for benchmark 1
-            if subject_id==1 && t==2
-                continue;
-            end
-        
             tissue = tissue_labels{t};
             tissue_suffix = tissue_suffixes{t};
-            
-            % Loop over properties
-            for p = 1:length(property_labels)
-                property = property_labels{p};
-                prop_suffix = property_suffixes{p};
-                                
-                % Loop over sweep values for the current property
-                for v = 1:size(sweep_values,2)
-                    % Set all properties to 100% (baseline)
-                    for pp = 1:length(property_labels)
-                        parameters.medium.(tissue).(property_labels{pp}) = ...
-                            parameters_baseline.medium.(tissue).(property_labels{pp});
-                    end
-                    
-                    % Vary only the current property
-                    parameters.medium.(tissue).(property) = ...
-                        sweep_values(p,v);
-                    
-                    % Create filename affix
-                    parameters.results_filename_affix = ...
-                        [tissue_suffix prop_suffix num2str(100*sweep_values(v))];
-        
-                    % Run the simulation
-                    parameters.code_type = 'matlab_cpu';
-                    single_subject_pipeline_with_slurm(subject_id, parameters, 0, '00:15:00', 8);
-                end
+
+            % Set all properties to 100% (baseline)
+            for pp = 1:length(property_labels)
+                parameters.medium.(tissue).(property_labels{pp}) = ...
+                    params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,'mid')));
             end
-        end
+        end 
+        
+        % Create filename affix
+        parameters.results_filename_affix = "";
+
+        % Run the simulation
+        parameters.code_type = 'matlab_cpu';
+        single_subject_pipeline_with_slurm(subject_id, parameters, 0, '01:00:00', 16);
 
         % end loop
 
-        %% TBD
     end
     end
 end

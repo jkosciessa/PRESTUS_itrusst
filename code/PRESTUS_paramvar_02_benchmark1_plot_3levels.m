@@ -1,0 +1,98 @@
+% get root path (script must be run)
+currentFile = mfilename('fullpath');
+[pathstr,~,~] = fileparts(currentFile); 
+cd(fullfile(pathstr,'..'))
+rootpath = pwd;
+
+pn.figures = fullfile(rootpath, 'figures');
+pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-001');
+pn.code = fullfile(rootpath, 'code'); addpath(pn.code)
+
+% Define tissues and suffixes
+tissue_labels = {'brain'};
+tissue_suffixes = {'_b'};
+
+% Define properties and suffixes
+property_labels = {'sound_speed', 'density', 'attenuation', 'thermal_conductivity', ...
+                   'specific_heat_capacity', 'perfusion', ...
+                   'absorption_fraction'};
+property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+
+% Define sweep values
+sweep_values = 1:2;
+
+% Preallocate results structure
+results = struct();
+xlabels = {};
+
+% Preallocate added metrics arrays
+max_Isppa_brain = nan(length(sweep_values), length(property_labels));
+riseT_brain = nan(length(sweep_values), length(property_labels));
+
+i_cond = 0;
+for t = 1:length(tissue_labels)
+    tissue = tissue_labels{t};
+    tissue_suffix = tissue_suffixes{t};
+
+    for p = 1:length(property_labels)
+        i_cond = i_cond+1;
+        property = property_labels{p};
+        prop_suffix = property_suffixes{p};
+
+        % Prepare to store results for this tissue/property
+        isppa_vec = nan(length(sweep_values),1);
+        maxT_vec = nan(length(sweep_values),1);
+        maxIsppa_vec = nan(length(sweep_values),1);
+        riseT_vec = nan(length(sweep_values),1);
+
+        for v = 1:length(sweep_values)
+            affix = [tissue_suffix prop_suffix num2str(sweep_values(v))];
+            xlabels{i_cond} = [tissue_suffix(2:end) '_' property];
+            filename = fullfile(pn.data, ['sub-001_phantom_output_table' affix '.csv']);
+
+            if isfile(filename)
+                T = readtable(filename);
+                if all(ismember({'isppa_at_target','maxT'}, T.Properties.VariableNames))
+                    isppa_vec(v) = T.isppa_at_target(1);
+                    maxT_vec(v) = T.maxT(1);
+                    % Check and read additional metrics if they exist
+                    if ismember('max_Isppa_brain', T.Properties.VariableNames)
+                        maxIsppa_vec(v) = T.max_Isppa_brain(1);
+                    else
+                        warning('File %s missing max_Isppa_brain.', filename);
+                    end
+                    if ismember('riseT_brain', T.Properties.VariableNames)
+                        riseT_vec(v) = T.riseT_brain(1);
+                    else
+                        warning('File %s missing riseT_brain.', filename);
+                    end
+                else
+                    warning('File %s does not contain required columns.', filename);
+                end
+            else
+                warning('File %s not found.', filename);
+            end
+        end
+        results.sweep(:,i_cond) = sweep_values;
+        results.isppa_at_target(:,i_cond) = isppa_vec;
+        results.maxT(:,i_cond) = maxT_vec-37;
+        max_Isppa_brain(:, i_cond) = maxIsppa_vec;
+        riseT_brain(:, i_cond) = riseT_vec;
+    end
+end
+
+%% Restrict to only plot levels 1 and 2
+scatter_levels = [1, 2]; % Only first and second sweep levels
+scatter_colors = {[1 1 1], [0 0 0]}; % white and black
+
+%% Plot maximum temperature
+plot_metric_with_patches(results.maxT, xlabels, 'max. Temp rise (deg C)', 'sub-001_temperature', [0 4], scatter_levels, scatter_colors, pn);
+
+%% Plot target intensity
+plot_metric_with_patches(results.isppa_at_target, xlabels, 'target intensity', 'sub-001_intensity', [0 60], scatter_levels, scatter_colors, pn);
+
+%% Plot max_Isppa_brain
+plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-001_maxIsppa_brain', [0 60], scatter_levels, scatter_colors, pn);
+
+%% Plot riseT_brain
+plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-001_riseT_brain', [0 1], scatter_levels, scatter_colors, pn);

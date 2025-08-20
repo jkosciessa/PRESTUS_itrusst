@@ -17,4 +17,8 @@ Relevant scripts are called ```PRESTUS_paramvar```.
 
 Relevant scripts are called ```PRESTUS_pipeline```.
 
+[3] Variations of skull thickness layer 
+
+Relevant scripts are called ```PRESTUS_thickness```.
+
 Benchmark phantoms are created using PRESTUS examples, see [here](https://github.com/Donders-Institute/PRESTUS/blob/development/examples/createPhantom.m). The code uses PRESTUS' ```phantom``` implementation (see [here](https://github.com/Donders-Institute/PRESTUS/blob/development/documentation/doc_medium.md)). 
