@@ -188,8 +188,6 @@ for subject_id = all_subjects
         % - specify a "parameters.results_filename_affix" as a combination of these suffixes
         % - vary "parameters_baseline.medium.<<brain>>.<<sound_speed>>" from 10% to 200% in steps of 10 %, set the other parameters to their respective 100% value.
 
-%         parameters_baseline = load_parameters(['config_',transducer_name,'.yaml']);
-
         % Define tissue labels and suffixes
         tissue_labels = {'brain', 'skull'};
         tissue_suffixes = {'_b', '_s'};

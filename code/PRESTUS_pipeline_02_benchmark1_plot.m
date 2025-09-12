@@ -4,9 +4,12 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'))
 rootpath = pwd;
 
-setup_list = {'itrusst_protocol1_bottom', 'itrusst_protocol1_mid', ...
-              'itrusst_protocol1_PRESTUS', 'itrusst_protocol1_kPlan', ...
-              'itrusst_protocol1_BabelBrain', 'itrusst_protocol1_top'};
+setup_list = {'itrusst_protocol1_conservative', ...
+                'itrusst_protocol1_kPlan', ...
+                'itrusst_protocol1_mid', ...
+                'itrusst_protocol1_PRESTUS', ...
+                'itrusst_protocol1_BabelBrain', ...
+                'itrusst_protocol1_liberal'};
 
 subject_list = {'sub-001', 'sub-002'};
 
@@ -41,7 +44,7 @@ for s = 1:n_setups
 end
 
 % Assume maxT_mat and isppa_mat are [2 x 4] arrays: rows=subjects, cols=setups
-setup_list = {'bottom', 'mid', 'PRESTUS', 'kPlan', 'BabelBrain', 'top'};
+setup_list = {'conservative', 'kPlan', 'mid', 'PRESTUS', 'BabelBrain', 'liberal'};
 subject_list = {'sub-001', 'sub-002'};
 
 % ------- Maximum Temperature -------
