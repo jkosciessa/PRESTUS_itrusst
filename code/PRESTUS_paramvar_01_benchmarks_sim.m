@@ -12,6 +12,7 @@ addpath(fullfile(rootpath, 'code'));
 
 pn.tuSIM = fullfile(rootpath, 'tools', 'PRESTUS'); addpath(pn.tuSIM);
 pn.tuSIM_fun = fullfile(pn.tuSIM, 'functions'); addpath(pn.tuSIM_fun);
+pn.tuSIM_profile = fullfile(pn.tuSIM, 'acoustic_profiling'); addpath(genpath(pn.tuSIM_profile));
 pn.tuSIM_tools = fullfile(pn.tuSIM, 'toolboxes'); addpath(genpath(pn.tuSIM_tools));
 pn.kwave = fullfile(pn.tuSIM_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
 if strcmp(user, 'julkos')
@@ -32,7 +33,7 @@ pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
 
 setup_list = {['itrusst_protocol1']};
 
-all_subjects = [001:002];
+all_subjects = [001:002, 303];
 intensities = 60;
 copy_positions = 1;
 
@@ -117,17 +118,31 @@ for subject_id = all_subjects
         parameters.correctEPdistance = 0; % do not correct for exit plan distance
 
         correctionFactor = (desired_intensity./max(axial_pressure));
-        real_profile(:,1) = pos_x_sim_res; %pos_x_axis;
-        real_profile(:,2) = axial_pressure.*correctionFactor;
-%         real_profile(real_profile(:,1)<=0, :) = [];
+        profile_empirical.dist_from_tran = pos_x_sim_res;
+        profile_empirical.profile_focus = axial_pressure.*correctionFactor;
+        profile_empirical.focus_wrt_exit_plane = 64; % not really the exit plane here...
+        
+        cd(fullfile(rootpath, 'data/configs/')) % needs to contain a folder called "configs" in this setup
 
-        [opt_source_amp, opt_phases] = transducer_calibration(...
-            pn, ...
-            parameters, ...
+        parameters.calibration = yaml.loadFile('calibration_config.yaml');
+        parameters.calibration.path_output = fullfile(rootpath, 'data/calibration/'); 
+            mkdir(parameters.calibration.path_output)
+        parameters.calibration.path_output_profiles = fullfile(rootpath, 'data/calibration/PRESTUS_virtual_parameters');
+            mkdir(parameters.calibration.path_output_profiles)
+
+        [opt_source_amp] = acoustic_profiling(profile_empirical,...
             transducer_name, ...
-            subject_id, ...
             desired_intensity, ...
-            real_profile);
+            parameters, ...
+            subject_id);
+
+%         [opt_source_amp, opt_phases] = transducer_calibration(...
+%             pn, ...
+%             parameters, ...
+%             transducer_name, ...
+%             subject_id, ...
+%             desired_intensity, ...
+%             real_profile);
 
         %% run soft-tissue simulation
 
@@ -234,13 +249,16 @@ for subject_id = all_subjects
                     % Vary only the current property to BOTTOM/TOP
                     parameters.medium.(tissue).(property) = ...
                         params_table.(property_labels{p})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,magnitude{v})));
-                
+
                     % Create filename affix
                     parameters.results_filename_affix = ...
                         [tissue_suffix prop_suffix num2str(v)];
         
                     % Run the simulation
                     parameters.code_type = 'matlab_cpu';
+                    parameters.using_donders_hpc = 1;
+
+%                     single_subject_pipeline(subject_id, parameters);
                     single_subject_pipeline_with_slurm(subject_id, parameters, 0, '01:00:00', 16);
                 end
             end

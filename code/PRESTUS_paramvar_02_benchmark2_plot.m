@@ -26,9 +26,10 @@ sweep_values = 1:2;
 results = struct();
 xlabels = {};
 
-% Additional metrics storage
-max_Isppa_brain = nan(length(sweep_values), length(property_labels));
-riseT_brain = nan(length(sweep_values), length(property_labels));
+% Preallocate added metrics arrays
+max_Isppa_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+riseT_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+real_focal_distance = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 
 i_cond = 0;
 for t = 1:length(tissue_labels)
@@ -45,6 +46,7 @@ for t = 1:length(tissue_labels)
         maxT_vec = nan(length(sweep_values),1);
         maxIsppa_vec = nan(length(sweep_values),1);
         riseT_vec = nan(length(sweep_values),1);
+        real_focal_vec = nan(length(sweep_values),1);
 
         for v = 1:length(sweep_values)
             affix = [tissue_suffix prop_suffix num2str(sweep_values(v))];
@@ -53,27 +55,49 @@ for t = 1:length(tissue_labels)
 
             if isfile(filename)
                 T = readtable(filename);
-                if all(ismember({'isppa_at_target'}, T.Properties.VariableNames))
+                
+                % Individual column checks for each requested column
+                if ismember('isppa_at_target', T.Properties.VariableNames)
                     isppa_vec(v) = T.isppa_at_target(1);
+                else
+                    warning('File %s missing isppa_at_target.', filename);
+                end
+                
+                if ismember('max_Isppa_brain', T.Properties.VariableNames)
                     maxIsppa_vec(v) = T.max_Isppa_brain(1);
                 else
-                    warning('File %s does not contain required columns.', filename);
+                    warning('File %s missing max_Isppa_brain.', filename);
                 end
-                if all(ismember({'maxT'}, T.Properties.VariableNames))
+                
+                if ismember('maxT', T.Properties.VariableNames)
                     maxT_vec(v) = T.maxT(1);
+                else
+                    warning('File %s missing maxT.', filename);
+                end
+                
+                if ismember('riseT_brain', T.Properties.VariableNames)
                     riseT_vec(v) = T.riseT_brain(1);
                 else
-                    warning('File %s does not contain required columns.', filename);
+                    warning('File %s missing riseT_brain.', filename);
+                end
+                
+                if ismember('real_focal_distance', T.Properties.VariableNames)
+                    real_focal_vec(v) = T.real_focal_distance(1);
+                else
+                    warning('File %s missing real_focal_distance.', filename);
                 end
             else
                 warning('File %s not found.', filename);
             end
         end
+        
+        % Store in results structure
         results.sweep(:,i_cond) = sweep_values;
         results.isppa_at_target(:,i_cond) = isppa_vec;
         results.maxT(:,i_cond) = maxT_vec - 37;
-        results.max_Isppa_brain(:, i_cond) = maxIsppa_vec;
-        results.riseT_brain(:, i_cond) = riseT_vec;
+        max_Isppa_brain(:, i_cond) = maxIsppa_vec;
+        riseT_brain(:, i_cond) = riseT_vec;
+        real_focal_distance(:, i_cond) = real_focal_vec;
     end
 end
 
@@ -88,11 +112,13 @@ plot_metric_with_patches(results.maxT, xlabels, 'max. Temp rise (deg C)', 'sub-0
 plot_metric_with_patches(results.isppa_at_target, xlabels, 'target intensity', 'sub-002_intensity', [0 11], scatter_levels, scatter_colors, pn);
 
 %% Plot max_Isppa_brain
-plot_metric_with_patches(results.max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-002_maxIsppa_brain', [0 13], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-002_maxIsppa_brain', [0 13], scatter_levels, scatter_colors, pn);
 
 %% Plot riseT_brain
-plot_metric_with_patches(results.riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-002_riseT_brain', [0 1.4], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-002_riseT_brain', [0 1.4], scatter_levels, scatter_colors, pn);
 
+%% Plot real_focal_distance
+plot_metric_with_patches(real_focal_distance, xlabels, 'real focal distance (mm)', 'sub-002_real_focal_distance', [], scatter_levels, scatter_colors, pn);
 
 %% Plot differences
 
@@ -132,4 +158,3 @@ ylabel('Difference in target intensity');
 set(gca, 'Layer', 'top');
 h.Color = 'white';
 h.InvertHardcopy = 'off';
-
