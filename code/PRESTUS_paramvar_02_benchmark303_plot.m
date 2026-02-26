@@ -109,13 +109,13 @@ scatter_colors = {[1 1 1], [0 0 0]}; % white and black
 plot_metric_with_patches(results.maxT, xlabels, 'max. Temp rise (deg C)', 'sub-303_temperature', [0 4], scatter_levels, scatter_colors, pn);
 
 %% Plot target intensity
-plot_metric_with_patches(results.isppa_at_target, xlabels, 'target intensity', 'sub-303_intensity', [0 11], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(results.isppa_at_target, xlabels, 'target intensity', 'sub-303_intensity', [0 20], scatter_levels, scatter_colors, pn);
 
 %% Plot max_Isppa_brain
-plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-303_maxIsppa_brain', [0 13], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-303_maxIsppa_brain', [0 20], scatter_levels, scatter_colors, pn);
 
 %% Plot riseT_brain
-plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-303_riseT_brain', [0 1.4], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-303_riseT_brain', [0 2], scatter_levels, scatter_colors, pn);
 
 %% Plot real_focal_distance
 plot_metric_with_patches(real_focal_distance, xlabels, 'real focal distance (mm)', 'sub-303_real_focal_distance', [], scatter_levels, scatter_colors, pn);

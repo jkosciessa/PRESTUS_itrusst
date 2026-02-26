@@ -12,6 +12,9 @@
 !/data/configs/
 !/data/configs/**
 
+# Exclude all archive directories
+/archive/*
+
 # Exclude all /figures directories
 **/figures
 

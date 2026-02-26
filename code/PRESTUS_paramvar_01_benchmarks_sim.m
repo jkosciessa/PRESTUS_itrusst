@@ -1,6 +1,6 @@
 clear all; close all; clc;
 
-user = 'julkos' % julkos/marwim/sebrei
+user = 'julkos'
 
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
@@ -17,10 +17,8 @@ pn.tuSIM_tools = fullfile(pn.tuSIM, 'toolboxes'); addpath(genpath(pn.tuSIM_tools
 pn.kwave = fullfile(pn.tuSIM_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
 if strcmp(user, 'julkos')
     pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
-elseif strcmp(user, 'marwim')
-    pn.simnibs = fullfile('/home', 'neuromod', 'marwim', 'miniconda3', 'envs', 'simnibs_env', 'bin');
-elseif strcmp(user, 'sebrei')
-    pn.simnibs = fullfile('/home', 'neuromod', 'sebrei', '.conda', 'envs', 'simnibs_env', 'bin');
+else
+    warning('User not specified...may be missing simnibs path');
 end
 pn.minimize = fullfile(pn.tuSIM_tools, 'FEX-minimize'); addpath(pn.minimize);
 pn.configs = fullfile(rootpath, 'data', 'configs');
@@ -130,19 +128,12 @@ for subject_id = all_subjects
         parameters.calibration.path_output_profiles = fullfile(rootpath, 'data/calibration/PRESTUS_virtual_parameters');
             mkdir(parameters.calibration.path_output_profiles)
 
-        [opt_source_amp] = acoustic_profiling(profile_empirical,...
-            transducer_name, ...
-            desired_intensity, ...
-            parameters, ...
-            subject_id);
-
-%         [opt_source_amp, opt_phases] = transducer_calibration(...
-%             pn, ...
-%             parameters, ...
-%             transducer_name, ...
-%             subject_id, ...
-%             desired_intensity, ...
-%             real_profile);
+        [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
+                    calibration_transducer(profile_empirical,...
+                    transducer_name, ...
+                    desired_intensity, ...
+                    parameters, ...
+                    subject_id);
 
         %% run soft-tissue simulation
 
@@ -163,6 +154,8 @@ for subject_id = all_subjects
         parameters.heatingvideo = 0;
 
         parameters.transducer.source_amp = opt_source_amp; % use calibrated input intensity
+        parameters.transducer.source_phase_deg = opt_source_phase_deg;
+        parameters.transducer.source_phase_rad = opt_source_phase_rad;
 
         parameters.transducer.pos_t1_grid = [3, 35];
         parameters.focus_pos_t1_grid = [64, 35];
@@ -170,6 +163,7 @@ for subject_id = all_subjects
         parameters.run_source_setup = 1;
         parameters.run_acoustic_sims = 1;
         parameters.run_heating_sims = 1;
+        parameters.run_posthoc_water_sims = 1;
 
         parameters.thermal.n_trials = 400; % 80 s
         parameters.thermal.duty_cycle = 0.1;

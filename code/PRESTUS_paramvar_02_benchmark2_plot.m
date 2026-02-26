@@ -29,6 +29,8 @@ xlabels = {};
 % Preallocate added metrics arrays
 max_Isppa_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 riseT_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+max_Isppa_skull = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+riseT_skull = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 real_focal_distance = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 
 i_cond = 0;
@@ -44,8 +46,10 @@ for t = 1:length(tissue_labels)
         % Prepare to store results for this tissue/property
         isppa_vec = nan(length(sweep_values),1);
         maxT_vec = nan(length(sweep_values),1);
-        maxIsppa_vec = nan(length(sweep_values),1);
-        riseT_vec = nan(length(sweep_values),1);
+        maxIsppa_brain_vec = nan(length(sweep_values),1);
+        riseT_brain_vec = nan(length(sweep_values),1);
+        maxIsppa_skull_vec = nan(length(sweep_values),1);
+        riseT_skull_vec = nan(length(sweep_values),1);
         real_focal_vec = nan(length(sweep_values),1);
 
         for v = 1:length(sweep_values)
@@ -64,7 +68,7 @@ for t = 1:length(tissue_labels)
                 end
                 
                 if ismember('max_Isppa_brain', T.Properties.VariableNames)
-                    maxIsppa_vec(v) = T.max_Isppa_brain(1);
+                    maxIsppa_brain_vec(v) = T.max_Isppa_brain(1);
                 else
                     warning('File %s missing max_Isppa_brain.', filename);
                 end
@@ -76,9 +80,21 @@ for t = 1:length(tissue_labels)
                 end
                 
                 if ismember('riseT_brain', T.Properties.VariableNames)
-                    riseT_vec(v) = T.riseT_brain(1);
+                    riseT_brain_vec(v) = T.riseT_brain(1);
                 else
                     warning('File %s missing riseT_brain.', filename);
+                end
+                
+                if ismember('max_Isppa_skull', T.Properties.VariableNames)
+                    maxIsppa_skull_vec(v) = T.max_Isppa_skull(1);
+                else
+                    warning('File %s missing max_Isppa_skull.', filename);
+                end
+                
+                if ismember('riseT_skull', T.Properties.VariableNames)
+                    riseT_skull_vec(v) = T.riseT_skull(1);
+                else
+                    warning('File %s missing riseT_skull.', filename);
                 end
                 
                 if ismember('real_focal_distance', T.Properties.VariableNames)
@@ -95,8 +111,10 @@ for t = 1:length(tissue_labels)
         results.sweep(:,i_cond) = sweep_values;
         results.isppa_at_target(:,i_cond) = isppa_vec;
         results.maxT(:,i_cond) = maxT_vec - 37;
-        max_Isppa_brain(:, i_cond) = maxIsppa_vec;
-        riseT_brain(:, i_cond) = riseT_vec;
+        max_Isppa_brain(:, i_cond) = maxIsppa_brain_vec;
+        riseT_brain(:, i_cond) = riseT_brain_vec;
+        max_Isppa_skull(:, i_cond) = maxIsppa_skull_vec;
+        riseT_skull(:, i_cond) = riseT_skull_vec;
         real_focal_distance(:, i_cond) = real_focal_vec;
     end
 end
@@ -116,6 +134,12 @@ plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-002_m
 
 %% Plot riseT_brain
 plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-002_riseT_brain', [0 1.4], scatter_levels, scatter_colors, pn);
+
+%% Plot max_Isppa_skull
+plot_metric_with_patches(max_Isppa_skull, xlabels, 'max Isppa skull', 'sub-002_maxIsppa_skull', [0 11], scatter_levels, scatter_colors, pn);
+
+%% Plot riseT_skull
+plot_metric_with_patches(riseT_skull, xlabels, 'rise T skull (deg C)', 'sub-002_riseT_skull', [0 4], scatter_levels, scatter_colors, pn);
 
 %% Plot real_focal_distance
 plot_metric_with_patches(real_focal_distance, xlabels, 'real focal distance (mm)', 'sub-002_real_focal_distance', [], scatter_levels, scatter_colors, pn);
@@ -158,3 +182,4 @@ ylabel('Difference in target intensity');
 set(gca, 'Layer', 'top');
 h.Color = 'white';
 h.InvertHardcopy = 'off';
+
