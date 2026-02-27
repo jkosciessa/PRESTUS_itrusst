@@ -45,7 +45,7 @@ for subject_id = all_subjects
 
         %% load parameter file and adjust paths if necessary
         
-        cd(fullfile(rootpath, 'data')) % needs to contain a folder called "configs" in this setup
+        cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
         if ismac
@@ -67,85 +67,15 @@ for subject_id = all_subjects
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
         parameters.usepseudoCT = 0;
 
-        %% run free-water simulations
-
-        % parameters.simulation_medium = 'water'; % indicate that we only want the simulation in the water medium for now
-        % parameters.interactive = 0;
-        % parameters.overwrite_files = 'always';
-        % parameters.run_heating_sims = 0;
-        % parameters.debug = 1;
-        % parameters.savemat = 1;
-        % parameters.axisymmetric = 0;
-        % if ismac % if run locally on a mac
-        %     parameters.code_type = 'matlab_cpu';
-        % else
-        %     parameters.code_type = 'matlab_gpu';
-        % end
-        % 
-        % single_subject_pipeline(subject_id, parameters);
-
         calibrate = 0;
         if calibrate == 1
-            %% plot free-water results
-    
-            opt_res = load(fullfile(pn.outputs_folder, sprintf('sub-%03d_water_results%s.mat',...
-            subject_id, parameters.results_filename_affix)));
-    
-            opt_res_param = opt_res.acoustic_info.parameters;
-    
-            p_max = gather(opt_res.sensor_data.p_max_all);
-            pred_axial_pressure_opt = squeeze(p_max(opt_res_param.transducer.trans_pos(1),:));
-            axial_pressure = pred_axial_pressure_opt.^2/...
-                (2*opt_res_param.medium.water.sound_speed*opt_res_param.medium.water.density).* 1e-4;
-    
-            h = figure('Position', [10 10 900 500]);
-            hold on
-            xlabel('Axial Position [mm]');
-            ylabel('Intensity [W/cm^2]');
-            pos_x_axis = (1:opt_res_param.default_grid_dims(2)).*opt_res_param.grid_step_mm; % x-axis [mm]
-            pos_x_trans = opt_res_param.transducer.trans_pos(2)*opt_res_param.grid_step_mm; % x-axis position of transducer [mm]
-            pos_x_sim_res = pos_x_axis-pos_x_trans; % axial position for the simulated results, relative to transducer position [mm]
-            plot(pos_x_sim_res, axial_pressure);
-            hold off
-            xline(opt_res_param.expected_focal_distance_mm, '--');
-            yline(desired_intensity, '--');
-            plotname = fullfile(pn.outputs_folder, 'simulation_analytic.png');
-            saveas(h, plotname, 'png');
-            close(h);
-    
-            %% introduce a simple free-water amplitude scaling
-            % Assumption: the "real" profile linearly scales to a peak of the desired intensity
-    
-            % axial_pressure | profile measured in simulation grid
-            %                pos_x_axis - raw simulation axis, 1: transducer bowl
-            %                pos_x_sim_res - axis without transducer position
-    
-            parameters.correctEPdistance = 0; % do not correct for exit plan distance
-    
-            correctionFactor = (desired_intensity./max(axial_pressure));
-            profile_empirical.dist_from_tran = pos_x_sim_res;
-            profile_empirical.profile_focus = axial_pressure.*correctionFactor;
-            profile_empirical.focus_wrt_exit_plane = 64; % not really the exit plane here...
-            
-            cd(fullfile(rootpath, 'data/configs/')) % needs to contain a folder called "configs" in this setup
-    
-            parameters.calibration = yaml.loadFile('calibration_config.yaml');
-            parameters.calibration.path_output = fullfile(rootpath, 'data/calibration/'); 
-                mkdir(parameters.calibration.path_output)
-            parameters.calibration.path_output_profiles = fullfile(rootpath, 'data/calibration/PRESTUS_virtual_parameters');
-                mkdir(parameters.calibration.path_output_profiles)
-    
             [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
-                calibration_transducer(profile_empirical,...
-                transducer_name, ...
-                desired_intensity, ...
-                parameters, ...
-                subject_id);
+                itrusst_calibrate(pn, parameters, subject_id, desired_intensity, transducer_name);
         end
 
         %% run soft-tissue simulation
 
-        cd(fullfile(rootpath, 'data')) % needs to contain a folder called "configs" in this setup
+        cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
         parameters.ld_library_path ="/opt/gcc/7.2.0/lib64";
@@ -168,32 +98,14 @@ for subject_id = all_subjects
             parameters.transducer.source_phase_rad = opt_source_phase_rad;
         end
 
-        parameters.transducer.pos_t1_grid = [3, 35];
-        parameters.focus_pos_t1_grid = [64, 35];
+        parameters.transducer.trans_pos = [3, 35];
+        parameters.transducer.focus_pos = [64, 35];
 
         parameters.run_source_setup = 1;
         parameters.run_acoustic_sims = 1;
         parameters.run_heating_sims = 1;
         parameters.run_posthoc_water_sims = 1;
         parameters.axisymmetric = 1;
-
-        % parameters.thermal.n_trials = 400; % 80 s
-        % parameters.thermal.duty_cycle = 0.1;
-        % parameters.thermal.stim_duration = 0.2; 
-        % parameters.thermal.sim_time_steps = 0.02;
-        % parameters.thermal.post_stim_dur = 400;
-        % parameters.thermal.post_time_steps = 1;
-        % parameters.thermal.pri_duration = 0.2;
-        % parameters.thermal.equal_steps = 1;
-        % parameters.thermal.cem43_iso = 1;
-
-        parameters.code_type = 'matlab_cpu';
-
-        if ismac % if run locally on a mac
-            parameters.using_donders_hpc = 0;
-        else
-            parameters.using_donders_hpc = 1;
-        end
 
         %% iterate over tissue parameters
         % benchmark sub-001: brain
@@ -255,11 +167,16 @@ for subject_id = all_subjects
                         [tissue_suffix prop_suffix num2str(v)];
         
                     % Run the simulation
-                    parameters.code_type = 'matlab_cpu';
-                    parameters.using_donders_hpc = 1;
+                    parameters.code_type = 'matlab_gpu';
+                    parameters.hpc_submit_medium = 'matlab';
 
-                    % single_subject_pipeline(subject_id, parameters);
-                    single_subject_pipeline_with_slurm(subject_id, parameters, 0, '01:00:00', 16);
+                    switch parameters.hpc_submit_medium
+                        case 'slurm'
+                            single_subject_pipeline_with_slurm(subject_id, parameters, 0, '01:00:00', 20);
+                        case 'matlab'
+                            single_subject_pipeline(subject_id, parameters);
+                    end
+
                 end
             end
         end

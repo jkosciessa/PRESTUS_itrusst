@@ -1,23 +1,30 @@
-subject_subfolder: 1
+simulation_medium: phantom
 
+# model only water, brain, and skull layers
+layers:
+  water: [0, 3, 6, 9, 10]
+  brain: [1, 2]
+  skull: [4, 7, 8]
+  
 transducer: 
-  n_elements: 1
-  Elements_ID_mm: [0]
-  Elements_OD_mm: [62.2]
-  curv_radius_mm: 64
-  dist_to_plane_mm: 64
-  source_amp: 330657
-  source_phase_deg: [244.9022]
-  source_freq_hz: 500e3
-
-simulation_medium: water
+  n_elements: 1.0
+  Elements_ID_mm: 0.0
+  Elements_OD_mm: 64.0
+  curv_radius_mm: 64.0
+  dist_to_plane_mm: 64.0
+  source_amp: 116901.0
+  source_phase_deg: 0
+  source_freq_hz: 500000.0
+  trans_pos: [35.0, 21.0] # 1 + 20 pml
+  focus_pos: [35.0, 85.0] # 64 + 1 + 20 pml
+  source_phase_rad: 0
 
 run_source_setup: 1
-run_posthoc_water_sims: 1
+run_acoustic_sims: 1
 run_heating_sims: 1
+run_posthoc_water_sims: 1
 
 grid_step_mm: 1  # [mm]
-default_grid_size: 120
 default_grid_dims: [70, 140] # 140 = 120mm + 20 pml
 
 pml_size: 20 # default for 2D (cf. 10 for 3D)
@@ -28,35 +35,34 @@ use_kWaveArray: 1
 
 expected_focal_distance_mm: 64
 transducer_from_localite: 0
-using_donders_hpc: 1
 
 medium:
   water:
     sound_speed: 1500
     density: 994
-    alpha_0_true: 2.17e-3
-    alpha_power_true: 2
+    alpha_coeff: 2.17e-3
+    alpha_power: 2
     thermal_conductivity: 0.60
     specific_heat_capacity: 4178
   brain:
     sound_speed: 1546
     density: 1045
-    alpha_0_true: 0.42
-    alpha_power_true: 1
+    alpha_coeff: 0.42
+    alpha_power: 1
     thermal_conductivity: 0.51
     specific_heat_capacity: 3630
   skull:
     sound_speed: 2800
     density: 1850
-    alpha_0_true: 13.3
-    alpha_power_true: 1
+    alpha_coeff: 13.3
+    alpha_power: 1
     thermal_conductivity: 0.32
     specific_heat_capacity: 1313
   skull_trabecular: # trabecular bone
     sound_speed: 2200 # [m/s]
     density: 1178 # [kg/m^3]
-    alpha_0_true: 13.3
-    alpha_power_true: 1
+    alpha_coeff: 13.3
+    alpha_power: 1
     thermal_conductivity: 0.31 # [W/m/°C]
     specific_heat_capacity: 2274 # [J/kg/°C]
     perfusion: 30
@@ -64,8 +70,8 @@ medium:
   skull_cortical: # cortical bone
     sound_speed: 2850 # [m/s]
     density: 1908 # [kg/m^3]
-    alpha_0_true: 13.3
-    alpha_power_true: 1
+    alpha_coeff: 13.3
+    alpha_power: 1
     thermal_conductivity: 0.32 # [W/m/°C]
     specific_heat_capacity: 1313 # [J/kg/°C]
     perfusion: 10
@@ -74,17 +80,13 @@ medium:
 thermal:
   # (model multiple PTR each containing a single PT)
   pd: 0.02              # Pulse Duration (PD) [seconds]
-  dc: 0                 # Duty cycle (DC) inside a Pulse Train [%] [inernally calculated: pd/pri]
   pri: 0.2              # Pulse Repetition Interval (PRI) [seconds]
-  prf: 0                # Pulse Repetition Frequency (PRF) [internally calculated: 1/pri]
   ptd: 0.2              # Pulse Train Duration (PTD) [seconds]
   pt_timestep: 0.02     # Modeling time steps inside a PT [seconds]
   ptri: 0.2             # Pulse Train Repetition Interval (PTRI) [seconds]
-  ptri_off: 0           # Duration of OFF period within a PTRI [internally calculated: ptri-ptd]
   ptrd: 80              # Pulse Train Repetition Duration (PTRD) [seconds] 
   post_ptri_dur: 80     # Cooloff Duration following the PTRI [seconds]
   post_pt_timestep: 1   # Modeling time steps following PT & PTRI [seconds]
-  # retained parameters
   equal_step_duration: 0
   cem43_iso: 1
   temp_0:

@@ -4,7 +4,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-pn.figures = fullfile(rootpath, 'figures');
+pn.figures = fullfile(rootpath, 'figures_tmp'); mkdir(pn.figures);
 pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-002');
 pn.code = fullfile(rootpath, 'code'); addpath(pn.code)
 
@@ -16,7 +16,7 @@ tissue_suffixes = {'_b', '_s'};
 property_labels = {'soundSpeed', 'density', 'attenuation', ...
                    'thermConductivity', ...
                    'heatCapacity', 'perfusion', ...
-                   'absorption'};
+                   'absorptionFraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 
 % Define sweep values (2 levels)
@@ -97,8 +97,8 @@ for t = 1:length(tissue_labels)
                     warning('File %s missing riseT_skull.', filename);
                 end
                 
-                if ismember('real_focal_distance', T.Properties.VariableNames)
-                    real_focal_vec(v) = T.real_focal_distance(1);
+                if ismember('real_focal_distance_mm', T.Properties.VariableNames)
+                    real_focal_vec(v) = T.real_focal_distance_mm(1);
                 else
                     warning('File %s missing real_focal_distance.', filename);
                 end

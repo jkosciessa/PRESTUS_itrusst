@@ -45,7 +45,7 @@ for subject_id = all_subjects
 
         %% load parameter file and adjust paths if necessary
         
-        cd(fullfile(rootpath, 'data')) % needs to contain a folder called "configs" in this setup
+        cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
         if ismac
@@ -67,68 +67,6 @@ for subject_id = all_subjects
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
         parameters.usepseudoCT = 0;
 
-        %% run free-water simulations
-
-        parameters.simulation_medium = 'water'; % indicate that we only want the simulation in the water medium for now
-        parameters.interactive = 0;
-        parameters.overwrite_files = 'always';
-        parameters.run_heating_sims = 0;
-        if ismac % if run locally on a mac
-            parameters.using_donders_hpc = 0;
-            parameters.code_type = 'matlab_cpu';
-        else
-            parameters.using_donders_hpc = 1;
-        end
-        
-        single_subject_pipeline(subject_id, parameters);
-
-        %% plot free-water results
-
-        opt_res = load(fullfile(pn.outputs_folder, sprintf('sub-%03d_water_results%s.mat',...
-        subject_id, parameters.results_filename_affix)),'sensor_data','parameters');
-
-        p_max = gather(opt_res.sensor_data.p_max_all);
-        pred_axial_pressure_opt = squeeze(p_max(opt_res.parameters.transducer.pos_grid(1),:));
-        axial_pressure = pred_axial_pressure_opt.^2/...
-            (2*parameters.medium.water.sound_speed*parameters.medium.water.density).* 1e-4;
-
-        h = figure('Position', [10 10 900 500]);
-        hold on
-        xlabel('Axial Position [mm]');
-        ylabel('Intensity [W/cm^2]');
-        pos_x_axis = (1:parameters.default_grid_dims(2)).*parameters.grid_step_mm; % x-axis [mm]
-        pos_x_trans = (opt_res.parameters.transducer.pos_grid(2)-1)*parameters.grid_step_mm; % x-axis position of transducer [mm]
-        pos_x_sim_res = pos_x_axis-pos_x_trans; % axial position for the simulated results, relative to transducer position [mm]
-        plot(pos_x_sim_res, axial_pressure);
-        hold off
-        xline(opt_res.parameters.expected_focal_distance_mm, '--');
-        yline(desired_intensity, '--');
-        plotname = fullfile(pn.outputs_folder, 'simulation_analytic.png');
-        saveas(h, plotname, 'png');
-        close(h);
-
-        %% introduce a simple free-water amplitude scaling
-        % Assumption: the "real" profile linearly scales to a peak of the desired intensity
-
-        % axial_pressure | profile measured in simulation grid
-        %                pos_x_axis - raw simulation axis, 1: transducer bowl
-        %                pos_x_sim_res - axis without transducer position
-
-        parameters.correctEPdistance = 0; % do not correct for exit plan distance
-
-        correctionFactor = (desired_intensity./max(axial_pressure));
-        real_profile(:,1) = pos_x_sim_res; %pos_x_axis;
-        real_profile(:,2) = axial_pressure.*correctionFactor;
-%         real_profile(real_profile(:,1)<=0, :) = [];
-
-        [opt_source_amp, opt_phases] = transducer_calibration(...
-            pn, ...
-            parameters, ...
-            transducer_name, ...
-            subject_id, ...
-            desired_intensity, ...
-            real_profile);
-
         %% run soft-tissue simulation
 
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
@@ -146,35 +84,6 @@ for subject_id = all_subjects
         parameters.overwrite_files = 'always';
         parameters.overwrite_simnibs = 0;
         parameters.heatingvideo = 0;
-
-        parameters.transducer.source_amp = opt_source_amp; % use calibrated input intensity
-
-        parameters.transducer.pos_t1_grid = [3, 35];
-        parameters.focus_pos_t1_grid = [64, 35];
-
-        parameters.run_source_setup = 1;
-        parameters.run_acoustic_sims = 1;
-        parameters.run_heating_sims = 1;
-
-        parameters.thermal.n_trials = 400; % 80 s
-        parameters.thermal.duty_cycle = 0.1;
-        parameters.thermal.stim_duration = 0.2; 
-        parameters.thermal.sim_time_steps = 0.02;
-        parameters.thermal.post_stim_dur = 400;
-        parameters.thermal.post_time_steps = 1;
-        parameters.thermal.pri_duration = 0.2;
-        parameters.thermal.equal_steps = 1;
-        parameters.thermal.cem43_iso = 1;
-
-        parameters.code_type = 'matlab_cpu';
-
-        if ismac % if run locally on a mac
-            parameters.using_donders_hpc = 0;
-        else
-            parameters.using_donders_hpc = 1;
-        end
-        
-%         single_subject_pipeline(subject_id, parameters);
 
         %% iterate over tissue parameters
 
