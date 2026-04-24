@@ -4,7 +4,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-pn.figures = fullfile(rootpath, 'figures_tmp'); mkdir(pn.figures);
+pn.figures = fullfile(rootpath, 'figures'); mkdir(pn.figures);
 pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-002');
 pn.code = fullfile(rootpath, 'code'); addpath(pn.code)
 
@@ -13,10 +13,10 @@ tissue_labels = {'brain', 'skull'};
 tissue_suffixes = {'_b', '_s'};
 
 % Define properties and suffixes
-property_labels = {'soundSpeed', 'density', 'attenuation', ...
-                   'thermConductivity', ...
-                   'heatCapacity', 'perfusion', ...
-                   'absorptionFraction'};
+property_labels = {'sound_speed', 'density', 'alpha_coeff', ...
+                   'thermal_conductivity', ...
+                   'specific_heat_capacity', 'perfusion', ...
+                   'absorption_fraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 
 % Define sweep values (2 levels)
@@ -27,9 +27,9 @@ results = struct();
 xlabels = {};
 
 % Preallocate added metrics arrays
-max_Isppa_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+Isppa_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 riseT_brain = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
-max_Isppa_skull = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
+Isppa_skull = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 riseT_skull = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 real_focal_distance = nan(length(sweep_values), length(property_labels)*length(tissue_labels));
 
@@ -61,16 +61,16 @@ for t = 1:length(tissue_labels)
                 T = readtable(filename);
                 
                 % Individual column checks for each requested column
-                if ismember('isppa_at_target', T.Properties.VariableNames)
-                    isppa_vec(v) = T.isppa_at_target(1);
+                if ismember('Ipa_target', T.Properties.VariableNames)
+                    isppa_vec(v) = T.Ipa_target(1);
                 else
-                    warning('File %s missing isppa_at_target.', filename);
+                    warning('File %s missing Ipa_target.', filename);
                 end
                 
-                if ismember('max_Isppa_brain', T.Properties.VariableNames)
-                    maxIsppa_brain_vec(v) = T.max_Isppa_brain(1);
+                if ismember('Isppa_brain', T.Properties.VariableNames)
+                    maxIsppa_brain_vec(v) = T.Isppa_brain(1);
                 else
-                    warning('File %s missing max_Isppa_brain.', filename);
+                    warning('File %s missing Isppa_brain.', filename);
                 end
                 
                 if ismember('maxT', T.Properties.VariableNames)
@@ -85,10 +85,10 @@ for t = 1:length(tissue_labels)
                     warning('File %s missing riseT_brain.', filename);
                 end
                 
-                if ismember('max_Isppa_skull', T.Properties.VariableNames)
-                    maxIsppa_skull_vec(v) = T.max_Isppa_skull(1);
+                if ismember('Isppa_skull', T.Properties.VariableNames)
+                    maxIsppa_skull_vec(v) = T.Isppa_skull(1);
                 else
-                    warning('File %s missing max_Isppa_skull.', filename);
+                    warning('File %s missing Isppa_skull.', filename);
                 end
                 
                 if ismember('riseT_skull', T.Properties.VariableNames)
@@ -109,11 +109,11 @@ for t = 1:length(tissue_labels)
         
         % Store in results structure
         results.sweep(:,i_cond) = sweep_values;
-        results.isppa_at_target(:,i_cond) = isppa_vec;
+        results.Ipa_target(:,i_cond) = isppa_vec;
         results.maxT(:,i_cond) = maxT_vec - 37;
-        max_Isppa_brain(:, i_cond) = maxIsppa_brain_vec;
+        Isppa_brain(:, i_cond) = maxIsppa_brain_vec;
         riseT_brain(:, i_cond) = riseT_brain_vec;
-        max_Isppa_skull(:, i_cond) = maxIsppa_skull_vec;
+        Isppa_skull(:, i_cond) = maxIsppa_skull_vec;
         riseT_skull(:, i_cond) = riseT_skull_vec;
         real_focal_distance(:, i_cond) = real_focal_vec;
     end
@@ -124,22 +124,22 @@ scatter_levels = [1, 2]; % Only first and second sweep levels
 scatter_colors = {[1 1 1], [0 0 0]}; % white and black
 
 %% Plot maximum temperature
-plot_metric_with_patches(results.maxT, xlabels, 'max. Temp rise (deg C)', 'sub-002_temperature', [0 4], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(results.maxT, xlabels, 'max. Temp rise (deg C)', 'sub-002_temperature', [0 2.5], scatter_levels, scatter_colors, pn);
 
 %% Plot target intensity
-plot_metric_with_patches(results.isppa_at_target, xlabels, 'target intensity', 'sub-002_intensity', [0 11], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(results.Ipa_target, xlabels, 'target intensity', 'sub-002_intensity', [0 11], scatter_levels, scatter_colors, pn);
 
-%% Plot max_Isppa_brain
-plot_metric_with_patches(max_Isppa_brain, xlabels, 'max Isppa brain', 'sub-002_maxIsppa_brain', [0 13], scatter_levels, scatter_colors, pn);
+%% Plot Isppa_brain
+plot_metric_with_patches(Isppa_brain, xlabels, 'max Isppa brain', 'sub-002_maxIsppa_brain', [0 15], scatter_levels, scatter_colors, pn);
 
 %% Plot riseT_brain
 plot_metric_with_patches(riseT_brain, xlabels, 'rise T brain (deg C)', 'sub-002_riseT_brain', [0 1.4], scatter_levels, scatter_colors, pn);
 
-%% Plot max_Isppa_skull
-plot_metric_with_patches(max_Isppa_skull, xlabels, 'max Isppa skull', 'sub-002_maxIsppa_skull', [0 11], scatter_levels, scatter_colors, pn);
+%% Plot Isppa_skull
+plot_metric_with_patches(Isppa_skull, xlabels, 'max Isppa skull', 'sub-002_maxIsppa_skull', [0 11], scatter_levels, scatter_colors, pn);
 
 %% Plot riseT_skull
-plot_metric_with_patches(riseT_skull, xlabels, 'rise T skull (deg C)', 'sub-002_riseT_skull', [0 4], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(riseT_skull, xlabels, 'rise T skull (deg C)', 'sub-002_riseT_skull', [0 2.5], scatter_levels, scatter_colors, pn);
 
 %% Plot real_focal_distance
 plot_metric_with_patches(real_focal_distance, xlabels, 'real focal distance (mm)', 'sub-002_real_focal_distance', [], scatter_levels, scatter_colors, pn);
@@ -165,8 +165,8 @@ h.Color = 'white';
 h.InvertHardcopy = 'off';
 
 % Plot target intensity as difference between levels
-parameters = 1:size(results.isppa_at_target,2);
-result_diff = results.isppa_at_target(2,:) - results.isppa_at_target(1,:); % difference between high and low levels
+parameters = 1:size(results.Ipa_target,2);
+result_diff = results.Ipa_target(2,:) - results.Ipa_target(1,:); % difference between high and low levels
 
 h = figure;
 set(h, 'Units', 'normalized');

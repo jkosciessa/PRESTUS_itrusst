@@ -26,12 +26,12 @@ for i = 1:length(subjects)
     
     if isfile(csv_file)
         T = readtable(csv_file);
-        % Check if 'isppa_at_target' exists in table
-        if any(strcmp(T.Properties.VariableNames, 'isppa_at_target'))
-            target_intensity(i) = T.isppa_at_target(1); % assume first row, brain intensity
-            brain_intensity(i) = T.max_Isppa_brain(1); % assume first row, brain intensity
+        % Check if 'Ipa_target' exists in table
+        if any(strcmp(T.Properties.VariableNames, 'Ipa_target'))
+            target_intensity(i) = T.Ipa_target(1); % assume first row, brain intensity
+            brain_intensity(i) = T.Isppa_brain(1); % assume first row, brain intensity
         else
-            warning('Column ''isppa_at_target'' not found in %s', csv_file);
+            warning('Column ''Ipa_target'' not found in %s', csv_file);
         end
     else
         warning('File %s not found.', csv_file);

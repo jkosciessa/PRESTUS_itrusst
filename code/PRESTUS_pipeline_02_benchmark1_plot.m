@@ -4,12 +4,12 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'))
 rootpath = pwd;
 
-setup_list = {'itrusst_protocol1_conservative', ...
-                'itrusst_protocol1_kPlan', ...
-                'itrusst_protocol1_mid', ...
-                'itrusst_protocol1_PRESTUS', ...
-                'itrusst_protocol1_BabelBrain', ...
-                'itrusst_protocol1_liberal'};
+setup_list = {'medium_conservative', ...
+                'medium_kPlan', ...
+                'medium_mid', ...
+                'medium_PRESTUS', ...
+                'medium_BabelBrain', ...
+                'medium_liberal'};
 
 subject_list = {'sub-001', 'sub-002'};
 
@@ -31,9 +31,9 @@ for s = 1:n_setups
         filename = fullfile(data_dir, [subject '_phantom_output_table.csv']);
         if isfile(filename)
             T = readtable(filename);
-            if all(ismember({'isppa_at_target','maxT'}, T.Properties.VariableNames))
+            if all(ismember({'Ipa_target','maxT'}, T.Properties.VariableNames))
                 maxT_mat(sub, s) = T.maxT(1);
-                isppa_mat(sub, s) = T.isppa_at_target(1);
+                isppa_mat(sub, s) = T.Ipa_target(1);
             else
                 warning('File %s lacks required columns.', filename);
             end
@@ -51,7 +51,7 @@ subject_list = {'sub-001', 'sub-002'};
 h = figure;
 for i = 1:2
     subplot(1,2,i);
-    bar(maxT_mat(i,:), 'FaceColor', [.2 .5 .7]);
+    bar(maxT_mat(i,:), 'FaceColor', [.7 .2 .2]);
     set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
     xlabel('Default Setup', 'FontSize', 14);
     ylabel('Maximum Temperature (°C)', 'FontSize', 14);
@@ -70,7 +70,7 @@ saveas(h, fullfile(pn.figures, figureName), 'png');
 h = figure;
 for i = 1:2
     subplot(1,2,i);
-    bar(isppa_mat(i,:), 'FaceColor', [.7 .2 .2]);
+    bar(isppa_mat(i,:), 'FaceColor', [.2 .5 .7]);
     set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
     xlabel('Default Setup', 'FontSize', 14);
     ylabel('Target Intensity', 'FontSize', 14);

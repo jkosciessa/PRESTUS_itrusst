@@ -1,4 +1,5 @@
-simulation_medium: layered
+simulation:
+  medium: layered
 
 # model only water, brain, and skull layers
 layers:
@@ -7,41 +8,39 @@ layers:
   skull: [4, 7, 8]
 
 transducer:
-  n_elements: 10.0
-  Elements_ID_mm: [10.0, 22.1, 29.8, 36.0, 41.4, 46.3, 50.7, 54.9, 58.7, 62.4]
-  Elements_OD_mm: [21.1, 28.8, 35.0, 40.4, 45.3, 49.7, 53.9, 57.8, 61.5, 65.0]
-  curv_radius_mm: 100.0
-  dist_to_plane_mm: 92.7
-  source_freq_hz: 300000.0
-  source_phase_deg: [0.0031688238225213716, 352.6706212397238, 345.72464364936803,
-    25.436993298161692, 46.15565353018764, 36.30648770956991, 33.6585035942788, 32.69493835276782,
-    60.62306414281815, 336.09833380018927]
-  source_amp: [156587.0, 156587.0, 156587.0, 156587.0, 156587.0, 156587.0, 156587.0,
-    156587.0, 156587.0, 156587.0] # calibrated to 30W
-  source_phase_rad: [5.5306409118630374E-5, 6.155263515687026, 6.034033336965576,
-    0.44395928486065317, 0.8055681225115182, 0.6336677503668496, 0.5874517090145106,
-    0.5706343229923698, 1.0580720719398906, 5.866022535280248]
-  set_focus_wrt_exit_plane_mm: 85.0
-  set_intensity_w_per_cm2: 30.0 
+  type: annular
+  freq_hz: 300000.0
   trans_pos: [202, 110, 147]
   focus_pos: [126, 131, 157]
+  focal_distance_ep: 85
+  set_focus_wrt_exit_plane_mm: 85.0
+  set_intensity_w_per_cm2: 30.0
+  annular:
+    elem_n: 10
+    elem_id_mm: [10.0, 22.1, 29.8, 36.0, 41.4, 46.3, 50.7, 54.9, 58.7, 62.4]
+    elem_od_mm: [21.1, 28.8, 35.0, 40.4, 45.3, 49.7, 53.9, 57.8, 61.5, 65.0]
+    curv_radius_mm: 100.0
+    dist_geom_ep_mm: 92.7
+    elem_phase_deg: [0.0031688238225213716, 352.6706212397238, 345.72464364936803,
+      25.436993298161692, 46.15565353018764, 36.30648770956991, 33.6585035942788, 32.69493835276782,
+      60.62306414281815, 336.09833380018927]
+    elem_amp: [156587.0, 156587.0, 156587.0, 156587.0, 156587.0, 156587.0, 156587.0,
+      156587.0, 156587.0, 156587.0] # calibrated to 30W
 
-expected_focal_distance_mm: 85 # expected distance to the stimulation focus (with respect to exit plane)
+modules:
+  run_source_setup: 1
+  run_acoustic_sims: 1
+  run_heating_sims: 1
+  run_posthoc_water_sims: 0
 
-run_source_setup: 1
-run_acoustic_sims: 1
-run_heating_sims: 1
-run_posthoc_water_sims: 1
+grid:
+  resolution_mm: 0.5    # [mm]
+  default_dims: [144, 144, 300] # [points per dimension]
+  pml_size: 10          # default for 3D
+  axisymmetric: 0
+  use_kWaveArray: 1
 
-grid_step_mm: 0.75  # [mm]
-
-pml_size: 10 # default for 2D (cf. 10 for 3D)
-
-n_sim_dims: 3
-axisymmetric: 0
-use_kWaveArray: 1
-
-medium:
+medium_properties:
   water:
     sound_speed: 1500
     density: 994
@@ -82,17 +81,18 @@ medium:
     perfusion: 10
     absorption_fraction: 0.58
 
-thermal:
-  # (model multiple PTR each containing a single PT)
+timing:
   pd: 0.02              # Pulse Duration (PD) [seconds]
   pri: 0.2              # Pulse Repetition Interval (PRI) [seconds]
   ptd: 0.2              # Pulse Train Duration (PTD) [seconds]
   pt_timestep: 0.02     # Modeling time steps inside a PT [seconds]
   ptri: 0.2             # Pulse Train Repetition Interval (PTRI) [seconds]
-  ptrd: 80              # Pulse Train Repetition Duration (PTRD) [seconds] 
+  ptrd: 80              # Pulse Train Repetition Duration (PTRD) [seconds]
   post_ptri_dur: 80     # Cooloff Duration following the PTRI [seconds]
   post_pt_timestep: 1   # Modeling time steps following PT & PTRI [seconds]
   equal_step_duration: 0
+
+thermal:
   cem43_iso: 1
   temp_0:
     water: 37
@@ -103,4 +103,3 @@ thermal:
     skull_cortical: 37
   sensor_xy_halfsize: 120
   record_t_at_every_step: 0
- 

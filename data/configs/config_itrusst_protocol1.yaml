@@ -1,42 +1,48 @@
-simulation_medium: phantom
+simulation:
+  medium: phantom
 
 # model only water, brain, and skull layers
 layers:
   water: [0, 3, 6, 9, 10]
   brain: [1, 2]
   skull: [4, 7, 8]
-  
-transducer: 
-  n_elements: 1.0
-  Elements_ID_mm: 0.0
-  Elements_OD_mm: 64.0
-  curv_radius_mm: 64.0
-  dist_to_plane_mm: 64.0
-  source_amp: 116901.0
-  source_phase_deg: 0
-  source_freq_hz: 500000.0
-  trans_pos: [35.0, 21.0] # 1 + 20 pml
-  focus_pos: [35.0, 85.0] # 64 + 1 + 20 pml
-  source_phase_rad: 0
 
-run_source_setup: 1
-run_acoustic_sims: 1
-run_heating_sims: 1
-run_posthoc_water_sims: 1
+transducer:
+  type: annular
+  freq_hz: 500000.0
+  trans_pos: [70, 2]      # 35mm lateral center; 1mm offset from active domain edge (no PML offset)
+  focus_pos: [70, 130]    # same lateral; 64mm focal distance: 2 + 128 voxels (0.5mm resolution)
+  focal_distance_ep: 55.42562584220407
+  focal_distance_bowl: 64.0
+  focal_distance_offset: 8.57437415779593
+  annular:
+    elem_n: 1
+    elem_id_mm: 0.0
+    elem_od_mm: 64.0
+    curv_radius_mm: 64.0
+    elem_amp: 69477.0
+    elem_phase_deg: 185.77977776093292
+    dist_geom_ep_mm: 55.42562584220407
+    depth_mm: 1.0
 
-grid_step_mm: 1  # [mm]
-default_grid_dims: [70, 140] # 140 = 120mm + 20 pml
+modules:
+  run_source_setup: 1
+  run_acoustic_sims: 1
+  run_heating_sims: 1
+  run_posthoc_water_sims: 0
 
-pml_size: 20 # default for 2D (cf. 10 for 3D)
+grid:
+  resolution_mm: 0.5    # [mm]
+  default_dims: [140, 240] # active domain only: 70mm lateral, 120mm axial (PML added externally)
+  pml_size: 40          # 20mm PML at 0.5mm/voxel = 40 grid points (matches phantom allocation)
+  axisymmetric: 1
+  use_kWaveArray: 1
 
-n_sim_dims: 2
-axisymmetric: 1
-use_kWaveArray: 1
+placement:
+  localite:
+    enabled: 0
 
-expected_focal_distance_mm: 64
-transducer_from_localite: 0
-
-medium:
+medium_properties:
   water:
     sound_speed: 1500
     density: 994
@@ -77,17 +83,19 @@ medium:
     perfusion: 10
     absorption_fraction: 0.58
 
-thermal:
+timing:
   # (model multiple PTR each containing a single PT)
   pd: 0.02              # Pulse Duration (PD) [seconds]
   pri: 0.2              # Pulse Repetition Interval (PRI) [seconds]
   ptd: 0.2              # Pulse Train Duration (PTD) [seconds]
   pt_timestep: 0.02     # Modeling time steps inside a PT [seconds]
   ptri: 0.2             # Pulse Train Repetition Interval (PTRI) [seconds]
-  ptrd: 80              # Pulse Train Repetition Duration (PTRD) [seconds] 
+  ptrd: 80              # Pulse Train Repetition Duration (PTRD) [seconds]
   post_ptri_dur: 80     # Cooloff Duration following the PTRI [seconds]
   post_pt_timestep: 1   # Modeling time steps following PT & PTRI [seconds]
   equal_step_duration: 0
+
+thermal:
   cem43_iso: 1
   temp_0:
     water: 37
@@ -98,4 +106,3 @@ thermal:
     skull_cortical: 37
   sensor_xy_halfsize: 120
   record_t_at_every_step: 0
- 

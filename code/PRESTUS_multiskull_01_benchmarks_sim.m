@@ -10,21 +10,19 @@ rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code'));
 
-% use most recent PRESTUS update (merge)
-pn.tuSIM = fullfile(rootpath, '..', 'merge', 'tools', 'PRESTUS'); addpath(pn.tuSIM);
-pn.tuSIM_fun = fullfile(pn.tuSIM, 'functions'); addpath(genpath(pn.tuSIM_fun));
-pn.tuSIM_profile = fullfile(pn.tuSIM, 'acoustic_profiling'); addpath(genpath(pn.tuSIM_profile));
-pn.tuSIM_tools = fullfile(pn.tuSIM, 'toolboxes'); addpath(genpath(pn.tuSIM_tools));
-pn.kwave = fullfile(pn.tuSIM_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
+% use most recent PRESTUS update (v05)
+pn.prestus = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS'); addpath(genpath(pn.prestus));
+pn.prestus_fun = fullfile(pn.prestus, 'functions'); addpath(genpath(pn.prestus_fun));
+pn.prestus_profile = fullfile(pn.prestus, 'acoustic_profiling'); addpath(genpath(pn.prestus_profile));
+pn.prestus_tools = fullfile(pn.prestus, 'toolboxes'); addpath(genpath(pn.prestus_tools));
+pn.kwave = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
 if strcmp(user, 'julkos')
     pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
-else
-    warning('User not specified...may be missing simnibs path');
 end
-pn.minimize = fullfile(pn.tuSIM_tools, 'FEX-minimize'); addpath(pn.minimize);
+pn.minimize = fullfile(pn.prestus_tools, 'FEX-minimize'); addpath(pn.minimize);
 pn.configs = fullfile(rootpath, 'data', 'configs');
 pn.data_path = fullfile(rootpath, 'data', 'bids');
-pn.data_seg = fullfile(rootpath, 'data', 'simnibs');
+pn.path_seg = fullfile(rootpath, 'data', 'simnibs');
 pn.data = fullfile(rootpath, 'data');
 pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
 
@@ -50,22 +48,22 @@ for subject_id = all_subjects
 
         if ismac
             % reset paths to local mac install; NOTE: horrible not to have this be dynamic
-            parameters.simnibs_bin_path = '/Users/julian.kosciessa/SimNIBS/bin/';
+            parameters.startup.simnibs_bin_path = '/Users/julian.kosciessa/SimNIBS/bin/';
         else
-            parameters.simnibs_bin_path = pn.simnibs;
+            parameters.startup.simnibs_bin_path = pn.simnibs;
         end
-        pn.data_sims = fullfile(rootpath, 'data', 'tussim', [transducer_name]);
-            if ~exist(pn.data_sims); mkdir(pn.data_sims); end
-        parameters.ld_library_path ="/opt/gcc/7.2.0/lib64";
-        parameters.data_path = pn.data_seg; % use simnibs folder
-        parameters.seg_path = pn.data_seg;
-        parameters.t1_path_template = fullfile(sprintf('m2m_sub-%03d', subject_id), "T1.nii.gz");
-        parameters.t2_path_template = fullfile(sprintf('m2m_sub-%03d', subject_id), "T2_reg.nii.gz");
-        parameters.sim_path = pn.data_sims;
-        parameters.paths_to_add = {pn.kwave, pn.minimize};
-        pn.outputs_folder = fullfile(parameters.sim_path,sprintf('sub-%03d', subject_id));
+        pn.path_sim = fullfile(rootpath, 'data', 'tussim', [transducer_name]);
+            if ~exist(pn.path_sim); mkdir(pn.path_sim); end
+        parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
+        parameters.path.anat = pn.path_seg; % use simnibs folder
+        parameters.path.seg = pn.path_seg;
+        parameters.path.t1_pattern = fullfile(sprintf('m2m_sub-%03d', subject_id), "T1.nii.gz");
+        parameters.path.t2_pattern = fullfile(sprintf('m2m_sub-%03d', subject_id), "T2_reg.nii.gz");
+        parameters.path.sim = pn.path_sim;
+        parameters.startup.paths_to_add = {pn.kwave, pn.minimize};
+        pn.outputs_folder = fullfile(pn.path_sim,sprintf('sub-%03d', subject_id));
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
-        parameters.usepseudoCT = 0;
+        parameters.pct.enabled = 0;
 
         calibrate = 0;
         if calibrate == 1
@@ -78,34 +76,34 @@ for subject_id = all_subjects
         cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
-        parameters.ld_library_path ="/opt/gcc/7.2.0/lib64";
-        parameters.data_path = pn.data_seg;
-        parameters.seg_path = pn.data_seg;
-        parameters.t1_path_template = fullfile(sprintf('m2m_sub-%03d', subject_id), "T1.nii.gz");
-        parameters.t2_path_template = fullfile(sprintf('m2m_sub-%03d', subject_id), "T2_reg.nii.gz");
-        parameters.sim_path = pn.data_sims;
-        parameters.paths_to_add = {pn.kwave, pn.minimize};
+        parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
+        parameters.path.anat = pn.path_seg;
+        parameters.path.seg = pn.path_seg;
+        parameters.path.t1_pattern = fullfile(sprintf('m2m_sub-%03d', subject_id), "T1.nii.gz");
+        parameters.path.t2_pattern = fullfile(sprintf('m2m_sub-%03d', subject_id), "T2_reg.nii.gz");
+        parameters.path.sim = pn.path_sim;
+        parameters.startup.paths_to_add = {pn.kwave, pn.minimize};
 
-        parameters.simulation_medium = 'phantom'; % use default grid in combo with (final) tissue mask
-        parameters.interactive = 0;
-        parameters.overwrite_files = 'always';
-        parameters.overwrite_simnibs = 0;
-        parameters.heatingvideo = 0;
+        parameters.simulation.medium = 'phantom'; % use default grid in combo with (final) tissue mask
+        parameters.simulation.interactive = 0;
+        parameters.io.overwrite_files = 'always';
+        parameters.io.overwrite_simnibs = 0;
+        parameters.io.save_heatingvideo = 0;
 
         if calibrate == 1
-            parameters.transducer.source_amp = opt_source_amp; % use calibrated input intensity
-            parameters.transducer.source_phase_deg = opt_source_phase_deg;
-            parameters.transducer.source_phase_rad = opt_source_phase_rad;
+            parameters.transducer.annular.elem_amp = opt_source_amp; % use calibrated input intensity
+            parameters.transducer.annular.elem_phase_deg = opt_source_phase_deg;
+            parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
         end
 
         parameters.transducer.trans_pos = [3, 35];
         parameters.transducer.focus_pos = [64, 35];
 
-        parameters.run_source_setup = 1;
-        parameters.run_acoustic_sims = 1;
-        parameters.run_heating_sims = 1;
-        parameters.run_posthoc_water_sims = 1;
-        parameters.axisymmetric = 1;
+        parameters.modules.run_source_setup = 1;
+        parameters.modules.run_acoustic_sims = 1;
+        parameters.modules.run_heating_sims = 1;
+        parameters.modules.run_posthoc_water_sims = 1;
+        parameters.grid.axisymmetric = 1;
 
         %% iterate over tissue parameters
         % benchmark sub-001: brain
@@ -125,7 +123,7 @@ for subject_id = all_subjects
         tissue_suffixes = {'_st', '_sc'};
         
         % Define property labels and short suffixes
-        property_labels = {'sound_speed', 'density', 'alpha_0_true','thermal_conductivity', ...
+        property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
                            'absorption_fraction'};
         property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
@@ -153,29 +151,23 @@ for subject_id = all_subjects
                     % Set all properties to mid setting (baseline)
                     for tissue_bl = 1:length(tissue_labels)
                         for pp = 1:length(property_labels)
-                            parameters.medium.(tissue_labels{tissue_bl}).(property_labels{pp}) = ...
+                            parameters.medium_properties.(tissue_labels{tissue_bl}).(property_labels{pp}) = ...
                                 params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue_labels{tissue_bl}) & strcmp(params_table.level,'mid')));
                         end
                     end
                     
                     % Vary only the current property to BOTTOM/TOP
-                    parameters.medium.(tissue).(property) = ...
+                    parameters.medium_properties.(tissue).(property) = ...
                         params_table.(property_labels{p})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,magnitude{v})));
 
                     % Create filename affix
-                    parameters.results_filename_affix = ...
+                    parameters.io.output_affix = ...
                         [tissue_suffix prop_suffix num2str(v)];
-        
-                    % Run the simulation
-                    parameters.code_type = 'matlab_gpu';
-                    parameters.hpc_submit_medium = 'matlab';
 
-                    switch parameters.hpc_submit_medium
-                        case 'slurm'
-                            single_subject_pipeline_with_slurm(subject_id, parameters, 0, '01:00:00', 20);
-                        case 'matlab'
-                            single_subject_pipeline(subject_id, parameters);
-                    end
+                    % Run the simulation
+                    parameters.simulation.code_type = 'matlab_gpu';
+                    parameters.subject_id = subject_id;
+                    prestus_pipeline_start(parameters);
 
                 end
             end
