@@ -1,0 +1,32 @@
+function pn = setup_itrusst_paths(rootpath, user)
+% Initialize PRESTUS toolbox paths and add them to the MATLAB path.
+%
+% Inputs:
+%   rootpath - root directory of the PRESTUS_itrusst project
+%   user     - (optional) username string; sets pn.simnibs for known users
+
+pn.prestus         = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS');
+pn.prestus_fun     = fullfile(pn.prestus, 'functions');
+pn.prestus_profile = fullfile(pn.prestus, 'acoustic_profiling');
+pn.prestus_tools   = fullfile(pn.prestus, 'toolboxes');
+pn.kwave           = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave');
+pn.minimize        = fullfile(pn.prestus_tools, 'FEX-minimize');
+pn.nifti           = fullfile(rootpath, 'tools', 'nifti_toolbox');
+pn.configs         = fullfile(rootpath, 'data', 'configs');
+pn.data_path       = fullfile(rootpath, 'data', 'bids');
+pn.path_seg        = fullfile(rootpath, 'data', 'simnibs');
+pn.data            = fullfile(rootpath, 'data');
+pn.code            = fullfile(rootpath, 'code');
+
+addpath(genpath(pn.prestus));
+addpath(genpath(pn.prestus_fun));
+addpath(genpath(pn.prestus_profile));
+addpath(genpath(pn.prestus_tools));
+addpath(pn.kwave);
+addpath(pn.minimize);
+addpath(pn.nifti);
+addpath(pn.code);
+
+if nargin >= 2 && strcmp(user, 'julkos')
+    pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
+end

@@ -12,19 +12,7 @@ cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code'));
-
-pn.prestus = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS'); addpath(genpath(pn.prestus));
-pn.prestus_fun = fullfile(pn.prestus, 'functions'); addpath(genpath(pn.prestus_fun));
-pn.prestus_tools = fullfile(pn.prestus, 'toolboxes'); addpath(genpath(pn.prestus_tools));
-pn.kwave = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
-if strcmp(user, 'julkos')
-    pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
-end
-pn.minimize = fullfile(pn.prestus_tools, 'FEX-minimize'); addpath(pn.minimize);
-pn.configs = fullfile(rootpath, 'data', 'configs');
-pn.data_path = fullfile(rootpath, 'data', 'bids');
-pn.path_seg = fullfile(rootpath, 'data', 'simnibs');
-pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
+pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 

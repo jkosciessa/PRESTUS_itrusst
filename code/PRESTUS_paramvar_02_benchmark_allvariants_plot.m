@@ -40,7 +40,7 @@ for i_variant = 1:length(variant_names)
     variant = variant_names{i_variant};
 
     pn.figures = fullfile(rootpath, 'figures', variant);
-    if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
+    if ~exist(pn.figures, 'dir'); mkdir(pn.figures); endo
 
     %% Loop over subjects
 
