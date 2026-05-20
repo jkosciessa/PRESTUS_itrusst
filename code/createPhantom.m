@@ -1,112 +1,144 @@
-% Create a 2D nifti image according to the desired tissue specification
-% Resolution: 0.5 mm/voxel
+% CREATEPHANTOM  Build 2-D axisymmetric NIfTI phantoms for PRESTUS benchmarks.
+%
+% Writes final_tissues.nii.gz for benchmark subjects 001 (water/tissue) and
+% 002 (water/skull/brain) into the SimNIBS m2m folders expected by PRESTUS.
+%
+% ── Array layout ────────────────────────────────────────────────────────────
+%   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox  (full diameter)
+%   dim 2    : singleton (size 1)
+%   dim 3 (z): axial,   140 mm → 280 vox at 0.5 mm/vox  (z = 1: transducer)
+%
+% PRESTUS loads the file with squeeze(), yielding a [140 × 280] 2-D array.
+% grid_axisymmetry then transposes and halves it to [Nz=280, Nr=70] before
+% passing it to kspaceFirstOrderAS.
+%
+% ── NIfTI coordinate convention ─────────────────────────────────────────────
+% write_phantom sets a diagonal sform so the singleton y-slice is centred at
+% world y = (nx/2)*res mm, matching the y-centre of the 3-D output produced
+% by convert_axisymmetric_to_3d + nifti_to_t1w.  This lets ITK-SNAP overlay
+% the input tissue map on the simulated acoustic/thermal output.
+%
+% ── Tissue labels (PRESTUS defaults) ────────────────────────────────────────
+%   0 = water / coupling medium
+%   1 = brain / soft tissue
+%   4 = skull (cortical bone)
+%
+% ── Benchmark geometry ──────────────────────────────────────────────────────
+%   Benchmark 1 (sub-001): flat water–tissue interface at 30 mm depth.
+%     Focus at 64 mm depth lies 34 mm inside the soft-tissue slab.
+%
+%   Benchmark 2 (sub-002): spherical skull cap + brain.
+%     Skull outer radius of curvature : 75.0 mm
+%     Skull inner radius of curvature : 68.5 mm  (apex thickness = 6.5 mm)
+%     Skull outer apex depth          : 30 mm
+%     Centre of curvature             : 30 + 75 = 105 mm (on the brain side)
+%     Brain fills everything inside the inner skull surface.
+%
+% See also: CREATEPHANTOM3D, PRESTUS_PARAMVAR_01_BENCHMARKS_SIM
 
-%% path management
-
-% the following detects the path of this script (when run), which we can
-% use to set up relative paths. in this example, PRESTUS is located in a
-% directory called 'project/tools', and we would like to depoit the benchmark
-% images into parallel folders project/data/simnibs/m2m-sub<xxx>
+%% paths
 
 currentFile = mfilename('fullpath');
-[pathstr,~,~] = fileparts(currentFile);
+[pathstr, ~, ~] = fileparts(currentFile);
 cd(fullfile(pathstr))
 rootpath = pwd;
 
-pn.benchmark1 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-001'); % specify the path to a SimNIBS m2m folder (optional)
-pn.benchmark2 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-002'); % specify second benchmark as a different subject (optional)
+pn.benchmark1 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-001');
+pn.benchmark2 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-002');
 
-% if no path is provided, the folder containing PRESTUS is specified by default
-% if paths are specified and do not yet exist, create the folders
-if isempty(pn.benchmark1)
-    pn.benchmark1 = rootpath;
-else
-    if ~exist(pn.benchmark1)
-        mkdir(pn.benchmark1);
-    end
-end
-if isempty(pn.benchmark2)
-    pn.benchmark2 = rootpath;
-else
-    if ~exist(pn.benchmark2)
-        mkdir(pn.benchmark2);
-    end
+for pf = {pn.benchmark1, pn.benchmark2}
+    if ~exist(pf{1}, 'dir'); mkdir(pf{1}); end
 end
 
-res = 0.5; % voxel size [mm]
-% PML is added outside the grid by k-Wave (PMLInside=false).
-% Phantoms contain only the active domain — no embedded PML voxels.
+%% grid
 
-%% Benchmark 1
+res = 0.5;                     % voxel size [mm]
+nx  = round(70  / res);        % 140 vox — full lateral diameter
+nz  = round(140 / res);        % 280 vox — axial (z = 1 is the transducer face)
+% PML is added outside the grid by k-Wave (PMLInside = false);
+% these dimensions cover only the active simulation domain.
 
-% This benchmark models a water / soft tissue interface.
+%% Benchmark 1 — water / soft-tissue interface
 
-% Active domain size (= full grid, PML is external)
-nx = round(70  / res);   % 140 voxels = 70 mm lateral
-ny = round(120 / res);   % 240 voxels = 120 mm axial
+data1    = zeros(nx, 1, nz, 'uint8');
+z_tissue = round(30 / res) + 1;   % first tissue voxel: 61 (= 30 mm depth)
+data1(:, :, z_tissue:end) = 1;    % label 1 from 30 mm to domain end
 
-% Initialize the matrix with global value 0
-data = zeros(ny, nx);
+write_phantom(data1, res, fullfile(pn.benchmark1, 'final_tissues.nii.gz'));
+fprintf('Benchmark 1 written -> %s\n', pn.benchmark1);
 
-% Generate coordinate grids
-[X, Y] = meshgrid(1:nx, 1:ny);
+%% Benchmark 2 — water / curved skull cap / brain
+%
+% The skull is a spherical cap convex toward the transducer (anatomically
+% realistic orientation).  The centre of curvature lies on the brain side:
+%
+%   cz  =  apex_depth + r_outer  =  30/res + 150  =  60 + 150  =  210 vox
+%        (= 105 mm, safely inside the 140-mm domain)
+%
+% At the beam axis (Xg = cx):
+%   skull outer surface : Zg = cz − r_outer = 210 − 150 =  60 vox ( 30.0 mm)
+%   skull inner surface : Zg = cz − r_inner = 210 − 137 =  73 vox ( 36.5 mm)
+%   skull thickness     : 73 − 60 = 13 vox = 6.5 mm
+%   brain onset         : Zg = 74 vox (37.0 mm)
+%
+% The skull shell does not wrap to the posterior side of the domain because
+% cz + r_outer = 210 + 150 = 360 vox > nz = 280.
 
-% Fill soft tissue region (starts at 30 mm into active domain)
-row_start = round(30 / res) + 1;
-data(row_start : ny, :) = 1;
+cx      = round(35 / res);     % lateral beam axis: vox 70 (= 35 mm)
+r_inner = 68.5 / res;          % inner skull radius: 137 vox
+r_outer = 75.0 / res;          % outer skull radius: 150 vox
+cz      = 30 / res + r_outer;  % centre of curvature: 210 vox (= 105 mm)
 
-% Reshape data to 3D for NIfTI compatibility: [nx x 1 x ny]
-% Singleton in the second dimension so external tools can overlay this
-% 2D phantom slice with 3D simulation results [nx x nx x ny].
-data_3d = reshape(data.', [nx, 1, ny]);
+% Distance from the centre of curvature at every grid point.
+% ndgrid returns 2-D arrays [nx × nz]; dim 2 (singleton) is handled by
+% indexing the 3-D data array separately below.
+[Xg, Zg] = ndgrid(1:nx, 1:nz);
+dist      = sqrt((Xg - cx).^2 + (Zg - cz).^2);
 
-% Write the data to a NIfTI file
-% Note: physical resolution is set via grid.resolution_mm in the PRESTUS config
-niftiwrite(data_3d, fullfile(pn.benchmark1, 'benchmark1.nii'));
-gzip(fullfile(pn.benchmark1, 'benchmark1.nii')) % Note: PRESTUS expects compressed images
-delete(fullfile(pn.benchmark1, 'benchmark1.nii')) % remove uncompressed image
-movefile(fullfile(pn.benchmark1, 'benchmark1.nii.gz'), ...
-    fullfile(pn.benchmark1, 'final_tissues.nii.gz')) % rename to SimNIBS convention
+skull_mask = (dist >= r_inner) & (dist <= r_outer);  % spherical shell
+brain_mask = (dist < r_inner);                        % interior of shell
 
-% Note: the output file should be called final_tissues.nii.gz and be
-% located in a "subject-"/benchmark specific simnibs m2m_sub-xxx folder
+data2 = zeros(nx, 1, nz, 'uint8');
+data2(skull_mask) = 4;    % cortical bone
+data2(brain_mask) = 1;    % soft tissue / brain
 
-%% Benchmark 2
+write_phantom(data2, res, fullfile(pn.benchmark2, 'final_tissues.nii.gz'));
+fprintf('Benchmark 2 written -> %s\n', pn.benchmark2);
 
-% This benchmark models a water / skull / soft tissue interface.
+%% helper
 
-% Initialize the active grid
-data = zeros(ny, nx);
+function write_phantom(data, res, out_path)
+% WRITE_PHANTOM  Save uint8 tissue array as a compressed NIfTI with sform.
+%
+% The NIfTI sform is set so that the singleton y-slice (dim 2 = 1 voxel)
+% aligns spatially with the centre cross-section of the 3-D output produced
+% by PRESTUS after radial expansion (convert_axisymmetric_to_3d).
+%
+% Convention (matches nifti_to_t1w non-layered path):
+%   world coordinate of voxel index (i, j, k):
+%     x = i * res + ox,   ox = 0
+%     y = j * res + oy,   oy = (nx/2 − 1) * res   ← centres the slice
+%     z = k * res + oz,   oz = 0
+%
+% The 3-D PRESTUS output has nx voxels in y with origin oy = 0, so its
+% y-centre is at (nx/2) * res.  Setting oy = (nx/2 − 1)*res means the
+% phantom's single slice (j = 1) maps to world y = 1*res + oy = (nx/2)*res,
+% matching the output centre slice exactly.
 
-% Generate coordinate grids
-[X, Y] = meshgrid(1:nx, 1:ny);
+    nx  = size(data, 1);
+    oy  = (nx/2 - 1) * res;   % y-offset [mm] — aligns with 3-D output centre
 
-% Center of curvature within the active domain (no PML offset)
-center_x = round(35 / res);
-center_y = round(15 / res);
+    % Diagonal affine: scale by res along each axis, shift y by oy.
+    % affine3d expects the transpose of the standard 4×4 matrix.
+    T        = diag([res res res 1]);
+    T(2, 4)  = oy;
 
-% Euclidean distance from the center
-distance = sqrt((X - center_x).^2 + (Y - center_y).^2);
-
-% Skull annulus: inner radius 68.5 mm, outer radius 75 mm
-r_inner = 68.5 / res;
-r_outer = 75.0 / res;
-annulus_mask = (distance > r_inner) & (distance <= r_outer) & (Y >= center_y);
-inner_mask   = (distance <= r_inner);
-
-data(annulus_mask) = 4;    % Annular layer
-data(inner_mask)   = 1;    % Inner region
-
-% Reshape data to 3D for NIfTI compatibility: [nx x 1 x ny]
-data_3d = reshape(data.', [nx, 1, ny]);
-
-% Invert image to match what we would like
-data_3d = data_3d(:,:,end:-1:1);
-
-% Write the data to a NIfTI file
-% Note: physical resolution is set via grid.resolution_mm in the PRESTUS config
-niftiwrite(data_3d, fullfile(pn.benchmark2, 'benchmark2.nii'));
-gzip(fullfile(pn.benchmark2, 'benchmark2.nii'))
-delete(fullfile(pn.benchmark2, 'benchmark2.nii'))
-movefile(fullfile(pn.benchmark2, 'benchmark2.nii.gz'), ...
-    fullfile(pn.benchmark2, 'final_tissues.nii.gz')) % rename to SimNIBS convention
+    tmp = strrep(out_path, '.nii.gz', '.nii');
+    niftiwrite(double(data), tmp);            % write to get a valid header
+    info                 = niftiinfo(tmp);
+    info.PixelDimensions = repmat(res, 1, numel(info.PixelDimensions));
+    info.Transform       = affine3d(T');
+    niftiwrite(double(data), tmp, info);      % rewrite with corrected header
+    gzip(tmp);
+    delete(tmp);
+end
