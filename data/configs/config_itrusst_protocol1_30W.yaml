@@ -15,15 +15,8 @@ transducer:
   focal_distance_ep: 55.42562584220407
   focal_distance_bowl: 64.0
   focal_distance_offset: 8.57437415779593
-  annular:
-    elem_n: 1
-    elem_id_mm: 0.0
-    elem_od_mm: 64.0
-    curv_radius_mm: 64.0
-    elem_amp: 49128.0
-    elem_phase_deg: 240.37396571346022
-    dist_geom_ep_mm: 55.42562584220407
-    depth_mm: 1.0
+  annular: {elem_n: 1.0, elem_id_mm: 0.0, elem_od_mm: 64.0, elem_amp: 49113.0, elem_phase_deg: 295.6721124950563,
+    curv_radius_mm: 64.0, dist_geom_ep_mm: 55.42562584220407, depth_mm: 1.0, elem_phase_rad: 5.160451869365799}
 
 modules:
   run_source_setup: 1

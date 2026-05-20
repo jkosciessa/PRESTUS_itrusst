@@ -21,7 +21,7 @@ variant_names     = {'itrusst_protocol1a', 'itrusst_protocol1b', 'itrusst_protoc
 variant_configs   = {'itrusst_protocol1',  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
 variant_intensity = [60, 30, 60];
 
-all_subjects = [001:002, 303];
+all_subjects = [201:202];%, 303];
 copy_positions = 1;
 calibrate = 0;
 
@@ -153,6 +153,11 @@ for subject_id = all_subjects
                     % Run the simulation
                     parameters.simulation.code_type = 'cpp_cpu'; % use CPU here to avoid parallel GPU calls
                     parameters.simulation.precision = 'single';
+
+                    parameters.grid.resolution_mm = 0.25;
+                    parameters.grid.default_dims = [70, 140]/parameters.grid.resolution_mm;
+                    parameters.grid.pml_size = [20]/parameters.grid.resolution_mm;
+  
                     parameters.subject_id = subject_id;
                     prestus_pipeline_start(parameters);
                 end

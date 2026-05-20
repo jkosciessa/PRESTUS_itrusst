@@ -29,6 +29,7 @@ tissue_suffixes_sub002303 = {'_b', '_s'};
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
                      'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
 
 sweep_values  = 1:2;
 scatter_levels = [1, 2];
@@ -40,7 +41,7 @@ for i_variant = 1:length(variant_names)
     variant = variant_names{i_variant};
 
     pn.figures = fullfile(rootpath, 'figures', variant);
-    if ~exist(pn.figures, 'dir'); mkdir(pn.figures); endo
+    if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
 
     %% Loop over subjects
 
@@ -91,9 +92,12 @@ for i_variant = 1:length(variant_names)
                     riseT_s_vec    = nan(length(sweep_values), 1);
                 end
 
+                tissue_sup = tissue_suffix(2:end);   % 'b' or 's'
+                sym        = property_symbols{p};
+                xlabels{i_cond} = [sym '_{' tissue_sup '}'];
+
                 for v = 1:length(sweep_values)
                     affix    = [tissue_suffix prop_suffix num2str(sweep_values(v))];
-                    xlabels{i_cond} = [tissue_suffix(2:end) '_' property];
                     filename = fullfile(pn.data, [sub_str '_phantom_output_table' affix '.csv']);
 
                     if isfile(filename)
@@ -197,7 +201,7 @@ for i_variant = 1:length(variant_names)
         hold on;
         bar(param_idx, results.maxT(2,:) - results.maxT(1,:), ...
             'FaceColor', [.7 .0 .0], 'EdgeColor', [1 1 1]);
-        set(gca, 'XTick', param_idx, 'XTickLabel', strrep(xlabels, '_', ' '));
+        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
         xtickangle(45);
         yline(0, '-k', 'LineWidth', 1);
         ylabel('Difference in max. Temp rise (deg C)');
@@ -211,7 +215,7 @@ for i_variant = 1:length(variant_names)
         hold on;
         bar(param_idx, results.Ipa_target(2,:) - results.Ipa_target(1,:), ...
             'FaceColor', [.7 .0 .0], 'EdgeColor', [1 1 1]);
-        set(gca, 'XTick', param_idx, 'XTickLabel', strrep(xlabels, '_', ' '));
+        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
         xtickangle(45);
         yline(0, '-k', 'LineWidth', 1);
         ylabel('Difference in target intensity (W/cm^2)');

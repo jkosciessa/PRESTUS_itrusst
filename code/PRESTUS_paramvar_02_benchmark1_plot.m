@@ -11,13 +11,14 @@ pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
 subject_id       = 1;
 tissue_labels    = {'brain'};
 tissue_suffixes  = {'_b'};
-property_labels  = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                    'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
+                     'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
-sweep_values     = 1:2;
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
+sweep_values      = 1:2;
 
 [results, xlabels] = load_paramvar_results(pn.data, subject_id, ...
-    tissue_labels, tissue_suffixes, property_labels, property_suffixes, sweep_values);
+    tissue_labels, tissue_suffixes, property_labels, property_suffixes, sweep_values, property_symbols);
 
 %% Restrict to only plot levels 1 and 2
 scatter_levels = [1, 2]; % Only first and second sweep levels
