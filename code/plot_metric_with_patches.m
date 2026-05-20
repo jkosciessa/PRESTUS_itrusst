@@ -27,9 +27,9 @@ function plot_metric_with_patches(data_matrix, xlabels, y_label, fig_name, y_lim
         x = [parameters(i)-barWidth/2, parameters(i)+barWidth/2, parameters(i)+barWidth/2, parameters(i)-barWidth/2];
         y = [lower_bounds(i), lower_bounds(i), upper_bounds(i), upper_bounds(i)];
         % If xlabel starts with 'b', draw a light grey rectangle behind the bar
-        if startsWith(xlabels{i}, 'b', 'IgnoreCase', true)
+        if contains(xlabels{i}, '_{b}')
             patch(x, y, lightGrey, 'EdgeColor', 'none', 'FaceAlpha', 1, 'HandleVisibility', 'off');
-        elseif startsWith(xlabels{i}, 's', 'IgnoreCase', true)
+        elseif contains(xlabels{i}, '_{s}')
             % Fill bar with red
             patch(x, y, [0.7 0 0], 'EdgeColor', 'none');
         end
@@ -56,7 +56,7 @@ function plot_metric_with_patches(data_matrix, xlabels, y_label, fig_name, y_lim
             'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 1);
     end
 
-    set(gca, 'XTick', 1:numel(parameters), 'XTickLabel', strrep(xlabels, '_', ' '));
+    set(gca, 'XTick', 1:numel(parameters), 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
     xtickangle(45);
     ylabel(y_label);
     if ~isempty(y_limits)
