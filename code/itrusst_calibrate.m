@@ -11,12 +11,14 @@ function [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
 
     parameters.simulation.medium = 'water'; % indicate that we only want the simulation in the water medium for now
     parameters.simulation.interactive = 0;
-    parameters.simulation.code_type = 'cpp_gpu';
+    parameters.simulation.code_type = 'cpp_cpu';
     parameters.io.overwrite_files = 'always';
     parameters.io.save_acoustic_matrices = 1; % we want to load the output below
     parameters.hpc.wait_for_job = 1;
     parameters.modules.run_heating_sims = 0;
-    parameters.platform = 'auto';
+    if ~isfield(parameters, 'platform')
+        parameters.platform = 'auto';
+    end
 
     parameters.subject_id = subject_id;
     prestus_pipeline_start(parameters);
@@ -51,7 +53,7 @@ function [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
         long_dim = 3;
     end
     pos_x_axis = (1:size(p_max, long_dim)).*opt_res_params.grid.resolution_mm; % x-axis [mm]
-    pos_x_trans = (opt_res_params.transducer(1).trans_pos(long_dim)-1)*opt_res_params.grid.resolution_mm; % x-axis position of transducer [mm]
+    pos_x_trans = opt_res_params.transducer(1).trans_pos(long_dim)*opt_res_params.grid.resolution_mm; % x-axis position of transducer [mm]
     pos_x_sim_res = pos_x_axis-pos_x_trans; % axial position for the simulated results, relative to transducer position [mm]
     plot(pos_x_sim_res, axial_pressure);
     hold off
@@ -78,14 +80,15 @@ function [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
     cd(pn.configs);
 
     parameters.calibration = yaml.loadFile('calibration_config.yaml');
+    parameters.calibration.opt_phase_precession = 'monotonic';
+    parameters.calibration.opt_amp_validation = 'always';
     parameters.calibration.path_output = fullfile(pn.configs,'..','calibration'); 
     mkdir(parameters.calibration.path_output)
     parameters.calibration.path_output_profiles = ...
         fullfile(parameters.calibration.path_output,'PRESTUS_virtual_parameters');
         mkdir(parameters.calibration.path_output_profiles)
 
-    [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
-        calibration_transducer(profile_empirical,...
+    job_id = calibration_pipeline_start(profile_empirical,...
         transducer_name, ...
         desired_intensity, ...
         parameters.transducer(1).focal_distance_ep, ...
