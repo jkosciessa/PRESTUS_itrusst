@@ -8,8 +8,7 @@
 %
 % ── Array layout ────────────────────────────────────────────────────────────
 %   dim 1 (x): lateral,  70 mm → 280 vox at 0.25 mm/vox  (full diameter)
-%   dim 2    : singleton (size 1)
-%   dim 3 (z): axial,   140 mm → 560 vox at 0.25 mm/vox  (z = 1: transducer)
+%   dim 2 (z): axial,   140 mm → 560 vox at 0.25 mm/vox  (z = 1: transducer)
 %
 % ── Geometry ────────────────────────────────────────────────────────────────
 % Identical to createPhantom.m:
@@ -41,9 +40,9 @@ nz  = round(140 / res);        % 560 vox — axial (z = 1 is the transducer face
 
 %% Benchmark 1 — water / soft-tissue interface
 
-data1    = zeros(nx, 1, nz, 'uint8');
+data1    = zeros(nx, nz, 'uint8');
 z_tissue = round(30 / res) + 1;   % first tissue voxel: 121 (= 30 mm depth)
-data1(:, :, z_tissue:end) = 1;
+data1(:, z_tissue:end) = 1;
 
 write_phantom(data1, res, fullfile(pn.benchmark1, 'final_tissues.nii.gz'));
 fprintf('Benchmark 1 0.25 mm (sub-201) written -> %s\n', pn.benchmark1);
@@ -61,7 +60,7 @@ dist      = sqrt((Xg - cx).^2 + (Zg - cz).^2);
 skull_mask = (dist >= r_inner) & (dist <= r_outer);
 brain_mask = (dist < r_inner);
 
-data2 = zeros(nx, 1, nz, 'uint8');
+data2 = zeros(nx, nz, 'uint8');
 data2(skull_mask) = 4;
 data2(brain_mask) = 1;
 
@@ -71,20 +70,13 @@ fprintf('Benchmark 2 0.25 mm (sub-202) written -> %s\n', pn.benchmark2);
 %% helper
 
 function write_phantom(data, res, out_path)
-% Mirrors createPhantom.m write_phantom: diagonal sform with y-offset to
-% align the singleton slice with the centre of the radially-expanded output.
-
-    nx  = size(data, 1);
-    oy  = (nx/2 - 1) * res;
-
-    T        = diag([res res res 1]);
-    T(2, 4)  = oy;
+% WRITE_PHANTOM  Save uint8 tissue array as a compressed NIfTI.
+% No singleton dimension: data is [nx × nz] (lateral × axial).
 
     tmp = strrep(out_path, '.nii.gz', '.nii');
     niftiwrite(double(data), tmp);
     info                 = niftiinfo(tmp);
     info.PixelDimensions = repmat(res, 1, numel(info.PixelDimensions));
-    info.Transform       = affine3d(T');
     niftiwrite(double(data), tmp, info);
     gzip(tmp);
     delete(tmp);

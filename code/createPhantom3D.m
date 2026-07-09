@@ -9,10 +9,10 @@
 % ── Array layout ────────────────────────────────────────────────────────────
 %   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox
 %   dim 2 (y): lateral,  70 mm → 140 vox at 0.5 mm/vox
-%   dim 3 (z): axial,   140 mm → 280 vox at 0.5 mm/vox  (z=1: transducer)
+%   dim 3 (z): axial,   120 mm → 240 vox at 0.5 mm/vox  (z=1: transducer)
 %
 % Coordinate grid: Xg/Yg/Zg = (1:N)*res mm, so voxel index 1 → 0.5 mm,
-% voxel index 280 → 140 mm.
+% voxel index 240 → 120 mm.
 %
 % ── NIfTI coordinate convention ─────────────────────────────────────────────
 % write_phantom sets a diagonal sform (origin [0 0 0]) so that
@@ -57,10 +57,10 @@ end
 res = 0.5;                       % voxel size [mm]
 nx  = round(70  / res);          % 140 — lateral x
 ny  = round(70  / res);          % 140 — lateral y
-nz  = round(140 / res);          % 280 — axial z (z = 1 is the transducer face)
+nz  = round(120 / res);          % 240 — axial z (z = 1 is the transducer face)
 
 % Physical coordinate (mm) of voxel index k along each axis: k * res.
-% Voxel 1 → 0.5 mm, voxel 280 → 140 mm.
+% Voxel 1 → 0.5 mm, voxel 240 → 120 mm.
 [Xg, Yg, Zg] = ndgrid((1:nx)*res, (1:ny)*res, (1:nz)*res);
 
 %% Benchmark 1 — flat soft-tissue slab
@@ -90,7 +90,7 @@ fprintf('Benchmark 1 3D (sub-101) written -> %s\n', pn.benchmark1);
 %   brain onset         : Zg > 36.5 mm
 %
 % The posterior shell (Zg = 105 + 68.5 = 173.5 mm and beyond) falls outside
-% the domain (nz = 140 mm), so no skull appears at the back of the volume.
+% the domain (nz = 120 mm), so no skull appears at the back of the volume.
 
 cx_mm          = 35;      % lateral beam centre [mm]
 cy_mm          = 35;

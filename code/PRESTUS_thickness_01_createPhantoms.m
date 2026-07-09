@@ -1,86 +1,87 @@
 % Create a 2D nifti image according to the desired tissue specification
-
-% Here, we create skull media with different thickness.
-% This is naturally only sensible if a skull layer is present.
+%
+% Creates skull media with different thickness (1–12 mm sweep).
+%
+% ── Array layout ─────────────────────────────────────────────────────────────
+%   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox  (full diameter)
+%   dim 2 (z): axial,   120 mm → 240 vox at 0.5 mm/vox  (z = 1: transducer)
+%
+% Mirrors the creation principle of createPhantom.m / createPhantom025mm.m:
+%   no axis flip, no singleton dimension, same write_phantom convention.
+%
+% ── Benchmark geometry ───────────────────────────────────────────────────────
+%   Outer skull surface held constant at r_outer = 75 mm, apex at 30 mm depth.
+%   Inner surface varies: distance_inner = 75 - thickness.
+%   cz + r_outer = 210 + 150 = 360 vox > nz = 240 → sphere truncated by domain,
+%   no half-cap guard needed.
 
 %% path management
-
-% the following detects the path of this script (when run), which we can
-% use to set up relative paths. in this example, PRESTUS is located in a
-% directory called 'project/tools', and we would like to depoit the benchmark
-% images into parallel folders project/data/simnibs/m2m-sub<xxx>
 
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile);
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-%% Benchmarks 3xx
+%% grid
 
-% This benchmark models a water / skull / soft tissue interface.
-% It includes multiple thickness settings for the skull layer.
-% The outer location of the skull is held constant.
+res = 0.5;               % voxel size [mm]
+nx  = round(70  / res);  % 140 vox — full lateral diameter
+nz  = round(120 / res);  % 240 vox — axial (z = 1: transducer face)
 
-res = 0.5; % voxel size [mm]
-% PML is added outside the grid by k-Wave (PMLInside=false).
-% Phantoms contain only the active domain — no embedded PML voxels.
+%% geometry constants
 
-thickness = 1:1:12;
-distance_outer = 75; % [mm]
+skull_apex_z_mm = 30;
+distance_outer  = 75;   % outer radius of curvature [mm]
 
-% Active domain size (= full grid, PML is external)
-nx = round(70  / res);   % 140 voxels = 70 mm lateral
-ny = round(120 / res);   % 240 voxels = 120 mm axial
+cx = round(35 / res);                        % lateral beam axis: vox 140
+r_outer = distance_outer / res;              % 300 vox
+cz = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 420 (= 105 mm)
+
+[Xg, Zg] = ndgrid(1:nx, 1:nz);
+
+%% thickness sweep
+
+thickness = 1:1:12;   % [mm]
 
 for i_thickness = 1:numel(thickness)
 
-    % Provide each thickness a subject label sub-3xx
     pn.benchmark3 = fullfile(rootpath, 'data', 'simnibs', sprintf('m2m_sub-3%02d', i_thickness));
-    if isempty(pn.benchmark3)
-        pn.benchmark3 = rootpath;
-    else
-        if ~exist(pn.benchmark3)
-            mkdir(pn.benchmark3);
-        end
+    if ~exist(pn.benchmark3, 'dir')
+        mkdir(pn.benchmark3);
     end
 
     thickness_current = thickness(i_thickness);
-    distance_inner = distance_outer - thickness_current;
+    distance_inner    = distance_outer - thickness_current;
+    r_inner           = distance_inner / res;
 
-    % Step 1: Initialize the matrix with global value 0
-    data = zeros(ny, nx);
+    dist = sqrt((Xg - cx).^2 + (Zg - cz).^2);
 
-    % Step 2: Generate coordinate grids
-    [X, Y] = meshgrid(1:nx, 1:ny);
+    % No half-cap guard — domain truncates the sphere naturally
+    annulus_mask = (dist > r_inner) & (dist <= r_outer);
+    inner_mask   = (dist <= r_inner);
 
-    % Step 3: Compute the center of curvature within the active domain (no PML offset)
-    center_x = round(35 / res);
-    center_y = round(15 / res);
+    data = zeros(nx, nz, 'uint8');
+    data(annulus_mask) = 4;   % skull (cortical bone)
+    data(inner_mask)   = 1;   % soft tissue / brain
 
-    % Step 4: Calculate the Euclidean distance from the center
-    distance = sqrt((X - center_x).^2 + (Y - center_y).^2);
+    write_phantom(data, res, fullfile(pn.benchmark3, 'final_tissues.nii.gz'));
+    fprintf('Benchmark 3 thickness %d mm (sub-3%02d) written -> %s\n', ...
+        thickness_current, i_thickness, pn.benchmark3);
 
-    % Step 5: Assign values based on distance from center and y position
-    % Only fill below the center (Y >= center_y)
-    annulus_mask = (distance > distance_inner / res) & (distance <= distance_outer / res) & (Y >= center_y);
-    inner_mask   = (distance <= distance_inner / res);
+end
 
-    data(annulus_mask) = 4;    % Annular layer
-    data(inner_mask)   = 1;    % Inner region
+%% helper
 
-    % Step 6: Reshape data to 3D for NIfTI compatibility: [nx x 1 x ny]
-    % Singleton in the second dimension so external tools can overlay this
-    % 2D phantom slice with 3D simulation results [nx x nx x ny].
-    data_3d = reshape(data.', [nx, 1, ny]);
+function write_phantom(data, res, out_path)
+% WRITE_PHANTOM  Save uint8 tissue array as a compressed NIfTI.
+% No singleton dimension: data is [nx × nz] (lateral × axial).
+% Matches createPhantom.m / createPhantom025mm.m convention.
 
-    % Invert image to match what we would like
-    data_3d = data_3d(:,:,end:-1:1);
-
-    % Step 7: Write the data to a NIfTI file
-    % Note: physical resolution is set via grid.resolution_mm in the PRESTUS config
-    niftiwrite(data_3d, fullfile(pn.benchmark3, 'benchmark3.nii'));
-    gzip(fullfile(pn.benchmark3, 'benchmark3.nii'))
-    delete(fullfile(pn.benchmark3, 'benchmark3.nii'))
-    movefile(fullfile(pn.benchmark3, 'benchmark3.nii.gz'), ...
-        fullfile(pn.benchmark3, 'final_tissues.nii.gz')) % rename to SimNIBS convention
+    tmp = strrep(out_path, '.nii.gz', '.nii');
+    niftiwrite(double(data), tmp);
+    info                 = niftiinfo(tmp);
+    info.PixelDimensions = repmat(res, 1, numel(info.PixelDimensions));
+    niftiwrite(double(data), tmp, info);
+    gzip(tmp);
+    delete(tmp);
 end

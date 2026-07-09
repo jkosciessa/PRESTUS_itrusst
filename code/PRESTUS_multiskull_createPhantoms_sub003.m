@@ -1,10 +1,24 @@
 % Create a 2D nifti image according to the desired tissue specification
-% Resolution: 0.5 mm/voxel
-
-% Here, we create skull media with cortical and trabecular subdivisions.
-% This is naturally only sensible if a skull layer is present.
-% We subdivide a 6.5mm thickness into 2mm cortical | 2.5mm trabecular | 2mm cortical
-% For PRESTUS, cortical skull bone is index 7, trabecular is index 8
+% Resolution: 0.25 mm/voxel
+%
+% Creates skull media with cortical and trabecular subdivisions.
+% Skull layer (6.5 mm total): 2 mm cortical | 2.5 mm trabecular | 2 mm cortical
+% PRESTUS tissue labels: cortical = 7, trabecular = 8
+%
+% ── Array layout ─────────────────────────────────────────────────────────────
+%   dim 1 (x): lateral,  70 mm → 280 vox at 0.25 mm/vox  (full diameter)
+%   dim 2 (z): axial,   120 mm → 480 vox at 0.25 mm/vox  (z = 1: transducer)
+%
+% Mirrors the creation principle of createPhantom.m / createPhantom025mm.m:
+%   no axis flip, no singleton dimension, same write_phantom convention.
+%
+% ── Benchmark geometry ───────────────────────────────────────────────────────
+%   Skull outer radius of curvature : 75.0 mm
+%   Skull inner radius of curvature : 68.5 mm  (apex thickness = 6.5 mm)
+%   Skull outer apex depth          : 30 mm
+%   Centre of curvature             : 30 + 75 = 105 mm (on the brain side)
+%   cz + r_outer = 420 + 300 = 720 vox > nz = 480 → sphere truncated by domain,
+%   no half-cap guard needed.
 
 %% path management
 
@@ -13,86 +27,69 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-%% Benchmarks 3xx
+%% grid
 
-% This benchmark models a water / skull / soft tissue interface.
-% It includes multiple thickness settings for the skull layer.
-% The outer location of the skull is held constant.
+res = 0.25;              % voxel size [mm]
+nx  = round(70  / res);  % 280 vox — full lateral diameter
+nz  = round(120 / res);  % 480 vox — axial (z = 1: transducer face)
 
-res = 0.5; % voxel size [mm]
-% PML is added outside the grid by k-Wave (PMLInside=false).
-% Phantom contains only the active domain — no embedded PML voxels.
+%% subject folder
 
-thickness = 6.5;
-i_thickness = 1;
-
-distance_outer = 75; % [mm]
-
-% Provide a subject label: sub-003
 pn.benchmark3 = fullfile(rootpath, 'data', 'simnibs', 'm2m_sub-003');
-if isempty(pn.benchmark3)
-    pn.benchmark3 = rootpath;
-else
-    if ~exist(pn.benchmark3)
-        mkdir(pn.benchmark3);
-    end
+if ~exist(pn.benchmark3, 'dir')
+    mkdir(pn.benchmark3);
 end
 
-thickness_current = thickness(i_thickness);
-distance_inner = distance_outer - thickness_current;
+%% geometry
 
-% Active domain size (= full grid, PML is external)
-nx = round(70  / res);   % 140 voxels = 70 mm lateral
-ny = round(120 / res);   % 240 voxels = 120 mm axial
+skull_apex_z_mm = 30;
+thickness       = 6.5;   % total skull thickness [mm]
+distance_outer  = 75;    % outer radius of curvature [mm]
+distance_inner  = distance_outer - thickness;
 
-% Step 1: Initialize the matrix with global value 0
-data = zeros(ny, nx);
+cx      = round(35 / res);                       % lateral beam axis: vox 140
+r_outer = distance_outer / res;                  % 300 vox
+r_inner = distance_inner / res;                  % 274 vox
+cz      = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 420 (= 105 mm)
 
-% Step 2: Generate coordinate grids
-[X, Y] = meshgrid(1:nx, 1:ny);
+% Skull subdivision
+t_cort = 2;    % cortical layer thickness [mm]
+t_trab = 2.5;  % trabecular layer thickness [mm]
 
-% Step 3: Compute the center of curvature within the active domain (no PML offset)
-center_x = round(35 / res);
-center_y = round(15 / res);
+r_outer_cort_inner = r_outer - t_cort / res;              % 292 vox
+r_trab_inner       = r_outer_cort_inner - t_trab / res;   % 282 vox
+% r_inner should equal r_trab_inner - t_cort/res = 274 (verified)
 
-% Step 4: Calculate the Euclidean distance from the center
-distance = sqrt((X - center_x).^2 + (Y - center_y).^2);
+[Xg, Zg] = ndgrid(1:nx, 1:nz);
+dist = sqrt((Xg - cx).^2 + (Zg - cz).^2);
 
-% Step 5: Assign values based on distance from center and y position
+% Concentric shell masks (no half-cap guard — domain truncates the sphere)
+mask_outer_cort = (dist > r_outer_cort_inner) & (dist <= r_outer);
+mask_trab       = (dist > r_trab_inner)       & (dist <= r_outer_cort_inner);
+mask_inner_cort = (dist > r_inner)            & (dist <= r_trab_inner);
+inner_mask      = (dist <= r_inner);
 
-% ---- Skull subdivision: 2 mm cortical | 2.5 mm trabecular | 2 mm cortical ----
-t_cort = 2;
-t_trab = 2.5;
-
-r_outer            = distance_outer / res;
-r_outer_cort_inner = r_outer - t_cort / res;             % outer cortical inner radius
-r_trab_inner       = r_outer_cort_inner - t_trab / res;  % trabecular inner radius
-r_inner            = r_trab_inner - t_cort / res;        % should equal distance_inner/res if thickness=6.5
-
-% Masks (concentric, no overlaps)
-mask_outer_cort = (distance > r_outer_cort_inner) & (distance <= r_outer)            & (Y >= center_y);
-mask_trab       = (distance > r_trab_inner)       & (distance <= r_outer_cort_inner) & (Y >= center_y);
-mask_inner_cort = (distance > r_inner)            & (distance <= r_trab_inner)       & (Y >= center_y);
-inner_mask      = (distance <= r_inner);
-
-% Labels (PRESTUS): cortical = 7, trabecular = 8
+data = zeros(nx, nz, 'uint8');
 data(mask_outer_cort) = 7;   % cortical (outer table)
 data(mask_trab)       = 8;   % trabecular (diploë)
 data(mask_inner_cort) = 7;   % cortical (inner table)
-data(inner_mask)      = 1;   % inner region (soft tissue)
+data(inner_mask)      = 1;   % soft tissue / brain
 
-% Step 6: Reshape data to 3D for NIfTI compatibility: [nx x 1 x ny]
-% Singleton in the second dimension so external tools can overlay this
-% 2D phantom slice with 3D simulation results [nx x nx x ny].
-data_3d = reshape(data.', [nx, 1, ny]);
+write_phantom(data, res, fullfile(pn.benchmark3, 'final_tissues.nii.gz'));
+fprintf('Benchmark 3 multiskull (sub-003) written -> %s\n', pn.benchmark3);
 
-% Invert image to match what we would like
-data_3d = data_3d(:,:,end:-1:1);
+%% helper
 
-% Step 7: Write the data to a NIfTI file
-% Note: physical resolution is set via grid.resolution_mm in the PRESTUS config
-niftiwrite(data_3d, fullfile(pn.benchmark3, 'benchmark3.nii'));
-gzip(fullfile(pn.benchmark3, 'benchmark3.nii'))
-delete(fullfile(pn.benchmark3, 'benchmark3.nii'))
-movefile(fullfile(pn.benchmark3, 'benchmark3.nii.gz'), ...
-    fullfile(pn.benchmark3, 'final_tissues.nii.gz')) % rename to SimNIBS convention
+function write_phantom(data, res, out_path)
+% WRITE_PHANTOM  Save uint8 tissue array as a compressed NIfTI.
+% No singleton dimension: data is [nx × nz] (lateral × axial).
+% Matches createPhantom.m / createPhantom025mm.m convention.
+
+    tmp = strrep(out_path, '.nii.gz', '.nii');
+    niftiwrite(double(data), tmp);
+    info                 = niftiinfo(tmp);
+    info.PixelDimensions = repmat(res, 1, numel(info.PixelDimensions));
+    niftiwrite(double(data), tmp, info);
+    gzip(tmp);
+    delete(tmp);
+end
