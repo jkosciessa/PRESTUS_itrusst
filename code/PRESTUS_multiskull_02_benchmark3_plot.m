@@ -55,7 +55,7 @@ for t = 1:length(tissue_labels)
         for v = 1:length(sweep_values)
             affix = [tissue_suffix prop_suffix num2str(sweep_values(v))];
             xlabels{i_cond} = [tissue_suffix(2:end) '_' property];
-            filename = fullfile(pn.data, ['sub-003_phantom_output_table' affix '.csv']);
+            filename = fullfile(pn.data, ['sub-003_phantom' affix '.csv']);
 
             if isfile(filename)
                 T = readtable(filename);

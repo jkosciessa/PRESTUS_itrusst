@@ -3,7 +3,7 @@ function [results, xlabels] = load_paramvar_results(data_dir, subject_id, ...
 % Load parameter variation simulation results from CSV files.
 %
 % Inputs:
-%   data_dir          - folder containing sub-XXX_phantom_output_table*.csv files
+%   data_dir          - folder containing sub-XXX_phantom*.csv files
 %   subject_id        - numeric subject ID (e.g. 1, 2, 303)
 %   tissue_labels     - cell array of tissue names, e.g. {'brain','skull'}
 %   tissue_suffixes   - cell array of file suffixes,  e.g. {'_b','_s'}
@@ -54,7 +54,7 @@ for t = 1:length(tissue_labels)
 
         for v = 1:length(sweep_values)
             affix    = [tissue_suffix prop_suffix num2str(sweep_values(v))];
-            filename = fullfile(data_dir, [sub_str '_phantom_output_table' affix '.csv']);
+            filename = fullfile(data_dir, [sub_str '_phantom' affix '.csv']);
 
             if ~isfile(filename)
                 warning('File not found: %s', filename);

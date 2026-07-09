@@ -14,7 +14,7 @@ pn.code     = fullfile(rootpath, 'code'); addpath(pn.code);
 
 subdir_path  = fullfile(pn.data, 'sub-002');
 subject_name = 'sub-002';
-postskull_vox = [35, 35, 58]; % fixed post-skull voxel (x,y,z)
+postskull_vox = [35, 35, 58]; % fixed post-skull voxel (x,y,z); 2D NIfTI indexed as V(x,z)
 
 % Define tissues and suffixes
 tissue_labels   = {'brain', 'skull'};
@@ -24,6 +24,7 @@ tissue_suffixes = {'_b', '_s'};
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', ...
                      'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
 
 sweep_values   = 1:2;
 scatter_levels = [1, 2];
@@ -42,11 +43,12 @@ for t = 1:length(tissue_labels)
         i_cond = i_cond + 1;
         prop_label = property_labels{p};
         prop_suf   = property_suffixes{p};
-        xlabels{i_cond} = [tissue_suf(2:end) '_' prop_label];
+        xlabels{i_cond} = [property_symbols{p} '_{' tissue_suf(2:end) '}'];
 
-        for sw = sweep_values
+        for i_sw = 1:length(sweep_values)
+            sw       = sweep_values(i_sw);
             affix    = [tissue_suf prop_suf num2str(sw)];
-            csv_file = fullfile(subdir_path, ['sub-002_phantom_output_table' affix '.csv']);
+            csv_file = fullfile(subdir_path, ['sub-002_phantom' affix '.csv']);
 
             if ~isfile(csv_file)
                 warning('CSV not found: %s', csv_file);
@@ -55,29 +57,38 @@ for t = 1:length(tissue_labels)
 
             T_csv = readtable(csv_file);
 
-            % riseT at the post-skull location from the output table
-            if ismember('riseT_brain', T_csv.Properties.VariableNames)
-                heatrise_postskull(sw, i_cond) = T_csv.riseT_brain(1);
-            else
-                warning('riseT_brain missing in %s', csv_file);
-            end
-
             % Isppa at the fixed post-skull voxel from the intensity NIfTI
-            nifti_pat   = fullfile(subdir_path, sprintf('*final_intensity_orig_coord%s%s%d.nii.gz', tissue_suf, prop_suf, sw));
-            nifti_files = dir(nifti_pat);
-            if ~isempty(nifti_files)
+            intensity_pat   = fullfile(subdir_path, 'nii', sprintf('*phantom_T1w%s%s%d_intensity.nii.gz', tissue_suf, prop_suf, sw));
+            intensity_files = dir(intensity_pat);
+            if ~isempty(intensity_files)
                 try
-                    V = niftiread(fullfile(nifti_files(1).folder, nifti_files(1).name));
-                    voxel_val = V(postskull_vox(1), postskull_vox(2), postskull_vox(3));
-                    isppa_postskull(sw, i_cond) = voxel_val;
-                    fprintf('Extracted %s sw%d (%s %s): voxel(%d,%d,%d)=%.4f\n', ...
+                    V = niftiread(fullfile(intensity_files(1).folder, intensity_files(1).name));
+                    isppa_postskull(i_sw, i_cond) = V(postskull_vox(1), postskull_vox(3));
+                    fprintf('%s sw%d (%s %s): Isppa voxel(%d,%d)=%.4f\n', ...
                         subject_name, sw, tissue_labels{t}, prop_label, ...
-                        postskull_vox(1), postskull_vox(2), postskull_vox(3), voxel_val);
+                        postskull_vox(1), postskull_vox(3), V(postskull_vox(1), postskull_vox(3)));
                 catch ME
-                    warning('NIfTI load failed %s: %s', nifti_files(1).name, ME.message);
+                    warning('Intensity NIfTI load failed %s: %s', intensity_files(1).name, ME.message);
                 end
             else
-                warning('Intensity NIfTI not found for pattern: %s', nifti_pat);
+                warning('Intensity NIfTI not found: %s', intensity_pat);
+            end
+
+            % Heatrise at the fixed post-skull voxel from the heatrise NIfTI
+            heatrise_pat   = fullfile(subdir_path, 'nii', sprintf('*phantom_T1w%s%s%d_heatrise.nii.gz', tissue_suf, prop_suf, sw));
+            heatrise_files = dir(heatrise_pat);
+            if ~isempty(heatrise_files)
+                try
+                    Vh = niftiread(fullfile(heatrise_files(1).folder, heatrise_files(1).name));
+                    heatrise_postskull(i_sw, i_cond) = Vh(postskull_vox(1), postskull_vox(3));
+                    fprintf('%s sw%d (%s %s): heatrise voxel(%d,%d)=%.4f\n', ...
+                        subject_name, sw, tissue_labels{t}, prop_label, ...
+                        postskull_vox(1), postskull_vox(3), Vh(postskull_vox(1), postskull_vox(3)));
+                catch ME
+                    warning('Heatrise NIfTI load failed %s: %s', heatrise_files(1).name, ME.message);
+                end
+            else
+                warning('Heatrise NIfTI not found: %s', heatrise_pat);
             end
         end
     end
@@ -90,3 +101,16 @@ plot_metric_with_patches(isppa_postskull, xlabels, 'Isppa at post-skull voxel (W
 %% Plot riseT at post-skull voxel
 plot_metric_with_patches(heatrise_postskull, xlabels, 'rise T brain (deg C)', ...
     'sub-002_riseT_skull_brain', [0 1.4], scatter_levels, scatter_colors, pn);
+
+%% Skull-properties-only plots (analogous to benchmark2 skull-only section)
+n_props       = length(property_labels);
+skull_idx     = n_props+1 : 2*n_props;
+xlabels_skull = cellfun(@(sym) [sym '_{s}'], property_symbols, 'UniformOutput', false);
+
+plot_metric_with_patches(isppa_postskull(:, skull_idx), xlabels_skull, ...
+    'Isppa at post-skull voxel (W/cm^2)', ...
+    'sub-002_maxIsppa_skull_brain_skullonly', [0 1], scatter_levels, scatter_colors, pn);
+
+plot_metric_with_patches(heatrise_postskull(:, skull_idx), xlabels_skull, ...
+    'rise T brain (deg C)', ...
+    'sub-002_riseT_skull_brain_skullonly', [0 1.4], scatter_levels, scatter_colors, pn);

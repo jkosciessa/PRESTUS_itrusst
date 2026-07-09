@@ -1,6 +1,6 @@
 % Extract focus-voxel metrics for sub-002 (brain + skull benchmark).
-% Reads Isppa at the empirical brain focus from the intensity NIfTI and
-% riseT_brain from the output-table CSV (no heatrise NIfTI is produced).
+% Reads Isppa and heatrise at the empirical brain focus voxel from the
+% intensity and heatrise NIfTIs respectively.
 
 % get root path (script must be run from file location)
 currentFile = mfilename('fullpath');
@@ -20,6 +20,7 @@ tissue_suffixes = {'_b', '_s'};
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', ...
                      'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
 
 sweep_values   = 1:2;
 scatter_levels = [1, 2];
@@ -38,11 +39,12 @@ for t = 1:length(tissue_labels)
         i_cond = i_cond + 1;
         prop_label = property_labels{p};
         prop_suf   = property_suffixes{p};
-        xlabels{i_cond} = [tissue_suf(2:end) '_' prop_label];
+        xlabels{i_cond} = [property_symbols{p} '_{' tissue_suf(2:end) '}'];
 
-        for sw = sweep_values
+        for i_sw = 1:length(sweep_values)
+            sw       = sweep_values(i_sw);
             affix    = [tissue_suf prop_suf num2str(sw)];
-            csv_file = fullfile(pn.data, ['sub-002_phantom_output_table' affix '.csv']);
+            csv_file = fullfile(pn.data, ['sub-002_phantom' affix '.csv']);
 
             if ~isfile(csv_file)
                 warning('CSV not found: %s', csv_file);
@@ -51,31 +53,43 @@ for t = 1:length(tissue_labels)
 
             T_csv = readtable(csv_file);
 
-            % Read riseT_brain directly from the output table
-            if ismember('riseT_brain', T_csv.Properties.VariableNames)
-                heatrise_focus(sw, i_cond) = T_csv.riseT_brain(1);
-            else
-                warning('riseT_brain missing in %s', csv_file);
+            if ~ismember('Ix_brain_vox', T_csv.Properties.VariableNames)
+                warning('Ix_brain_vox missing in %s', csv_file);
+                continue
             end
+            ix = T_csv.Ix_brain_vox(1);
+            iz = T_csv.Iz_brain_vox(1);
 
             % Read Isppa at the empirical brain focus voxel from intensity NIfTI
-            nifti_pat   = fullfile(pn.data, sprintf('*final_intensity_orig_coord%s%s%d.nii.gz', tissue_suf, prop_suf, sw));
-            nifti_files = dir(nifti_pat);
-            if ~isempty(nifti_files) && ...
-               ismember('Ix_brain_vox', T_csv.Properties.VariableNames)
+            intensity_pat   = fullfile(pn.data, 'nii', sprintf('*phantom_T1w%s%s%d_intensity.nii.gz', tissue_suf, prop_suf, sw));
+            intensity_files = dir(intensity_pat);
+            if ~isempty(intensity_files)
                 try
-                    V = niftiread(fullfile(nifti_files(1).folder, nifti_files(1).name));
-                    ix = T_csv.Ix_brain_vox(1);
-                    iy = T_csv.Iy_brain_vox(1);
-                    iz = T_csv.Iz_brain_vox(1);
-                    isppa_focus(sw, i_cond) = V(ix, iy, iz);
-                    fprintf('sub-002 sw%d (%s %s): voxel(%d,%d,%d)=%.4f\n', ...
-                        sw, tissue_labels{t}, prop_label, ix, iy, iz, V(ix,iy,iz));
+                    V = niftiread(fullfile(intensity_files(1).folder, intensity_files(1).name));
+                    isppa_focus(i_sw, i_cond) = V(ix, iz);
+                    fprintf('sub-002 sw%d (%s %s): Isppa voxel(%d,%d)=%.4f\n', ...
+                        sw, tissue_labels{t}, prop_label, ix, iz, V(ix,iz));
                 catch ME
-                    warning('NIfTI load failed %s: %s', nifti_files(1).name, ME.message);
+                    warning('Intensity NIfTI load failed %s: %s', intensity_files(1).name, ME.message);
                 end
-            elseif isempty(nifti_files)
-                warning('Intensity NIfTI not found for pattern: %s', nifti_pat);
+            else
+                warning('Intensity NIfTI not found: %s', intensity_pat);
+            end
+
+            % Read heatrise at the empirical brain focus voxel from heatrise NIfTI
+            heatrise_pat   = fullfile(pn.data, 'nii', sprintf('*phantom_T1w%s%s%d_heatrise.nii.gz', tissue_suf, prop_suf, sw));
+            heatrise_files = dir(heatrise_pat);
+            if ~isempty(heatrise_files)
+                try
+                    Vh = niftiread(fullfile(heatrise_files(1).folder, heatrise_files(1).name));
+                    heatrise_focus(i_sw, i_cond) = Vh(ix, iz);
+                    fprintf('sub-002 sw%d (%s %s): heatrise voxel(%d,%d)=%.4f\n', ...
+                        sw, tissue_labels{t}, prop_label, ix, iz, Vh(ix,iz));
+                catch ME
+                    warning('Heatrise NIfTI load failed %s: %s', heatrise_files(1).name, ME.message);
+                end
+            else
+                warning('Heatrise NIfTI not found: %s', heatrise_pat);
             end
         end
     end
@@ -83,8 +97,33 @@ end
 
 %% Plot Isppa at empirical focus
 plot_metric_with_patches(isppa_focus, xlabels, 'Isppa at focus (W/cm^2)', ...
-    'sub-002_maxIsppa_focus', [0 10], scatter_levels, scatter_colors, pn);
+    'sub-002_maxIsppa_focus', [0 15], scatter_levels, scatter_colors, pn);
 
 %% Plot riseT at empirical focus
-plot_metric_with_patches(heatrise_focus, xlabels, 'rise T brain (deg C)', ...
-    'sub-002_riseT_focus', [0 0.25], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(heatrise_focus, xlabels, 'rise T at focus (deg C)', ...
+    'sub-002_riseT_focus', [0 0.3], scatter_levels, scatter_colors, pn, 0:0.1:0.3);
+
+%% Brain-properties-only plots
+n_props        = length(property_labels);
+brain_idx      = 1:n_props;
+xlabels_brain  = cellfun(@(sym) [sym '_{b}'], property_symbols, 'UniformOutput', false);
+
+plot_metric_with_patches(isppa_focus(:, brain_idx), xlabels_brain, ...
+    'Isppa at focus (W/cm^2)', ...
+    'sub-002_maxIsppa_focus_brainonly', [0 15], scatter_levels, scatter_colors, pn);
+
+plot_metric_with_patches(heatrise_focus(:, brain_idx), xlabels_brain, ...
+    'rise T at focus (deg C)', ...
+    'sub-002_riseT_focus_brainonly', [0 0.3], scatter_levels, scatter_colors, pn, 0:0.1:0.3);
+
+%% Skull-properties-only plots (analogous to benchmark2 skull-only section)
+skull_idx     = n_props+1 : 2*n_props;
+xlabels_skull = cellfun(@(sym) [sym '_{s}'], property_symbols, 'UniformOutput', false);
+
+plot_metric_with_patches(isppa_focus(:, skull_idx), xlabels_skull, ...
+    'Isppa at focus (W/cm^2)', ...
+    'sub-002_maxIsppa_focus_skullonly', [0 15], scatter_levels, scatter_colors, pn);
+
+plot_metric_with_patches(heatrise_focus(:, skull_idx), xlabels_skull, ...
+    'rise T at focus (deg C)', ...
+    'sub-002_riseT_focus_skullonly', [0 0.3], scatter_levels, scatter_colors, pn, 0:0.1:0.3);

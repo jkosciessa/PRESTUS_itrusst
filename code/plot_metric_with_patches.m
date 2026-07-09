@@ -1,5 +1,7 @@
 function plot_metric_with_patches(data_matrix, xlabels, y_label, fig_name, y_limits, ...
-    scatter_levels, scatter_colors, pn)
+    scatter_levels, scatter_colors, pn, y_ticks)
+
+    if nargin < 9, y_ticks = []; end
 
     parameters = 1:size(data_matrix,2);
     result_mean = nanmean(data_matrix, 1);
@@ -10,6 +12,7 @@ function plot_metric_with_patches(data_matrix, xlabels, y_label, fig_name, y_lim
     barWidth = 0.6;
 
     h = figure;
+    set(gcf,'renderer','Painters');
     set(h, 'Units', 'normalized');
     if numel(xlabels) <10
         set(h, 'Position', [0.25 0.25 0.15 0.3]);
@@ -56,11 +59,14 @@ function plot_metric_with_patches(data_matrix, xlabels, y_label, fig_name, y_lim
             'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 1);
     end
 
-    set(gca, 'XTick', 1:numel(parameters), 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
+    set(gca, 'XTick', 1:numel(parameters), 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex', 'FontSize', 12);
     xtickangle(45);
     ylabel(y_label);
     if ~isempty(y_limits)
         ylim(y_limits);
+    end
+    if ~isempty(y_ticks)
+        yticks(y_ticks);
     end
     set(gca, 'Layer', 'top');
     h.Color = 'white';

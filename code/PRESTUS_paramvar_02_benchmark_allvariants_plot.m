@@ -98,7 +98,7 @@ for i_variant = 1:length(variant_names)
 
                 for v = 1:length(sweep_values)
                     affix    = [tissue_suffix prop_suffix num2str(sweep_values(v))];
-                    filename = fullfile(pn.data, [sub_str '_phantom_output_table' affix '.csv']);
+                    filename = fullfile(pn.data, [sub_str '_phantom' affix '.csv']);
 
                     if isfile(filename)
                         T = readtable(filename);
@@ -201,13 +201,14 @@ for i_variant = 1:length(variant_names)
         hold on;
         bar(param_idx, results.maxT(2,:) - results.maxT(1,:), ...
             'FaceColor', [.7 .0 .0], 'EdgeColor', [1 1 1]);
-        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
+        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex', 'FontSize', 15);
         xtickangle(45);
         yline(0, '-k', 'LineWidth', 1);
         ylabel('Difference in max. Temp rise (deg C)');
         set(gca, 'Layer', 'top');
         h.Color = 'white'; h.InvertHardcopy = 'off';
         saveas(h, fullfile(pn.figures, [tag '_diff_temperature.png']));
+        saveas(h, fullfile(pn.figures, [tag '_diff_temperature.eps']), 'epsc');
         close(h);
 
         h = figure;
@@ -215,13 +216,14 @@ for i_variant = 1:length(variant_names)
         hold on;
         bar(param_idx, results.Ipa_target(2,:) - results.Ipa_target(1,:), ...
             'FaceColor', [.7 .0 .0], 'EdgeColor', [1 1 1]);
-        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex');
+        set(gca, 'XTick', param_idx, 'XTickLabel', xlabels, 'TickLabelInterpreter', 'tex', 'FontSize', 15);
         xtickangle(45);
         yline(0, '-k', 'LineWidth', 1);
         ylabel('Difference in target intensity (W/cm^2)');
         set(gca, 'Layer', 'top');
         h.Color = 'white'; h.InvertHardcopy = 'off';
         saveas(h, fullfile(pn.figures, [tag '_diff_intensity.png']));
+        saveas(h, fullfile(pn.figures, [tag '_diff_intensity.eps']), 'epsc');
         close(h);
 
         close all;

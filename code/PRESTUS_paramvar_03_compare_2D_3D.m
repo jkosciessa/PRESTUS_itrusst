@@ -8,8 +8,7 @@
 % For each benchmark the script:
 %   1. Loads the output CSV tables and prints key scalar metrics side-by-side.
 %   2. Loads the intensity Nifti, extracts the focal-axis profile (along the
-%      beam propagation axis through the focus x/y voxel), normalises both
-%      profiles to their maximum, and superimposes them.
+%      beam propagation axis through the focus x/y voxel), and superimposes them.
 %
 % The 2D representative run used is the first available paramvar condition
 % with all OTHER tissue parameters held at their mid-range values (affix
@@ -44,7 +43,7 @@ voxel_mm = 0.5;
 % -------------------------------------------------------------------------
 benchmarks = struct( ...
     'label',     {'Benchmark 1 (water/brain)', 'Benchmark 2 (skull/brain)'}, ...
-    'sub_2d',    {1, 2}, ...
+    'sub_2d',    {001, 002}, ...
     'sub_3d',    {101, 102}, ...
     'affix_2d',  {'_b_c_1', '_b_c_1'});   % representative 2D mid-baseline run
 
@@ -150,54 +149,25 @@ for b = 1:numel(benchmarks)
         z_2d = (0:numel(prof_2d)-1) * voxel_mm - trans_z_mm;
         z_3d = (0:numel(prof_3d)-1) * voxel_mm - trans_z_mm;
 
-        % Normalise to the maximum within the focal (post-skull) region.
-        % Pre-skull standing-wave artefacts dominate the global max in skull
-        % phantoms, collapsing the focal peak in the normalised plot.
-        % Both configs have skull ending before z = 40 mm from transducer.
-        focal_z_thresh = 40;  % mm — conservative post-skull start
-        mask_focal_2d = z_2d >= focal_z_thresh;
-        mask_focal_3d = z_3d >= focal_z_thresh;
-        peak_2d = max(prof_2d(mask_focal_2d));
-        peak_3d = max(prof_3d(mask_focal_3d));
-        if isempty(peak_2d) || peak_2d == 0; peak_2d = max(prof_2d); end
-        if isempty(peak_3d) || peak_3d == 0; peak_3d = max(prof_3d); end
-        if peak_2d > 0; prof_2d_n = prof_2d / peak_2d; else; prof_2d_n = prof_2d; end
-        if peak_3d > 0; prof_3d_n = prof_3d / peak_3d; else; prof_3d_n = prof_3d; end
-
         % ---- plot ----
         figure('Name', bm.label, 'Color', 'w', 'Units', 'centimeters', ...
-               'Position', [2 2 18 10]);
+               'Position', [2 2 14 10]);
 
-        % Left panel: absolute intensity along axis
-        subplot(1, 2, 1);
         plot(z_2d, prof_2d, 'b-',  'LineWidth', 1.5, 'DisplayName', '2D axisymmetric'); hold on;
         plot(z_3d, prof_3d, 'r--', 'LineWidth', 1.5, 'DisplayName', '3D full');
         xlabel('Distance from transducer face (mm)');
         ylabel('Intensity (W/cm²)');
-        title(sprintf('%s — absolute', bm.label));
+        title(bm.label);
         legend('Location', 'best');
         xlim([0, max([z_2d(end), z_3d(end)])]);
         grid on; box on;
-
-        % Right panel: normalised intensity
-        subplot(1, 2, 2);
-        plot(z_2d, prof_2d_n, 'b-',  'LineWidth', 1.5, 'DisplayName', '2D axisymmetric'); hold on;
-        plot(z_3d, prof_3d_n, 'r--', 'LineWidth', 1.5, 'DisplayName', '3D full');
-        xlabel('Distance from transducer face (mm)');
-        ylabel('Normalised intensity');
-        title(sprintf('%s — normalised', bm.label));
-        legend('Location', 'best');
-        xlim([0, max([z_2d(end), z_3d(end)])]);
-        ylim([0 1.05]);
-        grid on; box on;
-
-        sgtitle(bm.label, 'FontSize', 12, 'FontWeight', 'bold');
 
         % Save figure
         figname = fullfile(pn.figures, sprintf('compare_2D_3D_%s', ...
             lower(strrep(strrep(bm.label, ' ', '_'), '/', ''))));
         saveas(gcf, [figname, '.png']);
-        fprintf('\n  Figure saved: %s.png\n', figname);
+        saveas(gcf, [figname, '.eps'], 'epsc');
+        fprintf('\n  Figure saved: %s.png/.eps\n', figname);
     end
 
 end
