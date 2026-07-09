@@ -96,9 +96,6 @@ for subject_id = all_subjects
             parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
         end
 
-        parameters.transducer.trans_pos = [3, 35];
-        parameters.transducer.focus_pos = [64, 35];
-
         parameters.modules.run_source_setup = 1;
         parameters.modules.run_acoustic_sims = 1;
         parameters.modules.run_heating_sims = 1;

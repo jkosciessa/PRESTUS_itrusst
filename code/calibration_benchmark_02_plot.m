@@ -114,6 +114,7 @@ for v = 1:n_variants
         'HorizontalAlignment', 'center', 'FontSize', 9);
 end
 saveas(h1, fullfile(fig_dir, 'walltime_comparison.png'), 'png');
+saveas(h1, fullfile(fig_dir, 'walltime_comparison.eps'), 'epsc');
 
 %% Figure 2: Source amplitude per condition
 
@@ -131,6 +132,7 @@ title('Optimised source amplitude');
 legend('Location', 'best');
 grid on;
 saveas(h2, fullfile(fig_dir, 'amplitude_comparison.png'), 'png');
+saveas(h2, fullfile(fig_dir, 'amplitude_comparison.eps'), 'epsc');
 
 %% Figure 3: Amplitude difference (3D as reference)
 
@@ -145,6 +147,7 @@ ylabel('Amplitude difference (%)');
 title('2D axisymmetric minus 3D (% of 3D)');
 grid on;
 saveas(h3, fullfile(fig_dir, 'amplitude_difference.png'), 'png');
+saveas(h3, fullfile(fig_dir, 'amplitude_difference.eps'), 'epsc');
 
 %% Figure 4: Element phases (one sub-panel per condition)
 
@@ -169,6 +172,7 @@ if n_elems > 1
         grid on;
     end
     saveas(h4, fullfile(fig_dir, 'phase_comparison.png'), 'png');
+    saveas(h4, fullfile(fig_dir, 'phase_comparison.eps'), 'epsc');
 end
 
 %% Console summary

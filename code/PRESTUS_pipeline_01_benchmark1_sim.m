@@ -24,10 +24,10 @@ setup_list = {
     'medium_kPlan'; ...
     'medium_PRESTUS'};
 
-all_subjects = [001:002]; %602
+all_subjects = [101, 102];
 intensities = 60;
 copy_positions = 1;
-calibrate = 1;
+calibrate = 0;
 
 for subject_id = all_subjects
 
@@ -78,6 +78,8 @@ for subject_id = all_subjects
         
         parameters = load_parameters(base_config, pwd, ['config_',setup_name,'.yaml'], pwd);
 
+        parameters.transducer.target_isppa_wcm2 = desired_intensity;
+
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
         parameters.path.anat = pn.path_seg;
         parameters.path.seg = pn.path_seg;
@@ -100,16 +102,16 @@ for subject_id = all_subjects
         if subject_id == 602 % for 3D run layered with C++ GPU code
             parameters.simulation.code_type = 'cpp_gpu';
             parameters.simulation.medium = 'layered';
-            parameters.grid.resolution_mm = 0.75;
+            parameters.grid.resolution_mm = 0.5;
             parameters.grid.axisymmetric = 0;
             jobtime = '02:00:00';
             jobram = 20;
         else
-            parameters.simulation.code_type = 'matlab_cpu';
+            parameters.simulation.code_type = 'cpp_gpu';
             parameters.simulation.medium = 'phantom';
             parameters.grid.axisymmetric = 1;
-            jobtime = '00:30:00';
-            jobram = 8;
+            jobtime = '04:00:00';
+            jobram = 16;
         end
 
         % specify GPU setup if requested
@@ -120,6 +122,7 @@ for subject_id = all_subjects
 
         % Run the simulation
         parameters.subject_id = subject_id;
+        parameters.platform = 'slurm'; % run locally
         prestus_pipeline_start(parameters);
 
     end

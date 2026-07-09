@@ -14,6 +14,7 @@ thicknesses = 1:12; % Thickness in mm corresponding to subjects
 
 % Preallocate vectors for intensity
 brain_intensity = nan(length(subjects), 1);
+target_intensity = nan(length(subjects), 1);
 
 % Loop over subjects to load brain intensity from CSV files
 for i = 1:length(subjects)
@@ -22,7 +23,7 @@ for i = 1:length(subjects)
     
     % Construct path to CSV file for this subject
     % Assuming pattern: .../sub-303/sub-303_phantom_output_table.csv
-    csv_file = fullfile(pn.data, sprintf('sub-%03d', sub_id), sprintf('sub-%03d_phantom_output_table.csv', sub_id));
+    csv_file = fullfile(pn.data, sprintf('sub-%03d', sub_id), sprintf('sub-%03d_phantom.csv', sub_id));
     
     if isfile(csv_file)
         T = readtable(csv_file);
@@ -41,20 +42,25 @@ end
 %% Plot target intensity as a function of thickness
 
 h = figure;
+set(gcf,'renderer','Painters');
 set(h, 'Units', 'normalized');
 set(h, 'Position', [0.25 0.25 0.15 0.2]);
 p1 = plot(thicknesses, target_intensity, 'k-', 'LineWidth', 2, 'MarkerSize', 8);
-hold on;
-p2 = plot(thicknesses, brain_intensity, '-', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
+% hold on;
+% p2 = plot(thicknesses, brain_intensity, '-', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
 grid on;
 % Add vertical red line at x = 6.5
 xline(6.5, 'r', 'LineWidth', 2);
+% Add vertical blue line at x = 3
+xline(3, 'b', 'LineWidth', 2);
+% Add vertical mean intensity
+% yline(mean(target_intensity), 'r', 'LineWidth', 1, 'LineStyle', ':');
 xlabel('Skull Thickness (mm)');
-ylabel('Intensity (W/cm2)'); % Adjust label according to intensity measure
+ylabel('Target Intensity (W/cm2)'); % Adjust label according to intensity measure
 xlim([1, 12]);
-legend([p1, p2], {'target'; 'brain'})
-legend('boxoff')
-set(gca, 'FontSize', 14);
+% legend([p1, p2], {'target'; 'brain'})
+% legend('boxoff')
+set(gca, 'FontSize', 12);
 
 % Save plot
 if ~exist(pn.figures, 'dir')

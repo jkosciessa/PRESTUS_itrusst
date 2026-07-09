@@ -4,9 +4,8 @@ user = 'julkos'
 
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
-[pathstr,~,~] = fileparts(currentFile); 
-cd(fullfile(pathstr,'..'))
-rootpath = pwd;
+[pathstr,~,~] = fileparts(currentFile);
+rootpath = fileparts(pathstr);
 
 addpath(fullfile(rootpath, 'code'));
 pn = setup_itrusst_paths(rootpath, user);
@@ -17,12 +16,11 @@ pn = setup_itrusst_paths(rootpath, user);
 %   a: 500 kHz @ 60 W/cm2 (baseline)
 %   b: 500 kHz @ 30 W/cm2
 %   c: 250 kHz @ 60 W/cm2
-variant_names     = {'itrusst_protocol1a', 'itrusst_protocol1b', 'itrusst_protocol1c'};
-variant_configs   = {'itrusst_protocol1',  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
-variant_intensity = [60, 30, 60];
+variant_names     = {'itrusst_protocol1a'};%, 'itrusst_protocol1b', 'itrusst_protocol1c'};
+variant_configs   = {'itrusst_protocol1'};%,  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
+variant_intensity = [60];%, 30, 60];
 
-all_subjects = [201:202];%, 303];
-copy_positions = 1;
+all_subjects = 001; %[002, 303, 001];%, 303];
 calibrate = 0;
 
 for subject_id = all_subjects
@@ -76,7 +74,7 @@ for subject_id = all_subjects
 
         parameters.simulation.medium = 'phantom'; % use default grid in combo with (final) tissue mask
         parameters.simulation.interactive = 0;
-        parameters.io.overwrite_files = 'always';
+        parameters.io.overwrite_files = 'never';
         parameters.io.overwrite_simnibs = 0;
         parameters.io.save_heatingvideo = 0;
         parameters.io.save_matrices = 0;
@@ -154,9 +152,11 @@ for subject_id = all_subjects
                     parameters.simulation.code_type = 'cpp_cpu'; % use CPU here to avoid parallel GPU calls
                     parameters.simulation.precision = 'single';
 
-                    parameters.grid.resolution_mm = 0.25;
-                    parameters.grid.default_dims = [70, 140]/parameters.grid.resolution_mm;
-                    parameters.grid.pml_size = [20]/parameters.grid.resolution_mm;
+                    parameters.grid.resolution_mm = 0.5;
+                    parameters.grid.default_dims = [70, 120]/parameters.grid.resolution_mm;
+                    parameters.grid.pml_size = [10]/parameters.grid.resolution_mm;
+                    parameters.hpc.timelimit = '04:00:00';
+                    parameters.grid.axisymmetric = 1;
   
                     parameters.subject_id = subject_id;
                     prestus_pipeline_start(parameters);

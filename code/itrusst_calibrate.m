@@ -61,6 +61,7 @@ function [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
     yline(desired_intensity, '--');
     plotname = fullfile(pn.outputs_folder, 'simulation_analytic.png');
     saveas(h, plotname, 'png');
+    saveas(h, strrep(plotname, '.png', '.eps'), 'epsc');
     close(h);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

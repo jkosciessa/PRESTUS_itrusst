@@ -1,7 +1,7 @@
 % Load the NIfTI files using niftiread (MATLAB R2017b+ built-in)
-mask_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_medium_masks_orig_coord_s_a0_1.nii.gz';
-img1_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_heating_orig_coord_s_abs_1.nii.gz';
-img2_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_heating_orig_coord_s_abs_2.nii.gz';
+mask_file = '/project/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1a/sub-002/nii/sub-002_final_medium_masks_orig_coord_s_a0_1.nii.gz';
+img1_file = '/project/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1a/sub-002/nii/sub-002_final_heating_orig_coord_s_abs_1.nii.gz';
+img2_file = '/project/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1a/sub-002/nii/sub-002_final_heating_orig_coord_s_abs_2.nii.gz';
 
 mask = niftiread(mask_file);
 img1 = niftiread(img1_file);
@@ -46,6 +46,7 @@ title('High vs low skull absorption', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
 print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/absorption_heating_diff.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/absorption_heating_diff.eps', '-depsc');
 
 % Plot heating at low attenuation
 custom_cmap = [white_to_red];
@@ -64,3 +65,4 @@ title('low absorption', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
 print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/absorption_heating_low.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/absorption_heating_low.eps', '-depsc');

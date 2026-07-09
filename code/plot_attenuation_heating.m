@@ -46,6 +46,7 @@ title('High vs low skull attenuation', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
 print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_diff.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_diff.eps', '-depsc');
 
 % Plot heating at low attenuation
 custom_cmap = [white_to_red];
@@ -64,3 +65,4 @@ title('low attenuation', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
 print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_low.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_low.eps', '-depsc');

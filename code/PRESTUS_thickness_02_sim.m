@@ -36,7 +36,7 @@ setup_list = {['itrusst_protocol1']};
 all_subjects = 301:312;
 intensities = 60;
 copy_positions = 1;
-calibrate = 1;
+calibrate = 0;
 
 for subject_id = all_subjects
 
@@ -136,6 +136,13 @@ for subject_id = all_subjects
         % Run the simulation
         parameters.simulation.code_type = 'cpp_cpu';
         parameters.simulation.precision = 'single';
+
+        parameters.grid.resolution_mm = 0.5;
+        parameters.grid.default_dims = [70, 120]/parameters.grid.resolution_mm;
+        parameters.grid.pml_size = [10]/parameters.grid.resolution_mm;
+
+        parameters.modules.run_heating_sims = 0;
+
         parameters.subject_id = subject_id;
         prestus_pipeline_start(parameters);
 

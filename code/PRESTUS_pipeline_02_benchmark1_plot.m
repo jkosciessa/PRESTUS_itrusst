@@ -4,14 +4,20 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'))
 rootpath = pwd;
 
+% setup_list = {'medium_conservative', ...
+%                 'medium_kPlan', ...
+%                 'medium_mid', ...
+%                 'medium_PRESTUS', ...
+%                 'medium_BabelBrain', ...
+%                 'medium_liberal'};
+
 setup_list = {'medium_conservative', ...
                 'medium_kPlan', ...
-                'medium_mid', ...
                 'medium_PRESTUS', ...
                 'medium_BabelBrain', ...
                 'medium_liberal'};
 
-subject_list = {'sub-001', 'sub-002'};
+subject_list = {'sub-101', 'sub-102'};
 
 pn.figures = fullfile(rootpath, 'figures');
 
@@ -28,11 +34,11 @@ for s = 1:n_setups
     for sub = 1:n_subjects
         subject = subject_list{sub};
         data_dir = fullfile(rootpath, 'data', 'tussim', setup, subject);
-        filename = fullfile(data_dir, [subject '_phantom_output_table.csv']);
+        filename = fullfile(data_dir, [subject '_phantom.csv']);
         if isfile(filename)
             T = readtable(filename);
             if all(ismember({'Ipa_target','maxT'}, T.Properties.VariableNames))
-                maxT_mat(sub, s) = T.maxT(1);
+                maxT_mat(sub, s) = T.maxT(1)-37;
                 isppa_mat(sub, s) = T.Ipa_target(1);
             else
                 warning('File %s lacks required columns.', filename);
@@ -44,8 +50,9 @@ for s = 1:n_setups
 end
 
 % Assume maxT_mat and isppa_mat are [2 x 4] arrays: rows=subjects, cols=setups
-setup_list = {'conservative', 'kPlan', 'mid', 'PRESTUS', 'BabelBrain', 'liberal'};
-subject_list = {'sub-001', 'sub-002'};
+% setup_list = {'setup A', 'kPlan', 'mid', 'PRESTUS', 'BabelBrain', 'setup B'};
+setup_list = {'setup A', 'kPlan', 'PRESTUS', 'BabelBrain', 'setup B'};
+subject_list = {'sub-101', 'sub-102'};
 
 % ------- Maximum Temperature -------
 h = figure;
@@ -54,7 +61,7 @@ for i = 1:2
     bar(maxT_mat(i,:), 'FaceColor', [.7 .2 .2]);
     set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
     xlabel('Default Setup', 'FontSize', 14);
-    ylabel('Maximum Temperature (°C)', 'FontSize', 14);
+    ylabel('Temperature rise (°C)', 'FontSize', 14);
     title(['benchmark ', num2str(i)], 'FontSize', 14);
     ylim([min(maxT_mat(:))-0.5, max(maxT_mat(:))+0.5]);
     grid on;
@@ -80,6 +87,25 @@ for i = 1:2
     ylim([0 60])
 end
 figureName = ['pipeline_intensity'];
+h.Color = 'white';
+h.InvertHardcopy = 'off';
+saveas(h, fullfile(pn.figures, figureName), 'epsc');
+saveas(h, fullfile(pn.figures, figureName), 'png');
+
+% ------- Target Intensity -------
+h = figure;
+for i = 1:2
+    subplot(1,2,i);
+    bar(isppa_mat(i,:), 'FaceColor', [.2 .5 .7]);
+    set(gca, 'XTick', 1:size(isppa_mat,2), 'XTickLabel', setup_list, 'FontSize', 14);
+    xlabel('Default Setup', 'FontSize', 14);
+    ylabel('Target Intensity', 'FontSize', 14);
+    title(['benchmark ', num2str(i)], 'FontSize', 14);
+    grid on;
+    xtickangle(30);
+    ylim([0 30])
+end
+figureName = ['pipeline_intensity_rescaled'];
 h.Color = 'white';
 h.InvertHardcopy = 'off';
 saveas(h, fullfile(pn.figures, figureName), 'epsc');
