@@ -17,6 +17,7 @@
 
 # Exclude all /figures directories
 **/figures
+figures_ppw12/
 
 # Ignore temporary files
 *.DS_STORE
