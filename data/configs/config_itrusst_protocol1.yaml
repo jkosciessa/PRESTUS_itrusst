@@ -10,8 +10,8 @@ layers:
 transducer:
   type: annular
   freq_hz: 500000.0
-  trans_pos: [70, 2]      # 35mm lateral center; 1mm offset from active domain edge (no PML offset)
-  focus_pos: [70, 130]    # same lateral; 64mm focal distance: 2 + 128 voxels (0.5mm resolution)
+  trans_pos: [70, 1]      # lateral center (35mm / 0.5mm/vox = 70); transducer bowl at grid edge (vox 1)
+                          # focus_pos omitted: auto-computed as trans_pos + focal_distance_bowl/resolution_mm = [70, 129]
   focal_distance_ep: 55.42562584220407
   focal_distance_bowl: 64.0
   focal_distance_offset: 8.57437415779593

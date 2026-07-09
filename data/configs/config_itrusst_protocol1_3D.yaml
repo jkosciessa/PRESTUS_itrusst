@@ -26,7 +26,7 @@ modules:
 
 grid:
   resolution_mm: 0.5    # [mm]
-  default_dims: [140, 140, 280] # active domain: 70mm x 70mm lateral, 140mm axial (PML added externally)
+  default_dims: [140, 140, 240] # active domain: 70mm x 70mm lateral, 120mm axial (PML added externally)
   pml_size: 40          # 20mm PML at 0.5mm/voxel = 40 grid points
   axisymmetric: 0
   use_kWaveArray: 1

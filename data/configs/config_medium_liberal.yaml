@@ -1,3 +1,13 @@
+simulation:
+  medium: phantom
+
+grid:
+  resolution_mm: 0.5
+  default_dims: [140, 240]
+  pml_size: 40
+  axisymmetric: 1
+  use_kWaveArray: 1
+
 medium_properties:
   water:
     sound_speed: 1500
