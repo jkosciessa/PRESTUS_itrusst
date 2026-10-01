@@ -1,8 +1,8 @@
 % PRESTUS_PARAMVAR_04_AXIAL_PROFILES_2D
 %
 % Extracts and compares focal-axis intensity AND thermal profiles for all 2D
-% axisymmetric parameter-variation runs in sub-201 (water/brain) and
-% sub-202 (skull/brain).
+% axisymmetric parameter-variation runs in sub-001 (water/brain) and
+% sub-002 (skull/brain), at the primary 0.5 mm grid resolution.
 %
 % For each tissue × property combination, the script plots the axial profile
 % for the bottom (_1) and top (_2) sweep levels superimposed, showing how
@@ -21,8 +21,7 @@
 %
 % Output figures are saved to figures/itrusst_protocol1a/axial_profiles/.
 %
-% See also: PRESTUS_PARAMVAR_01_BENCHMARKS_SIM,
-%           PRESTUS_PARAMVAR_05_COMPARE_2D_3D
+% See also: PRESTUS_PARAMVAR_01_BENCHMARKS_SIM
 
 clear; close all; clc;
 
@@ -48,11 +47,11 @@ dir_2d = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
 % -------------------------------------------------------------------------
 % Configuration
 % -------------------------------------------------------------------------
-voxel_mm  = 0.25;
-trans_vox = 4;    % transducer face at z-voxel 4 (config: trans_pos z = 4)
+voxel_mm  = 0.5;
+trans_vox = 1;    % transducer face at z-voxel 1 (config: trans_pos z = 1)
 
 subjects = struct( ...
-    'id',              {201,           202}, ...
+    'id',              {1,             2}, ...
     'label',           {'water/brain', 'skull/brain'}, ...
     'tissue_labels',   {{'brain'},     {'brain', 'skull'}}, ...
     'tissue_suffixes', {{'_b'},        {'_b', '_s'}});
@@ -93,9 +92,11 @@ for s = 1:numel(subjects)
     end
     ref_img = load_nii(fullfile(nii_dir, ref_files(1).name));
     ref_vol = double(ref_img.img);
+    % Phantoms are true 2-D arrays [x (lateral), z (axial)] — no singleton
+    % y-dimension (see createPhantom.m array-layout header) — so the axial
+    % axis is dim 2, not dim 3.
     cx   = round(size(ref_vol, 1) / 2);
-    cy   = round(size(ref_vol, 2) / 2);
-    nz   = size(ref_vol, 3);
+    nz   = size(ref_vol, 2);
     z_mm = ((1:nz) - trans_vox) * voxel_mm;
 
     % Check whether thermal NIfTIs exist for this subject
@@ -153,7 +154,7 @@ for s = 1:numel(subjects)
 
                     nii  = load_nii(nii_path);
                     vol  = double(nii.img);
-                    prof = squeeze(vol(cx, cy, :));
+                    prof = vol(cx, :)';
                     prof(prof < 0) = 0;
 
                     plot(ax, z_mm, prof, 'Color', level_colors{lv}, ...
