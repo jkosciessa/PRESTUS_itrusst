@@ -51,6 +51,20 @@ plot_metric_with_patches(results_int.Isppa_brain,            xlabels_int, 'max I
 % plot_metric_with_patches(results_int.Isppa_skull,            xlabels_int, 'max Isppa skull',          'sub-002_maxIsppa_skull_acousticonly',     [0 11], scatter_levels, scatter_colors, pn);
 % plot_metric_with_patches(results_int.real_focal_distance_mm, xlabels_int, 'real focal distance (mm)', 'sub-002_real_focal_distance_acousticonly', [],    scatter_levels, scatter_colors, pn);
 
+%% Focal geometry and heating-location comparison — all tissues x all properties
+
+[focus_results, ~] = load_focus_heating_metrics(pn.data, subject_id, ...
+    tissue_labels, tissue_suffixes, property_labels, property_suffixes, sweep_values, property_symbols);
+
+plot_metric_with_patches(results.real_focal_distance_mm, xlabels, 'real focal distance (mm)',       'sub-002_real_focal_distance_mm', [],  scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(results.focal_vol_3dB_mm3,      xlabels, 'focal volume, -3dB/FWHM (mm^3)', 'sub-002_focal_vol_3dB_mm3',      [],  scatter_levels, scatter_colors, pn);
+
+% Heating-location comparison: whole-brain max (results.riseT_brain, plotted
+% above for the skull-only subset) vs at the empirical acoustic focus vs at
+% the fixed nominal target — see load_focus_heating_metrics.m
+plot_metric_with_patches(focus_results.riseT_focus,  xlabels, 'rise T at empirical focus (deg C)',      'sub-002_riseT_focus',  [0 0.8], scatter_levels, scatter_colors, pn);
+plot_metric_with_patches(focus_results.riseT_target, xlabels, 'rise T at fixed nominal target (deg C)', 'sub-002_riseT_target', [0 0.8], scatter_levels, scatter_colors, pn);
+
 %% Plot differences
 
 % % Plot maximum temperature as difference between levels

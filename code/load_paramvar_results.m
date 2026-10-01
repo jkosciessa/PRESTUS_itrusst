@@ -16,7 +16,9 @@ function [results, xlabels] = load_paramvar_results(data_dir, subject_id, ...
 % Outputs:
 %   results  - struct with fields: sweep, Ipa_target, maxT (rise from 37 C),
 %              Isppa_brain, riseT_brain, Isppa_skull, riseT_skull,
-%              real_focal_distance_mm  — each [n_sweep x n_conds]
+%              real_focal_distance_mm, focal_vol_3dB_mm3 (ITRUSST −3 dB /
+%              half-intensity focal volume, i.e. the volumetric FWHM)
+%              — each [n_sweep x n_conds]
 %   xlabels  - cell array of condition labels (length n_conds)
 
 if nargin < 8
@@ -28,7 +30,8 @@ n_sweep = length(sweep_values);
 sub_str = sprintf('sub-%03d', subject_id);
 
 metric_cols = {'Ipa_target', 'maxT', 'Isppa_brain', 'riseT_brain', ...
-               'Isppa_skull', 'riseT_skull', 'real_focal_distance_mm'};
+               'Isppa_skull', 'riseT_skull', 'real_focal_distance_mm', ...
+               'focal_vol_3dB_mm3'};
 
 results  = struct();
 xlabels  = cell(1, n_conds);
