@@ -48,8 +48,8 @@ benchmarks = struct( ...
     'affix_2d',  {'_b_c_1', '_b_c_1'});   % representative 2D mid-baseline run
 
 % Scalar metrics to compare
-metric_fields  = {'Isppa', 'Ipa_target', 'real_focal_distance_mm', 'riseT_brain', 'maxT', 'MI_brain'};
-metric_labels  = {'ISPPA (W/cm²)', 'Ipa target (W/cm²)', 'Focal distance (mm)', ...
+metric_fields  = {'Isppa', 'Isppa_brain', 'Ipa_target', 'real_focal_distance_mm', 'riseT_brain', 'maxT', 'MI_brain'};
+metric_labels  = {'ISPPA global max (W/cm²)', 'ISPPA brain (W/cm²)', 'Ipa target (W/cm²)', 'Focal distance (mm)', ...
                   'Temp rise brain (°C)', 'Max temp (°C)', 'MI brain'};
 
 % -------------------------------------------------------------------------

@@ -40,15 +40,15 @@ for i = 1:length(subjects)
     end
 end
 
-%% Plot target intensity as a function of thickness
+%% Plot target and brain intensity as a function of thickness
 
 h = figure;
 set(gcf,'renderer','Painters');
 set(h, 'Units', 'normalized');
 set(h, 'Position', [0.25 0.25 0.15 0.2]);
 p1 = plot(thicknesses, target_intensity, 'k-o', 'LineWidth', 2, 'MarkerSize', 4);
-% hold on;
-% p2 = plot(thicknesses, brain_intensity, '-', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
+hold on;
+p2 = plot(thicknesses, brain_intensity, '-o', 'LineWidth', 2, 'MarkerSize', 4, 'Color', [0.5 0.5 0.5]);
 grid on;
 % Add vertical red line at x = 6.5
 xline(6.5, 'r', 'LineWidth', 2);
@@ -57,13 +57,17 @@ xline(3, 'b', 'LineWidth', 2);
 % Add vertical mean intensity
 % yline(mean(target_intensity), 'r', 'LineWidth', 1, 'LineStyle', ':');
 xlabel('Skull Thickness (mm)');
-ylabel('Target Intensity (W/cm2)'); % Adjust label according to intensity measure
+ylabel('Intensity (W/cm^2)');
 xlim([1, 12]);
-% legend([p1, p2], {'target'; 'brain'})
-% legend('boxoff')
+legend([p1, p2], {'target (Ipa\_target)'; 'brain max (Isppa\_brain)'}, 'Location', 'best')
+legend('boxoff')
 set(gca, 'FontSize', 12);
 
 % Save plot
-figureName = 'target_intensity_vs_thickness';
+figureName = 'intensity_vs_thickness';
 saveas(h, fullfile(pn.figures, figureName), 'png');
 saveas(h, fullfile(pn.figures, figureName), 'epsc');
+% Save table
+writetable(table(subjects(:), thicknesses(:), target_intensity, brain_intensity, ...
+    'VariableNames', {'subject_id', 'thickness_mm', 'Ipa_target', 'Isppa_brain'}), ...
+    fullfile(pn.figures, 'intensity_vs_thickness.csv'));
