@@ -20,7 +20,7 @@ variant_names     = {'itrusst_protocol1a'};%, 'itrusst_protocol1b', 'itrusst_pro
 variant_configs   = {'itrusst_protocol1'};%,  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
 variant_intensity = [60];%, 30, 60];
 
-all_subjects = 001; %[002, 303, 001];%, 303];
+all_subjects = [001, 002, 303];
 calibrate = 0;
 
 for subject_id = all_subjects

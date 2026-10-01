@@ -1,5 +1,5 @@
 function config_files = itrusst_write_medium_configs(pn, setup_names)
-% Write config_medium_<setup>.yaml for the literature setups from the CSVs.
+% Write config_medium_<setup>.yaml for the literature setups and bounds from the CSVs.
 %
 % data/tissue_parameters.csv (+ data/tissue_setups.csv) is the single source
 % of the brain/skull/water properties; the yamls are regenerated from it
@@ -7,12 +7,13 @@ function config_files = itrusst_write_medium_configs(pn, setup_names)
 %
 % Inputs:
 %   pn          - path struct from setup_itrusst_paths (uses pn.data, pn.configs)
-%   setup_names - (optional) default {'setup1', 'reference', 'setup2'}
+%   setup_names - (optional) default {'setup1', 'reference', 'setup2', 'bottom', 'top'}
+%                 (bottom/top: all brain/skull properties at one bound)
 % Output:
 %   config_files - cell array of written file paths
 
 if nargin < 2
-    setup_names = {'setup1', 'reference', 'setup2'};
+    setup_names = {'setup1', 'reference', 'setup2', 'bottom', 'top'};
 end
 
 % fields written per tissue (water: no perfusion/absorption, as in the tool configs)

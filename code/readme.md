@@ -2,7 +2,7 @@
 
 | folder | content |
 |---|---|
-| `code/` | main analysis chain: phantoms, calibration, `PRESTUS_paramvar_00-04`, `PRESTUS_pipeline_01-02`, `PRESTUS_thickness_01-05`, setup/range figures |
+| `code/` | main analysis chain (all stages: `itrusst_rerun_all.m`, see top-level README): phantoms, calibration, `PRESTUS_paramvar_00-04`, `PRESTUS_pipeline_01-02`, `PRESTUS_thickness_01-05`, setup/range figures |
 | `code/functions/` | shared helpers called by the scripts (no script runs from here) |
 | `code/explore/` | side analyses not (yet) used: `PRESTUS_paramvar_06-10/13`, skull sound-speed case study, sub-303 sweep, multiskull, per-voxel `plot_sub*` |
 | `code/debug/` | numerical checks (0.25 mm / 0.5 mm / 3D resolution, 2D vs 3D, calibration 2D vs 3D, benchmark 2 mismatch) and stale scripts with hard-coded paths |
@@ -50,6 +50,14 @@ Same inputs as `load_paramvar_results`; reads the heatrise NIfTIs at the empiric
 
 Range plot (min-max patch per condition, bottom/top levels as dots; brain grey, skull red) and parallel-coordinates plot of the setup property tables.
 
-### `itrusst_calibrate.m`, `itrusst_thickness_subjects.m`
+### `itrusst_calibrate.m`, `itrusst_apply_calibration.m`, `itrusst_thickness_subjects.m`
 
-Free-water calibration of the annular transducer to a target intensity; mapping between skull thickness (mm) and thickness-phantom subject IDs.
+Free-water calibration of the annular transducer to a target intensity; copy of the calibrated drive (`annular: {...}` block of `data/calibration/PRESTUS_virtual_parameters/<setup>-F*mm-I*wpercm2.yaml`) into `config_<setup>.yaml`; mapping between skull thickness (mm) and thickness-phantom subject IDs.
+
+### `itrusst_tissue_properties.m`, `itrusst_write_medium_configs.m`
+
+Tissue properties of a setup (`setup1`, `setup2`, `reference`, `bottom`, `top`) from `data/tissue_parameters.csv` + `tissue_setups.csv`; generation of `data/configs/config_medium_<setup>.yaml` from them.
+
+### `itrusst_backup_outputs.m`
+
+Moves `data/tussim`, `data/calibration` and `figures/*` aside under a date tag before a rerun, keeping the I/O paths.
