@@ -51,8 +51,8 @@
 % simulation agree again, then re-run this script.
 %
 % Output:
-%   figures/paramvar/constellation_check.{png,eps}
-%   figures/paramvar/paramvar_constellation_check.csv
+%   figures/explore/constellation_check/constellation_check.{png,eps}
+%   figures/explore/constellation_check/paramvar_constellation_check.csv
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ rootpath = pwd;
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
 pn.tussim  = fullfile(rootpath, 'data', 'tussim');
 pn.configs = fullfile(rootpath, 'data', 'configs');
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'constellation_check');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 

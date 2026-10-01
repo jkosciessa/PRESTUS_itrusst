@@ -92,8 +92,8 @@ clear all; close all; clc;
 %
 % ANALYSIS (not yet written - no results exist to analyse): once this
 % design has been run, mu*/sigma per factor can be computed directly from
-% the trajectory design table this script writes to figures/paramvar/
-% morris_design.csv (columns: trajectory, step, tissue, property,
+% the trajectory design table this script writes to data/tussim/
+% <variant_name>/morris_design.csv (columns: trajectory, step, tissue, property,
 % direction, output_affix) joined against each output_affix's riseT_
 % brain/riseT_skull/Isppa_brain/Ipa_target from its sub-002_phantom
 % <affix>.csv.
@@ -103,7 +103,7 @@ clear all; close all; clc;
 % the same non-decoupled/non-cached cross-check this design needs too.
 %
 % Output: data/tussim/<variant_name>/sub-002/sub-002_phantom<affix>.csv
-% per evaluation; figures/paramvar/morris_design.csv (trajectory design
+% per evaluation; data/tussim/<variant_name>/morris_design.csv (trajectory design
 % table for the follow-up analysis).
 
 user = 'julkos';
@@ -154,8 +154,6 @@ else
 end
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
-if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";
 base_parameters.path.anat = pn.path_seg;
 base_parameters.path.seg  = pn.path_seg;
@@ -263,7 +261,7 @@ for tr = 1:n_traj
     end
 end
 
-writetable(design_rows, fullfile(pn.figures, 'morris_design.csv'));
+writetable(design_rows, fullfile(pn.path_sim, 'morris_design.csv'));
 
 fprintf('Morris design: %d trajectories x 15 points = %d evaluations (%d acoustic-cost, %d thermal-cost)%s.\n', ...
     n_traj, n_traj * (n_total + 1), numel(specs_phase1), numel(specs_phase2), ternary(pilot_mode, ' [PILOT MODE]', ''));

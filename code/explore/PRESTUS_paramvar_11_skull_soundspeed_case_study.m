@@ -29,7 +29,7 @@
 % pixel-accurate reproduction of them.
 %
 % Data:   data/tussim/itrusst_protocol1a/sub-002 (2D axisymmetric, 0.5 mm grid)
-% Output: figures/paramvar/skull_soundspeed/
+% Output: figures/explore/skull_soundspeed/
 %
 % See also: PRESTUS_PARAMVAR_04_AXIAL_PROFILES_2D,
 %           PRESTUS_PARAMVAR_06_IMPACT_DIRECTION_PLOT, COMPUTE_FOCAL_METRICS
@@ -47,7 +47,7 @@ addpath(fullfile(rootpath, 'code', 'functions'));
 
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a', 'sub-002');
 pn.nii     = fullfile(pn.data, 'nii');
-pn.figures = fullfile(rootpath, 'figures', 'paramvar', 'skull_soundspeed');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'skull_soundspeed');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 %% ── Configuration: skull sound_speed OAT sweep (Benchmark 2) ────────────────

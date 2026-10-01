@@ -19,7 +19,7 @@
 %         warning.  Re-run simulations with run_heating_sims:1 and ensure
 %         nifti_thermal completes (check log for "400/400 pulse trains").
 %
-% Output figures are saved to figures/itrusst_protocol1a/axial_profiles/.
+% Output figures are saved to figures/paramvar/axial_profiles/.
 %
 % See also: PRESTUS_PARAMVAR_01_BENCHMARKS_SIM
 
@@ -39,7 +39,7 @@ if isfolder('/Volumes/2425122.01/v05/tools/nifti_toolbox')
     addpath('/Volumes/2425122.01/v05/tools/nifti_toolbox');
 end
 
-pn.figures = fullfile(rootpath, 'figures', 'itrusst_protocol1a', 'axial_profiles');
+pn.figures = fullfile(rootpath, 'figures', 'paramvar', 'axial_profiles');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 dir_2d = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');

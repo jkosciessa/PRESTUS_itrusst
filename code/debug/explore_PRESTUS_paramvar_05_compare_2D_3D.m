@@ -48,7 +48,7 @@ if isfolder('/Volumes/2425122.01/v05/tools/nifti_toolbox')
     addpath('/Volumes/2425122.01/v05/tools/nifti_toolbox');
 end
 
-pn.figures = fullfile(rootpath, 'figures', 'itrusst_protocol1a', 'compare_2D_3D');
+pn.figures = fullfile(rootpath, 'figures', 'debug', 'compare_2D_3D');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 dir_2d = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');

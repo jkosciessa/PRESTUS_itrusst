@@ -4,7 +4,8 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
-pn.figures = fullfile(rootpath, 'figures');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'multiskull');
+if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-003');
 pn.code = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 

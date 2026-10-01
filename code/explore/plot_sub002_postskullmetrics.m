@@ -8,7 +8,8 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
-pn.figures  = fullfile(rootpath, 'figures');
+pn.figures  = fullfile(rootpath, 'figures', 'explore', 'focus_voxel_metrics');
+if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.data     = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
 pn.code     = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'));
 

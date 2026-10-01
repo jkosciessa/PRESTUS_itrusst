@@ -1,3 +1,5 @@
+if ~isfolder('/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps'); mkdir('/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps'); end
+
 % Load the NIfTI files using niftiread (MATLAB R2017b+ built-in)
 mask_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_medium_masks_orig_coord_s_a0_1.nii.gz';
 img1_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_heating_orig_coord_s_a0_1.nii.gz';
@@ -45,8 +47,8 @@ axis image equal tight;
 title('High vs low skull attenuation', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
-print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_diff.png', '-dpng', '-r300');
-print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_diff.eps', '-depsc');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps/attenuation_heating_diff.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps/attenuation_heating_diff.eps', '-depsc');
 
 % Plot heating at low attenuation
 custom_cmap = [white_to_red];
@@ -64,5 +66,5 @@ axis image equal tight;
 title('low attenuation', 'FontSize', 16);
 % xlabel('X (pixels)'); ylabel('Y (pixels)');
 set(gca, 'FontSize', 14);
-print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_low.png', '-dpng', '-r300');
-print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/attenuation_heating_low.eps', '-depsc');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps/attenuation_heating_low.png', '-dpng', '-r300');
+print(gcf, '/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps/attenuation_heating_low.eps', '-depsc');

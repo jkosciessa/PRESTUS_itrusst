@@ -16,7 +16,7 @@
 % Subjects covered: sub-001 (water/brain), sub-002 (skull/brain).
 % Extend SUB_DEFS below to include other subjects.
 %
-% Output: figures/overview_profiles/{folder}_{band|butterfly}.png
+% Output: figures/paramvar/overview_profiles/{folder}_{band|butterfly}.png
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ rootpath = pwd;
 
 pn.tussim   = fullfile(rootpath, 'data', 'tussim');
 pn.simnibs  = fullfile(rootpath, 'data', 'simnibs');
-pn.figures  = fullfile(rootpath, 'figures', 'overview_profiles');
+pn.figures  = fullfile(rootpath, 'figures', 'paramvar', 'overview_profiles');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 %% ── Subject definitions ─────────────────────────────────────────────────────

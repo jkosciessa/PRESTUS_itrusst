@@ -110,8 +110,6 @@ else
 end
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
-if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";
 base_parameters.path.anat = pn.path_seg;
 base_parameters.path.seg  = pn.path_seg;
@@ -216,7 +214,7 @@ for i = 1:n_rows
         specs(i).extra_levels(1), specs(i).extra_levels(2), string(specs(i).output_affix)};
 end
 
-writetable(design_rows, fullfile(pn.figures, 'density_crossover_design.csv'));
+writetable(design_rows, fullfile(pn.path_sim, 'density_crossover_design.csv'));
 
 %% ── Submit every evaluation (all independent - no phase ordering needed) ───
 

@@ -6,7 +6,7 @@
 % Parallel lines = no interaction; a widening/narrowing gap = interaction.
 % Missing or incomplete result files are reported and left as gaps.
 %
-% Output: figures/paramvar/density_thickness_<outcome>.{png,eps}
+% Output: figures/thickness/density_thickness_<outcome>.{png,eps}
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
 
@@ -17,7 +17,8 @@ rootpath = pwd;
 
 variant_name = 'itrusst_protocol1a_density_thickness';   % must match PRESTUS_thickness_04
 pn.results = fullfile(rootpath, 'data', 'tussim', variant_name);
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
+pn.figures = fullfile(rootpath, 'figures', 'thickness');
+if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 outcomes = {'Isppa_brain', 'Ipa_target', 'riseT_brain', 'riseT_skull'};
 density_levels_name = {'bottom', 'mid', 'top'};
@@ -26,7 +27,7 @@ level_colors = [0.00 0.45 0.74; 0.50 0.50 0.50; 0.85 0.10 0.10];   % blue / grey
 %% ── Load the design table and join results ─────────────────────────────────
 
 % force ',' delimiter: auto-detection can misfire on underscore-heavy values
-design = readtable(fullfile(pn.figures, 'density_thickness_design.csv'), 'Delimiter', ',', 'TextType', 'string');
+design = readtable(fullfile(pn.results, 'density_thickness_design.csv'), 'Delimiter', ',', 'TextType', 'string');
 n_rows = height(design);
 
 for o = 1:numel(outcomes)

@@ -44,7 +44,7 @@
 %                                      conduct., Specific Heat and Perf. axes
 %                                      are flipped (max at bottom, min at top)
 %
-% Output: figures/table_comparison/itrusst_table_parallel*.{png,eps}
+% Output: figures/setups/itrusst_table_parallel*.{png,eps}
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'));
 rootpath = pwd;
 
-pn.figures = fullfile(rootpath, 'figures', 'table_comparison');
+pn.figures = fullfile(rootpath, 'figures', 'setups');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 

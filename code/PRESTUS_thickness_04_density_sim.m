@@ -54,8 +54,6 @@ else
 end
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
-if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";
 base_parameters.path.anat = pn.path_seg;
 base_parameters.path.seg  = pn.path_seg;
@@ -111,7 +109,7 @@ for s = 1:numel(thickness_subjects)
     end
 end
 
-writetable(design_rows, fullfile(pn.figures, 'density_thickness_design.csv'));
+writetable(design_rows, fullfile(pn.path_sim, 'density_thickness_design.csv'));
 fprintf('Density x thickness design: %d evaluations (%d thicknesses x %d density levels).\n', ...
     n_rows, numel(thickness_subjects), numel(density_levels_name));
 

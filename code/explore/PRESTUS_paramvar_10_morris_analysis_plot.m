@@ -2,7 +2,7 @@
 %
 % Analyses the Morris elementary-effects design built and (partially or
 % fully) run by PRESTUS_paramvar_09_morris_interactions_sim.m. Joins the
-% trajectory design table (figures/paramvar/morris_design.csv) against
+% trajectory design table (data/tussim/<variant_name>/morris_design.csv) against
 % each step's result CSV (data/tussim/<variant_name>/sub-002/sub-002_
 % phantom<output_affix>.csv) to get, per design-table row:
 %   Isppa_brain, Ipa_target, riseT_brain, riseT_skull
@@ -28,9 +28,9 @@
 % silently mistaken for a stable estimate.
 %
 % Output:
-%   figures/paramvar/morris_effects.csv   (mu, mu_star, sigma, n per
+%   figures/explore/morris/morris_effects.csv   (mu, mu_star, sigma, n per
 %                                           factor per outcome)
-%   figures/paramvar/morris_plot_<outcome>.{png,eps}  (mu* vs sigma
+%   figures/explore/morris/morris_plot_<outcome>.{png,eps}  (mu* vs sigma
 %                                           scatter, one point per factor)
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ variant_name = 'itrusst_protocol1a_morris';   % must match PRESTUS_paramvar_09
 subject_id   = 2;
 
 pn.results = fullfile(rootpath, 'data', 'tussim', variant_name, sprintf('sub-%03d', subject_id));
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'morris');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 outcomes = {'Isppa_brain', 'Ipa_target', 'riseT_brain', 'riseT_skull'};
@@ -54,7 +54,7 @@ outcomes = {'Isppa_brain', 'Ipa_target', 'riseT_brain', 'riseT_skull'};
 % Delimiter forced to ',' - readtable's auto-detection can misfire on
 % underscore-saturated headers/values (see PRESTUS_paramvar_13's fix for
 % the concrete failure this caused on a similarly-shaped design table).
-design = readtable(fullfile(pn.figures, 'morris_design.csv'), 'Delimiter', ',', 'TextType', 'string');
+design = readtable(fullfile(rootpath, 'data', 'tussim', variant_name, 'morris_design.csv'), 'Delimiter', ',', 'TextType', 'string');
 n_rows = height(design);
 
 for o = 1:numel(outcomes)

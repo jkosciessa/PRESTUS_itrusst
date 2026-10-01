@@ -29,7 +29,7 @@ rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code', 'functions'));
 addpath('/project/2425122.01/v05/tools/nifti_toolbox');
-pn.figures = fullfile(rootpath, 'figures');
+pn.figures = fullfile(rootpath, 'figures', 'debug', 'compare_2D_3D');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 dir_2d = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');

@@ -48,14 +48,14 @@
 % is higher at the top bound than at the bottom bound.
 %
 % Output:
-%   figures/paramvar/impact_direction_Isppa_brain.{png,eps}
-%   figures/paramvar/impact_direction_riseT_skull.{png,eps}
-%   figures/paramvar/impact_direction_riseT_brain.{png,eps}
-%   figures/paramvar/impact_direction_riseT_focus.{png,eps}
-%   figures/paramvar/impact_direction_riseT_target.{png,eps}
-%   figures/paramvar/impact_direction_real_focal_distance_mm.{png,eps}
-%   figures/paramvar/impact_direction_focal_vol_3dB_mm3.{png,eps}
-%   figures/paramvar/paramvar_impact_direction.csv  (full results table,
+%   figures/explore/impact_direction/impact_direction_Isppa_brain.{png,eps}
+%   figures/explore/impact_direction/impact_direction_riseT_skull.{png,eps}
+%   figures/explore/impact_direction/impact_direction_riseT_brain.{png,eps}
+%   figures/explore/impact_direction/impact_direction_riseT_focus.{png,eps}
+%   figures/explore/impact_direction/impact_direction_riseT_target.{png,eps}
+%   figures/explore/impact_direction/impact_direction_real_focal_distance_mm.{png,eps}
+%   figures/explore/impact_direction/impact_direction_focal_vol_3dB_mm3.{png,eps}
+%   figures/explore/impact_direction/paramvar_impact_direction.csv  (full results table,
 %                                                     all outcomes)
 
 %% ── Paths ───────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ cd(fullfile(pathstr, '..', '..'));
 rootpath = pwd;
 
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'impact_direction');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 

@@ -19,7 +19,8 @@ setup_list = {'medium_conservative', ...
 
 subject_list = {'sub-101', 'sub-102'};
 
-pn.figures = fullfile(rootpath, 'figures');
+pn.figures = fullfile(rootpath, 'figures', 'pipeline');
+if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 % Preallocate result matrices
 n_setups = numel(setup_list);

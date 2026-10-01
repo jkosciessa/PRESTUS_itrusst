@@ -3,7 +3,7 @@
 %   itrusst_protocol1a  (500 kHz, 60 W/cm2)
 %   itrusst_protocol1b  (500 kHz, 30 W/cm2)
 %   itrusst_protocol1c  (250 kHz, 60 W/cm2)
-% Figures are saved in figures/<variant_name>/.
+% Figures are saved in figures/paramvar/<variant_name>/.
 
 % get root path (script must be run from file location)
 currentFile = mfilename('fullpath');
@@ -40,7 +40,7 @@ scatter_colors = {[1 1 1], [0 0 0]};
 for i_variant = 1:length(variant_names)
     variant = variant_names{i_variant};
 
-    pn.figures = fullfile(rootpath, 'figures', variant);
+    pn.figures = fullfile(rootpath, 'figures', 'paramvar', variant);
     if ~exist(pn.figures, 'dir'); mkdir(pn.figures); end
 
     %% Loop over subjects

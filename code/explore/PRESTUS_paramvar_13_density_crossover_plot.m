@@ -4,7 +4,7 @@
 % factorial_sim.m (skull density x each of the other 13 tissue-property
 % factors, 2x2 grid per pair, everything else at midpoint).
 %
-% Joins figures/paramvar/density_crossover_design.csv against each row's
+% Joins data/tussim/<variant_name>/density_crossover_design.csv against each row's
 % result CSV (data/tussim/itrusst_protocol1a_density_crossover/sub-002/
 % sub-002_phantom<output_affix>.csv), then for every "other" factor
 % computes the exact 2x2 interaction:
@@ -23,9 +23,9 @@
 % reported and leave that cell/pair as NaN, not imputed).
 %
 % Output:
-%   figures/paramvar/density_crossover_effects.csv (effect_at_other_bottom,
+%   figures/explore/density_crossover/density_crossover_effects.csv (effect_at_other_bottom,
 %   effect_at_other_top, interaction, n_available per factor per outcome)
-%   figures/paramvar/density_crossover_<outcome>.{png,eps} - one row per
+%   figures/explore/density_crossover/density_crossover_<outcome>.{png,eps} - one row per
 %   factor, showing density's effect on the outcome when that factor is at
 %   bottom (blue dot) vs. top (red dot), connected by a line: horizontal
 %   distance from 0 is the main effect of density, and the gap between the
@@ -45,7 +45,8 @@ variant_name = 'itrusst_protocol1a_density_crossover';   % must match PRESTUS_pa
 subject_id   = 2;
 
 pn.results = fullfile(rootpath, 'data', 'tussim', variant_name, sprintf('sub-%03d', subject_id));
-pn.figures = fullfile(rootpath, 'figures', 'paramvar');
+pn.figures = fullfile(rootpath, 'figures', 'explore', 'density_crossover');
+if ~isfolder(pn.figures); mkdir(pn.figures); end
 
 outcomes = {'Isppa_brain', 'Ipa_target', 'riseT_brain', 'riseT_skull'};
 
@@ -55,7 +56,7 @@ outcomes = {'Isppa_brain', 'Ipa_target', 'riseT_brain', 'riseT_skull'};
 % file, since both the headers (other_tissue, other_property, ...) and the
 % output_affix values are saturated with underscores, which it can mistake
 % for an additional delimiter alongside the comma.
-design = readtable(fullfile(pn.figures, 'density_crossover_design.csv'), 'Delimiter', ',', 'TextType', 'string');
+design = readtable(fullfile(rootpath, 'data', 'tussim', variant_name, 'density_crossover_design.csv'), 'Delimiter', ',', 'TextType', 'string');
 n_rows = height(design);
 
 for o = 1:numel(outcomes)

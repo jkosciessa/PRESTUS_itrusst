@@ -25,7 +25,7 @@ pn = setup_itrusst_paths(rootpath, 'julkos');
 variant_names   = {'3D', 'axisymmetric2D'};
 variant_labels  = {'3D', '2D axisymmetric'};
 bench_dir       = fullfile(rootpath, 'data', 'calibration_benchmark');
-fig_dir         = fullfile(rootpath, 'figures', 'calibration_benchmark');
+fig_dir         = fullfile(rootpath, 'figures', 'debug', 'calibration_benchmark');
 if ~isfolder(fig_dir); mkdir(fig_dir); end
 
 %% Load timing summary
