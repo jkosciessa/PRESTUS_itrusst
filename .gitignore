@@ -15,9 +15,13 @@
 # Exclude all archive directories
 /archive/*
 
+# Exclude local toolbox backups (PRESTUS is used from ../v05/tools/PRESTUS)
+/tools/
+
 # Exclude all /figures directories
 **/figures
 figures_ppw12/
+/backup_figures/
 
 # Ignore temporary files
 *.DS_STORE
