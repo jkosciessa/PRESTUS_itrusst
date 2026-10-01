@@ -11,7 +11,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop

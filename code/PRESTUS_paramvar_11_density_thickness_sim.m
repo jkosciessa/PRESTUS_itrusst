@@ -59,7 +59,7 @@ currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
 rootpath = fileparts(pathstr);
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 pn = setup_itrusst_paths(rootpath, user);
 
 %% ── Configuration ───────────────────────────────────────────────────────────

@@ -58,7 +58,7 @@
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'));
+cd(fullfile(pathstr, '..', '..'));
 rootpath = pwd;
 
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
@@ -66,7 +66,7 @@ pn.tussim  = fullfile(rootpath, 'data', 'tussim');
 pn.configs = fullfile(rootpath, 'data', 'configs');
 pn.figures = fullfile(rootpath, 'figures', 'paramvar');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
-pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 %% ── OAT sweep definitions (matches PRESTUS_paramvar_01_benchmarks_sim.m) ────
 

@@ -23,10 +23,10 @@ user = 'julkos';
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 pn = setup_itrusst_paths(rootpath, user);
 
 %% Variant definitions (matching the 2-D study — baseline only for now)

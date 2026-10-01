@@ -33,7 +33,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'));
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 addpath('/project/2425122.01/v05/tools/nifti_toolbox');
 if isfolder('/Volumes/2425122.01/v05/tools/nifti_toolbox')
     addpath('/Volumes/2425122.01/v05/tools/nifti_toolbox');

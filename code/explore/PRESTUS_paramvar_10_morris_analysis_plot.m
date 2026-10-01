@@ -37,7 +37,7 @@
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'));
+cd(fullfile(pathstr, '..', '..'));
 rootpath = pwd;
 
 variant_name = 'itrusst_protocol1a_morris';   % must match PRESTUS_paramvar_09

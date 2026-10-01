@@ -15,7 +15,7 @@ rootpath = pwd;
 
 pn.data    = fullfile(rootpath, 'data');
 pn.figures = fullfile(rootpath, 'figures', 'tissue_ranges');
-pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 if ~exist(pn.figures, 'dir'), mkdir(pn.figures); end
 
 params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));

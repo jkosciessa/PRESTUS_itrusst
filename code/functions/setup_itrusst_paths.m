@@ -30,7 +30,7 @@ addpath(genpath(pn.prestus_tools));
 addpath(pn.kwave);
 addpath(pn.minimize);
 addpath(pn.nifti);
-addpath(pn.code);
+addpath(fullfile(pn.code, 'functions'));
 
 if nargin >= 2 && strcmp(user, 'julkos')
     pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');

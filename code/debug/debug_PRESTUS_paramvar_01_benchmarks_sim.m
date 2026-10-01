@@ -5,12 +5,11 @@ user = 'julkos'
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile); 
-cd(fullfile(pathstr,'..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 
-% use most recent PRESTUS update (v05)
 pn.prestus = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS'); addpath(genpath(pn.prestus));
 pn.prestus_fun = fullfile(pn.prestus, 'functions'); addpath(genpath(pn.prestus_fun));
 pn.prestus_profile = fullfile(pn.prestus, 'acoustic_profiling'); addpath(genpath(pn.prestus_profile));
@@ -30,21 +29,22 @@ pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
 
 setup_list = {['itrusst_protocol1']};
 
-all_subjects = 003;
+all_subjects = [001:002, 303];
 intensities = 60;
 copy_positions = 1;
+calibrate = 0;
 
-for subject_id = all_subjects
+for subject_id = all_subjects(2)
 
     for i_setup = 1:length(setup_list)
     for i_intensity = 1:length(intensities)
-        transducer_name = setup_list{i_setup};
+        setup_name = setup_list{i_setup};
         desired_intensity = intensities(i_intensity);
 
         %% load parameter file and adjust paths if necessary
         
         cd(fullfile(rootpath, 'data', 'configs'))
-        parameters = load_parameters(['config_',transducer_name,'.yaml']);
+        parameters = load_parameters(['config_',setup_name,'.yaml']);
 
         if ismac
             % reset paths to local mac install; NOTE: horrible not to have this be dynamic
@@ -52,7 +52,7 @@ for subject_id = all_subjects
         else
             parameters.startup.simnibs_bin_path = pn.simnibs;
         end
-        pn.path_sim = fullfile(rootpath, 'data', 'tussim', [transducer_name]);
+        pn.path_sim = fullfile(rootpath, 'data', 'tussim', [setup_name, '_tmp']);
             if ~exist(pn.path_sim); mkdir(pn.path_sim); end
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
         parameters.path.anat = pn.path_seg; % use simnibs folder
@@ -65,16 +65,15 @@ for subject_id = all_subjects
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
         parameters.pct.enabled = 0;
 
-        calibrate = 0;
         if calibrate == 1
             [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
-                itrusst_calibrate(pn, parameters, subject_id, desired_intensity, transducer_name);
+                itrusst_calibrate(pn, parameters, subject_id, desired_intensity, setup_name);
         end
 
-        %% run soft-tissue simulation
+        %% run layered phantom simulation
 
-        cd(fullfile(rootpath, 'data', 'configs'))
-        parameters = load_parameters(['config_',transducer_name,'.yaml']);
+        cd(fullfile(rootpath, 'data','configs'));
+        parameters = load_parameters(['config_',setup_name,'.yaml']);
 
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
         parameters.path.anat = pn.path_seg;
@@ -95,29 +94,22 @@ for subject_id = all_subjects
             parameters.transducer.annular.elem_phase_deg = opt_source_phase_deg;
             parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
         end
-
-        parameters.modules.run_source_setup = 1;
-        parameters.modules.run_acoustic_sims = 1;
-        parameters.modules.run_heating_sims = 1;
-        parameters.modules.run_posthoc_water_sims = 1;
-        parameters.grid.axisymmetric = 1;
-
+        
         %% iterate over tissue parameters
         % benchmark sub-001: brain
         % benchmark sub-002: brain & skull
-        % [x] benchmark sub-003: brain & skull trabecular & skull cortical 
 
         % iterate over multiple parameters:
-        % [1] the tissue labels "skull-trabecular" and "skull-cortical", create either a suffix "_st_" or "_sc_"
+        % [1] the tissue labels "brain" and "skull", create either a suffix "_b_" or "_s_"
         % [2] for each of these tissues, there are multiple property labels: "sound_speed", "density", "alpha_0_true", "alpha_power_true", "thermal_conductivity", "specific_heat_capacity", create a short suffix 
         % 
         % For each of these combinations:
         % - specify a "parameters.results_filename_affix" as a combination of these suffixes
-        % - vary upper and lower parameters based on tissue_parameters_multiskull
+        % - vary "parameters_baseline.medium.<<brain>>.<<sound_speed>>" from 10% to 200% in steps of 10 %, set the other parameters to their respective 100% value.
 
         % Define tissue labels and suffixes
-        tissue_labels = {'skull_trabecular', 'skull_cortical'};
-        tissue_suffixes = {'_st', '_sc'};
+        tissue_labels = {'brain', 'skull'};
+        tissue_suffixes = {'_b', '_s'};
         
         % Define property labels and short suffixes
         property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
@@ -129,22 +121,30 @@ for subject_id = all_subjects
         magnitude = {'bottom', 'top'};
         
         % load ranges
-        opts = detectImportOptions(fullfile(pn.data, 'tissue_parameters_multiskull.csv'));
-        params_table = readtable(fullfile(pn.data, 'tissue_parameters_multiskull.csv'), opts); clear opts;
+        opts = detectImportOptions(fullfile(pn.data, 'tissue_parameters.csv'));
+        params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'), opts); clear opts;
 
         % Loop over tissues
-        for t = 1:length(tissue_labels)
+        for t = 2 % focus on skull absorption
+            %:length(tissue_labels)
+        
+            % no skull exists for benchmark 1
+            if subject_id==1 && t==2
+                continue;
+            end
         
             tissue = tissue_labels{t};
             tissue_suffix = tissue_suffixes{t};
             
             % Loop over properties
-            for p = 1:length(property_labels)
+            for p = 7 % focus on absorption
+                
+                %1:length(property_labels)
                 property = property_labels{p};
                 prop_suffix = property_suffixes{p};
                                 
                 % Loop over sweep values for the current property
-                for v = 1:numel(magnitude)
+                for v = 2%1:numel(magnitude)
                     % Set all properties to mid setting (baseline)
                     for tissue_bl = 1:length(tissue_labels)
                         for pp = 1:length(property_labels)
@@ -162,10 +162,12 @@ for subject_id = all_subjects
                         [tissue_suffix prop_suffix num2str(v)];
 
                     % Run the simulation
-                    parameters.simulation.code_type = 'matlab_gpu';
+                    parameters.simulation.code_type = 'matlab_gpu'; % use CPU here to avoid parallel GPU calls
+                    parameters.simulation.precision = 'single';
+                    parameters.simulation.interactive = 0;
+                    parameters.modules.run_posthoc_water_sims = 0;
                     parameters.subject_id = subject_id;
                     prestus_pipeline_start(parameters);
-
                 end
             end
         end

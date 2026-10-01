@@ -11,7 +11,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
-pn.code = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 %% Configuration
 

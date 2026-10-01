@@ -5,12 +5,12 @@
 % get root path (script must be run from file location)
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile);
-cd(fullfile(pathstr,'..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
 pn.figures  = fullfile(rootpath, 'figures');
 pn.data     = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
-pn.code     = fullfile(rootpath, 'code'); addpath(pn.code);
+pn.code     = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'));
 
 subdir_path  = fullfile(pn.data, 'sub-002');
 subject_name = 'sub-002';

@@ -34,7 +34,7 @@ user     = 'julkos';
 % -------------------------------------------------------------------------
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
 % On macOS the volume may be mounted under /Volumes rather than /project.
@@ -47,7 +47,7 @@ if ~isfolder(fullfile(rootpath, 'data'))
     end
 end
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 pn = setup_itrusst_paths(rootpath, user);
 
 subject_id = 2;

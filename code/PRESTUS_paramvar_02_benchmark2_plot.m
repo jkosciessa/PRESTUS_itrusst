@@ -6,7 +6,7 @@ rootpath = pwd;
 
 pn.figures = fullfile(rootpath, 'figures', 'paramvar'); mkdir(pn.figures);
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a', 'sub-002');
-pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 subject_id        = 002;
 tissue_labels     = {'brain', 'skull'};

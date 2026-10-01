@@ -24,7 +24,7 @@
 
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile);
-cd(fullfile(pathstr,'..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
 %% grid

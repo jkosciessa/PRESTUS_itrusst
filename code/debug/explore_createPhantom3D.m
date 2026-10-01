@@ -42,7 +42,7 @@
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr))
+cd(fullfile(pathstr, '..'))
 rootpath = pwd;
 
 pn.benchmark1 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-101');

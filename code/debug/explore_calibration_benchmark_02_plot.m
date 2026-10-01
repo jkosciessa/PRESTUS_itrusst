@@ -14,10 +14,10 @@ clear all; close all; clc;
 % get root path
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 pn = setup_itrusst_paths(rootpath, 'julkos');
 
 %% Configuration — must match explore_calibration_benchmark_01_sim.m

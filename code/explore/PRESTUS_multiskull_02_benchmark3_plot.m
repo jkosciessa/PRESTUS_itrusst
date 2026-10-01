@@ -1,12 +1,12 @@
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile); 
-cd(fullfile(pathstr,'..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
 pn.figures = fullfile(rootpath, 'figures');
 pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-003');
-pn.code = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 % Define tissues and suffixes
 tissue_labels = {'skull_trabecular', 'skull_cortical'};

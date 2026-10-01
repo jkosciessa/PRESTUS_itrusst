@@ -1,12 +1,12 @@
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
 [pathstr,~,~] = fileparts(currentFile);
-cd(fullfile(pathstr,'..'))
+cd(fullfile(pathstr, '..', '..'))
 rootpath = pwd;
 
 pn.figures = fullfile(rootpath, 'figures', 'paramvar'); mkdir(pn.figures);
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a', 'sub-303');
-pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 subject_id        = 303;
 tissue_labels     = {'brain', 'skull'};

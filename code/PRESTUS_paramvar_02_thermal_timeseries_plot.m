@@ -34,7 +34,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'));
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 
 pn.figures = fullfile(rootpath, 'figures', 'paramvar');
 if ~isfolder(pn.figures); mkdir(pn.figures); end

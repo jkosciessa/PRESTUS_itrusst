@@ -1,13 +1,14 @@
-% CREATEPHANTOM05MM  Build 0.5 mm 2-D axisymmetric NIfTI phantoms for PRESTUS benchmarks.
+% CREATEPHANTOM025MM  Build 0.25 mm 2-D axisymmetric NIfTI phantoms for PRESTUS benchmarks.
 %
 % Writes final_tissues.nii.gz for benchmark subjects 201 (water/tissue) and
 % 202 (water/skull/brain) into the SimNIBS m2m folders expected by PRESTUS.
-% This is identical in geometry to createPhantom.m and uses 0.5 mm/vox
-% resolution (6 PPW at 500 kHz).
+% This is identical in geometry to createPhantom.m but uses 0.25 mm/vox
+% resolution (12 PPW at 500 kHz) to assess the effect of resolution on the
+% jagged on-axis pressure profiles observed at 6 PPW (0.5 mm/vox).
 %
 % ── Array layout ────────────────────────────────────────────────────────────
-%   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox  (full diameter)
-%   dim 2 (z): axial,   120 mm → 240 vox at 0.5 mm/vox  (z = 1: transducer)
+%   dim 1 (x): lateral,  70 mm → 280 vox at 0.25 mm/vox  (full diameter)
+%   dim 2 (z): axial,   140 mm → 560 vox at 0.25 mm/vox  (z = 1: transducer)
 %
 % ── Geometry ────────────────────────────────────────────────────────────────
 % Identical to createPhantom.m:
@@ -21,7 +22,7 @@
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr))
+cd(fullfile(pathstr, '..'))
 rootpath = pwd;
 
 pn.benchmark1 = fullfile(rootpath, '..', 'data', 'simnibs', 'm2m_sub-201');
@@ -33,9 +34,9 @@ end
 
 %% grid
 
-res = 0.5;                     % voxel size [mm]
-nx  = round(70  / res);        % 140 vox — full lateral diameter
-nz  = round(120 / res);        % 240 vox — axial (z = 1 is the transducer face)
+res = 0.25;                    % voxel size [mm]
+nx  = round(70  / res);        % 280 vox — full lateral diameter
+nz  = round(140 / res);        % 560 vox — axial (z = 1 is the transducer face)
 
 %% Benchmark 1 — water / soft-tissue interface
 
@@ -44,14 +45,14 @@ z_tissue = round(30 / res) + 1;   % first tissue voxel: 121 (= 30 mm depth)
 data1(:, z_tissue:end) = 1;
 
 write_phantom(data1, res, fullfile(pn.benchmark1, 'final_tissues.nii.gz'));
-fprintf('Benchmark 1 0.5 mm (sub-201) written -> %s\n', pn.benchmark1);
+fprintf('Benchmark 1 0.25 mm (sub-201) written -> %s\n', pn.benchmark1);
 
 %% Benchmark 2 — water / curved skull cap / brain
 
-cx      = round(35 / res);     % lateral beam axis: vox 70 (= 35 mm)
-r_inner = 68.5 / res;          % inner skull radius: 137 vox
-r_outer = 75.0 / res;          % outer skull radius: 150 vox
-cz      = 30 / res + r_outer;  % centre of curvature: 210 vox (= 105 mm)
+cx      = round(35 / res);     % lateral beam axis: vox 140 (= 35 mm)
+r_inner = 68.5 / res;          % inner skull radius: 274 vox
+r_outer = 75.0 / res;          % outer skull radius: 300 vox
+cz      = 30 / res + r_outer;  % centre of curvature: 420 vox (= 105 mm)
 
 [Xg, Zg] = ndgrid(1:nx, 1:nz);
 dist      = sqrt((Xg - cx).^2 + (Zg - cz).^2);
@@ -64,7 +65,7 @@ data2(skull_mask) = 4;
 data2(brain_mask) = 1;
 
 write_phantom(data2, res, fullfile(pn.benchmark2, 'final_tissues.nii.gz'));
-fprintf('Benchmark 2 0.5 mm (sub-202) written -> %s\n', pn.benchmark2);
+fprintf('Benchmark 2 0.25 mm (sub-202) written -> %s\n', pn.benchmark2);
 
 %% helper
 

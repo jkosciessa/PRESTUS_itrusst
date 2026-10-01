@@ -40,10 +40,10 @@ clear; close all; clc;
 
 currentFile = mfilename('fullpath');
 [pathstr, ~, ~] = fileparts(currentFile);
-cd(fullfile(pathstr, '..'));
+cd(fullfile(pathstr, '..', '..'));
 rootpath = pwd;
 
-addpath(fullfile(rootpath, 'code'));
+addpath(fullfile(rootpath, 'code', 'functions'));
 
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a', 'sub-002');
 pn.nii     = fullfile(pn.data, 'nii');

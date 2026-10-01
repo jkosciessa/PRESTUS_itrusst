@@ -81,7 +81,7 @@ rootpath = pwd;
 
 pn.figures = fullfile(rootpath, 'figures', 'table_comparison');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
-pn.code    = fullfile(rootpath, 'code'); addpath(pn.code)
+pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 %% ── Table data ──────────────────────────────────────────────────────────────
 % Columns: Sound Speed, Density, Att. (dB/MHz/cm), Thermal conduct.,
