@@ -1,7 +1,7 @@
 % PRESTUS_PARAMVAR_01_BENCHMARKS_025MM_SIM
 %
 % 2-D axisymmetric benchmark simulations at 0.25 mm resolution (12 PPW at
-% 500 kHz) using phantoms produced by createPhantom025mm.m.
+% 500 kHz) using phantoms produced by explore_createPhantom025mm.m.
 %
 % Purpose: assess whether increasing resolution from 0.5 mm (6 PPW) to
 % 0.25 mm (12 PPW) eliminates the jagged on-axis intensity profiles seen in
@@ -17,7 +17,7 @@
 %                         transducer.focus_pos = [140, 260]
 %   - Output folder:    data/tussim/itrusst_protocol1a_025mm
 %
-% Run createPhantom025mm.m first if the phantom files do not yet exist.
+% Run explore_createPhantom025mm.m first if the phantom files do not yet exist.
 %
 % See also: CREATEPHANTOM025MM, PRESTUS_PARAMVAR_01_BENCHMARKS_SIM,
 %           PRESTUS_PARAMVAR_01_BENCHMARKS_3D_SIM

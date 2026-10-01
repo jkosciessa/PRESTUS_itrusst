@@ -1,6 +1,6 @@
 % CALIBRATION_BENCHMARK_02_PLOT
 % Compare calibration outputs between the 3D and axisymmetric (2D) variants
-% produced by calibration_benchmark_01_sim.m.
+% produced by explore_calibration_benchmark_01_sim.m.
 %
 % Reads the YAML files written by save_optimized_values and the benchmark_results.mat
 % timing summary, then produces:
@@ -20,7 +20,7 @@ rootpath = pwd;
 addpath(fullfile(rootpath, 'code'));
 pn = setup_itrusst_paths(rootpath, 'julkos');
 
-%% Configuration — must match calibration_benchmark_01_sim.m
+%% Configuration — must match explore_calibration_benchmark_01_sim.m
 
 variant_names   = {'3D', 'axisymmetric2D'};
 variant_labels  = {'3D', '2D axisymmetric'};
@@ -32,7 +32,7 @@ if ~isfolder(fig_dir); mkdir(fig_dir); end
 
 timing_file = fullfile(bench_dir, 'benchmark_results.mat');
 if ~isfile(timing_file)
-    error('Run calibration_benchmark_01_sim.m first to generate %s', timing_file);
+    error('Run explore_calibration_benchmark_01_sim.m first to generate %s', timing_file);
 end
 load(timing_file, 'results');
 

@@ -1,20 +1,21 @@
-% PRESTUS_PARAMVAR_01_BENCHMARKS_025MM_SIM
+% PRESTUS_PARAMVAR_01_BENCHMARKS_3D_SIM
 %
-% 2-D axisymmetric benchmark simulations at 0.5 mm resolution (6 PPW at
-% 500 kHz) using phantoms produced by createPhantom025mm.m.
+% Full 3-D (non-axisymmetric) benchmark simulations using the 3-D SimNIBS
+% phantoms produced by explore_createPhantom3D.m (sub-101: water/tissue, sub-102: skull/brain).
 %
-% Phantom folders:  m2m_sub-201  /  m2m_sub-202
-% Config:           config_itrusst_protocol1_025mm.yaml
-%                     grid.resolution_mm = 0.5
-%                     grid.default_dims  = [140, 240]
-%                     grid.pml_size      = 40
-%                     transducer.trans_pos = [70, 1]
-% Output folder:    data/tussim/itrusst_protocol1a_025mm
+% This is the 3-D counterpart of PRESTUS_PARAMVAR_01_BENCHMARKS_SIM, which
+% uses axisymmetric 2-D grids.  Differences:
+%   - Phantom folders:  m2m_sub-001_3D  /  m2m_sub-002_3D
+%   - Config:           config_itrusst_protocol1_3D.yaml
+%                         grid.axisymmetric = 0
+%                         grid.default_dims = [140, 140, 280]
+%                         transducer.trans_pos = [70, 70, 2]
+%                         transducer.focus_pos = [70, 70, 130]
+%   - Output folder:    data/tussim/itrusst_protocol1a_3D
 %
-% Run createPhantom025mm.m first if the phantom files do not yet exist.
+% Run explore_createPhantom3D.m first if the phantom files do not yet exist.
 %
-% See also: CREATEPHANTOM025MM, PRESTUS_PARAMVAR_01_BENCHMARKS_SIM,
-%           PRESTUS_PARAMVAR_01_BENCHMARKS_3D_SIM
+% See also: CREATEPHANTOM3D, PRESTUS_PARAMVAR_01_BENCHMARKS_SIM
 
 clear all; close all; clc;
 
@@ -28,13 +29,13 @@ rootpath = pwd;
 addpath(fullfile(rootpath, 'code'));
 pn = setup_itrusst_paths(rootpath, user);
 
-%% Variant definitions
+%% Variant definitions (matching the 2-D study — baseline only for now)
 
-variant_names     = {'itrusst_protocol1a_05mm'};
-variant_configs   = {'itrusst_protocol1_05mm'};
+variant_names     = {'itrusst_protocol1a_3D'};
+variant_configs   = {'itrusst_protocol1_3D'};
 variant_intensity = [60];
 
-all_subjects = 002;%[001, 002];   % 0.5 mm phantoms: sub-201 = water/tissue, sub-202 = skull/brain
+all_subjects = [101, 102];   % 3D phantoms: sub-101 = water/tissue, sub-102 = skull/brain
 
 for subject_id = all_subjects
 
@@ -69,23 +70,21 @@ for subject_id = all_subjects
         pn.outputs_folder = fullfile(pn.path_sim, sprintf('sub-%03d', subject_id));
         if ~isfolder(pn.outputs_folder); mkdir(pn.outputs_folder); end
 
-        %% run phantom simulation
+        %% run phantom simulation — mid-range tissue properties (baseline only)
 
         parameters.simulation.medium      = 'phantom';
         parameters.simulation.interactive = 0;
-        parameters.io.overwrite_files     = 'always';
+        parameters.io.overwrite_files     = 'never';
         parameters.io.overwrite_simnibs   = 0;
         parameters.io.save_heatingvideo   = 0;
         parameters.io.save_matrices       = 0;
         parameters.io.output_affix        = '';
 
         parameters.simulation.code_type   = 'cpp_gpu';
+        parameters.hpc.gpu                = "gpu:1";
+        parameters.hpc.partition          = "gpu40g";
         parameters.simulation.precision   = 'single';
         parameters.subject_id             = subject_id;
-        parameters.platform = 'matlab';
-
-        % parameters.grid.source_cfl = 0.01;
-        parameters.grid.pml_size = 'auto';
 
         prestus_pipeline_start(parameters);
     end

@@ -6,7 +6,7 @@
 % the output path.  Wall time is recorded for each variant and saved
 % together with the calibrated parameters to a .mat summary file.
 %
-% Results are consumed by calibration_benchmark_02_plot.m.
+% Results are consumed by explore_calibration_benchmark_02_plot.m.
 %
 % Run from the code/ directory or via F5 in the IDE.
 
