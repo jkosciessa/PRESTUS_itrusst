@@ -26,7 +26,7 @@ property_labels  = {'sound_speed', 'density', 'alpha_coeff', 'specific_heat_capa
                      'thermal_conductivity', 'perfusion', 'absorption_fraction'};
 property_symbols = {'c', '\rho', '\alpha', 'c_p', '\kappa', '\omega', '\beta'};
 property_units   = {'m/s', 'kg/m^3', 'dB/(MHz^y cm)', 'J/(kg K)', ...
-                     'W/(m K)', 'kg/(m^3 s)', 'fraction (0-1)'};
+                     'W/(m K)', 'mL/min/kg', 'fraction (0-1)'};
 
 %% 1. Build a results table (bottom / mid / top per tissue x property)
 

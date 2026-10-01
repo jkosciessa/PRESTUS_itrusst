@@ -52,33 +52,44 @@ The sonication timing followed a pulse-train paradigm: pulse duration (PD) 20 ms
 
 ## Analysis 1: Pipeline Benchmark — Tissue Property Configuration Comparison
 
-To quantify how assumptions about tissue acoustic and thermal properties propagate into simulation outputs, six property configurations were evaluated representing the defaults used by five TUS simulation tools/frameworks as well as a conservative (maximum attenuation) parameter set:
+To quantify how assumptions about tissue acoustic and thermal properties propagate into simulation outputs, six property configurations were evaluated: three literature setups and the defaults of three TUS simulation tools.
 
 | Configuration | Rationale |
 |---|---|
-| **conservative** | High brain attenuation (α = 0.94 dB/MHz/cm), low perfusion (196 s⁻¹); maximises predicted heating |
-| **liberal** | Low brain attenuation (α = 0.36 dB/MHz/cm), high perfusion (809 s⁻¹); minimises predicted heating |
-| **mid** | Midpoint values across the literature range (α = 0.48, perfusion = 559 s⁻¹) |
-| **PRESTUS** | PRESTUS toolbox defaults (α = 0.52, perfusion = 559 s⁻¹, absorption fraction = 1.0) |
-| **BabelBrain** | BabelBrain defaults (sound speed = 1562 m/s, absorption fraction = 0.85) |
-| **kPlan** | kPlan defaults (perfusion = 0, absorption fraction = 1.0) |
+| **setup 1** | Per property, the literature bound that maximises predicted brain heating |
+| **setup 2** | Per property, the opposite bound (minimises predicted heating) |
+| **reference** | Literature reference values |
+| **PRESTUS** | PRESTUS toolbox defaults |
+| **BabelBrain** | BabelBrain defaults |
+| **kPlan** | kPlan defaults (perfusion not reported; simulated as 0) |
 
-For each configuration, acoustic and thermal simulations were run for Benchmark 1 (soft tissue only; sub-001) and Benchmark 2 (skull + brain; sub-002) at a target intensity of 60 W/cm². Simulation outputs (maxT, Ipa_target) were extracted from per-subject CSV tables and compared across configurations.
+The literature values (bottom/reference/top per tissue and property) are kept in `data/tissue_parameters.csv` (source table: `data/tissue_parameters_source.md`), and the bound used by setup 1 and setup 2 per property in `data/tissue_setups.csv`. The bound directions follow the one-at-a-time effect on brain heating (Analysis 2). `config_medium_setup1/reference/setup2.yaml` are generated from these files (`code/functions/itrusst_write_medium_configs.m`); the tool defaults are hand-written `config_medium_<tool>.yaml` files. Water is identical across configurations (c = 1482 m/s, ρ = 994 kg/m³, α = 0.00055 dB/cm at 500 kHz with y = 2).
 
-The full tissue property values used in each configuration are summarised below.
+For each configuration, acoustic and thermal simulations were run for Benchmark 1 (soft tissue only) and Benchmark 2 (skull + brain) at a target intensity of 60 W/cm². Simulation outputs (maxT, Ipa_target) were extracted from per-subject CSV tables and compared across configurations.
+
+Attenuation is specified at 500 kHz and converted to PRESTUS' 1 MHz coefficient α₀ = α(500 kHz) / 0.5^y (dB/(MHz^y·cm); y = 1 for brain and skull). Both are listed below.
 
 **Brain properties by configuration:**
 
-| Setup | Sound speed (m/s) | Density (kg/m³) | α (dB/MHz/cm) | k (W/m/K) | c (J/kg/K) | Perfusion (s⁻¹) | Absorption fraction |
-|---|---|---|---|---|---|---|---|
-| conservative | 1520 | 1046 | 0.94 | 0.48 | 3583 | 196 | 1.0 |
-| liberal | 1568 | 1046 | 0.36 | 0.55 | 3696 | 809 | 0.8 |
-| mid | 1546 | 1045 | 0.48 | 0.51 | 3630 | 559 | 0.9 |
-| PRESTUS | 1546 | 1046 | 0.52 | 0.51 | 3630 | 559 | 1.0 |
-| BabelBrain | 1562 | 1041 | 0.48 | 0.51 | 3630 | 559 | 0.85 |
-| kPlan | 1550 | 1045 | 0.52 | 0.51 | 3600 | 0 | 1.0 |
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | Absorption fraction |
+|---|---|---|---|---|---|---|---|---|
+| setup 1 | 1520 | 1040 | 0.412 | 0.824 | 0.48 | 3525 | 196 | 1.0 |
+| setup 2 | 1568 | 1050 | 0.206 | 0.412 | 0.55 | 3718 | 809 | 0.8 |
+| reference | 1546 | 1045 | 0.24 | 0.48 | 0.51 | 3630 | 559 | 0.9 |
+| PRESTUS | 1546 | 1046 | 0.26 | 0.52 | 0.51 | 3630 | 559 | 1.0 |
+| BabelBrain | 1562 | 1041 | 0.24 | 0.48 | 0.51 | 3630 | 559 | 0.85 |
+| kPlan | 1550 | 1045 | 0.26 | 0.52 | 0.51 | 3600 | 0 | 1.0 |
 
-Brain absorption fraction for conservative/liberal was corrected from the originally assigned literature bottom/top bound (0.8/1.0) to 1.0/0.8: the one-at-a-time sensitivity sweep (Analysis 2) shows a *higher* absorption fraction increases predicted brain heating (riseT_brain +25% for the top vs. bottom bound, Benchmark 1), so the bottom bound was the wrong choice for "conservative" (maximises heating). The corresponding skull property table (used in PRESTUS_itrusst_setups_skull.m) has an analogous correction for skull density, which was similarly assigned the wrong bound (a *lower* skull density increases heating by 25%, but conservative had been assigned the top bound).
+**Skull properties by configuration:**
+
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | Absorption fraction |
+|---|---|---|---|---|---|---|---|---|
+| setup 1 | 2871 | 1178 | 10.2 | 20.4 | 0.31 | 826 | 0 | 1.0 |
+| setup 2 | 2190 | 2100 | 3.22 | 6.44 | 0.36 | 2524 | 30 | 0.16 |
+| reference | 2800 | 1908 | 6.65 | 13.3 | 0.315 | 1793 | 20 | 0.58 |
+| PRESTUS | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1793 | 20 | 0.28 |
+| BabelBrain | 2800 | 1850 | 6.65 | 13.3 | 0.315 | 1793 | 20 | 0.163 |
+| kPlan | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1300 | 0 | 1.0 |
 
 ---
 
@@ -90,10 +101,10 @@ To isolate the contribution of individual tissue parameters to simulation output
 |---|---|---|
 | Sound speed | c | m/s |
 | Density | ρ | kg/m³ |
-| Acoustic attenuation coefficient | α | dB/MHz/cm |
+| Acoustic attenuation coefficient | α₀ | dB/(MHz^y·cm) |
 | Thermal conductivity | k | W/m/K |
 | Specific heat capacity | c_p | J/kg/K |
-| Blood perfusion | ω | s⁻¹ |
+| Blood perfusion | ω | mL/min/kg |
 | Absorption fraction | — | — |
 
 Parameter bounds were drawn from a literature-informed tissue property table (`tissue_parameters.csv`). Brain parameters were perturbed for Benchmark 1 (sub-001); both brain and skull parameters were perturbed for Benchmark 2 (sub-002). For each perturbation, a separate simulation was run with a unique output filename affix encoding the tissue, parameter, and bound level (e.g., `_b_c_1` = brain sound speed lower bound; `_s_a0_2` = skull attenuation upper bound). Three protocol variants were evaluated in this sensitivity analysis:
@@ -120,13 +131,13 @@ As a follow-up, skull density was varied across its bottom/mid/top levels on eve
 
 *Status: exploratory, not part of the main analysis (scripts in `code/explore/`). **The design described below (449 evaluations, acoustic/thermal caching, batched jobs) is not what the code implements.** `PRESTUS_paramvar_08_constellation_factorial_sim.m` currently runs a 52-evaluation 2×2 crossover of skull density with each of the other 13 properties (analysed by `PRESTUS_paramvar_13_density_crossover_plot.m`), without acoustic caching or batching. The Morris design (`PRESTUS_paramvar_09_morris_interactions_sim.m`) is analysed by `PRESTUS_paramvar_10_morris_analysis_plot.m`. This section needs rewriting before use.*
 
-The pipeline-comparison configurations (Analysis 1) and the one-at-a-time sensitivity sweep (Analysis 2) each probe the tissue-property space in a limited way: the former evaluates only two literature-bound "constellations" (all seven properties per tissue simultaneously at their conservative or liberal bound), and the latter perturbs one property at a time from the midpoint, holding all others fixed. Neither directly establishes whether combining every property's individually assigned bound actually produces the expected combined (maximal/minimal) outcome, since one-at-a-time effects need not sum linearly when parameters are varied jointly.
+The pipeline-comparison configurations (Analysis 1) and the one-at-a-time sensitivity sweep (Analysis 2) each probe the tissue-property space in a limited way: the former evaluates only two literature-bound "constellations" (all seven properties per tissue simultaneously at their setup 1 or setup 2 bound), and the latter perturbs one property at a time from the midpoint, holding all others fixed. Neither directly establishes whether combining every property's individually assigned bound actually produces the expected combined (maximal/minimal) outcome, since one-at-a-time effects need not sum linearly when parameters are varied jointly.
 
 A preliminary check compared, for each combined "constellation", the actual simulated outcome against the sum of the seven (Benchmark 1) or fourteen (Benchmark 2) individual one-at-a-time effects from Analysis 2 relative to the midpoint configuration. Every constellation moved each outcome (riseT_brain, riseT_skull, Isppa_brain, Ipa_target) in the direction predicted by the additive sum, but the magnitude deviated substantially: heating outcomes were super-additive (actual change 1.6–2.0× the additive prediction, i.e. combining bounds heats more than one-at-a-time effects would suggest), while intensity outcomes were close to additive with no skull present but sub-additive with skull present (actual change 0.65–0.79× predicted), consistent with attenuation acting multiplicatively (exponentially) rather than additively along the propagation path. This motivated evaluating the full combinatorial parameter space directly rather than relying on the additive approximation.
 
 **Method.** A two-level (literature bottom/top bound) factorial design over all fourteen Benchmark 2 (brain+skull) tissue properties is run by exploiting a structural property of the PRESTUS pipeline: the acoustic (k-Wave) simulation depends only on sound speed, density and attenuation coefficient per tissue (confirmed both empirically, via zero measured effect of any other property on Isppa_brain/Ipa_target in Analysis 2, and in the toolbox source, where thermal-only properties are explicitly excluded from the medium struct passed to the acoustic solver), while the remaining four properties per tissue (thermal conductivity, specific heat capacity, perfusion, absorption fraction) affect only the subsequent bio-heat thermal simulation, which consumes the acoustic pressure field as a fixed input. The acoustic simulation is therefore run once per unique combination of the acoustic-relevant properties and cached; each combination of the remaining thermal-relevant properties is then evaluated by reloading the cached acoustic field and re-running only the thermal simulation with the new thermal property values, reproducing the exact joint outcome (not a statistical approximation) without repeating the acoustic solve. Benchmark 1 (brain only) is not part of this design - its smaller 2⁷ = 128-combination space was used earlier only to cross-check effect directions between Analyses 2 and 4.
 
-A full 2¹⁴ = 16,384-combination design would require 16,448 simulations, far exceeding the study's job-count ceiling (≤1,000, ideally ≤128) even before scheduler queue limits are considered. This is not an exhaustive design: it instead exhaustively covers two *marginal* spaces at representative anchor points of the other dimension, in three complementary parts totalling 449 evaluations: (A) all 2⁶ = 64 acoustic combinations, each run with heating enabled at midpoint thermal properties - since these 64 acoustic simulations are required for caching regardless, running heating on them adds no extra evaluations and yields the exact 6-factor acoustic interaction structure at representative thermal settings; (B) one additional "mid-acoustic" anchor (all six acoustic properties at their literature midpoint) crossed with the full 2⁸ = 256-combination thermal factorial, giving the exact 8-factor thermal interaction structure at a representative acoustic point; and (C) the two already-established worst-case (Setup A) and best-case (Setup B) thermal bound patterns (Analysis 1; PRESTUS_itrusst_setups_brain.m / _skull.m) applied to each of the 64 part-(A) acoustic combinations, testing whether that worst/best-case assignment holds regardless of acoustic conditions. The full 64 × 256 acoustic × thermal joint grid is not covered - a gap the preliminary additive-vs-actual check above already bounds as a quantified, modest deviation rather than leaving unconstrained.
+A full 2¹⁴ = 16,384-combination design would require 16,448 simulations, far exceeding the study's job-count ceiling (≤1,000, ideally ≤128) even before scheduler queue limits are considered. This is not an exhaustive design: it instead exhaustively covers two *marginal* spaces at representative anchor points of the other dimension, in three complementary parts totalling 449 evaluations: (A) all 2⁶ = 64 acoustic combinations, each run with heating enabled at midpoint thermal properties - since these 64 acoustic simulations are required for caching regardless, running heating on them adds no extra evaluations and yields the exact 6-factor acoustic interaction structure at representative thermal settings; (B) one additional "mid-acoustic" anchor (all six acoustic properties at their literature midpoint) crossed with the full 2⁸ = 256-combination thermal factorial, giving the exact 8-factor thermal interaction structure at a representative acoustic point; and (C) the two already-established worst-case (setup 1) and best-case (setup 2) thermal bound patterns (Analysis 1; `data/tissue_setups.csv`) applied to each of the 64 part-(A) acoustic combinations, testing whether that worst/best-case assignment holds regardless of acoustic conditions. The full 64 × 256 acoustic × thermal joint grid is not covered - a gap the preliminary additive-vs-actual check above already bounds as a quantified, modest deviation rather than leaving unconstrained.
 
 **Batching.** PRESTUS's own job dispatcher (`hpc_submit_job.m`) submits exactly one HPC job per parameter set, with no native array-job or batching support. To keep the job count within budget, the 449 evaluations are grouped into batches of `combos_per_job` (4 by default) sequential, in-process evaluations per submitted job, calling `prestus_pipeline()` directly rather than the per-call dispatcher. Because every thermal-only evaluation depends on its acoustic combination's cache already being written, batches run in two sequential phases: phase 1 (the 65 acoustic-defining/anchor evaluations of parts A and B, 17 batches at the default batch size) must complete before phase 2 (the 384 thermal-only evaluations of parts B and C, 96 batches) is submitted - 113 jobs total at the default batch size. `modules.run_nifti_creation` and `modules.generate_report` (both enabled by default) are disabled for every evaluation, since only the numeric per-combination CSV output table is used; `io.save_thermal_matrices` is likewise disabled throughout, and `io.save_acoustic_matrices` is enabled only for the 65 phase-1 evaluations whose cache phase 2 depends on.
 

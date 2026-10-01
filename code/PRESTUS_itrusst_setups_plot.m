@@ -43,7 +43,7 @@ media = {itrusst_tissue_properties('setup1', pn.data), itrusst_tissue_properties
 tool_configs = {'PRESTUS', 'BabelBrain', 'kPlan'};
 for i = 1:numel(tool_configs)
     cfg = yaml.loadFile(fullfile(pn.configs, ['config_medium_' tool_configs{i} '.yaml']));
-    media{end+1} = cfg.medium_properties; %#ok<SAGROW>
+    media{end+1} = cfg.medium_properties;
 end
 
 setups_table = readtable(fullfile(pn.data, 'tissue_setups.csv'), 'TextType', 'char');
