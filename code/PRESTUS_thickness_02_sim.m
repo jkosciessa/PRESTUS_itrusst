@@ -139,7 +139,7 @@ for subject_id = all_subjects
 
         parameters.grid.resolution_mm = 0.5;
         parameters.grid.default_dims = [70, 120]/parameters.grid.resolution_mm;
-        parameters.grid.pml_size = [10]/parameters.grid.resolution_mm;
+        parameters.grid.pml_size = [20]/parameters.grid.resolution_mm; % 20 mm PML, matches primary pipeline configs
 
         parameters.modules.run_heating_sims = 0;
 
