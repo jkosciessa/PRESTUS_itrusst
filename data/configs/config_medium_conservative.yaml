@@ -24,10 +24,10 @@ medium_properties:
     thermal_conductivity: 0.48
     specific_heat_capacity: 3583
     perfusion: 196
-    absorption_fraction: 0.8
+    absorption_fraction: 1.0
   skull:
     sound_speed: 2822
-    density: 1908
+    density: 1178
     alpha_coeff: 24.4
     alpha_power: 1
     thermal_conductivity: 0.31

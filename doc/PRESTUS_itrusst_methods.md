@@ -71,12 +71,14 @@ The full tissue property values used in each configuration are summarised below.
 
 | Setup | Sound speed (m/s) | Density (kg/m³) | α (dB/MHz/cm) | k (W/m/K) | c (J/kg/K) | Perfusion (s⁻¹) | Absorption fraction |
 |---|---|---|---|---|---|---|---|
-| conservative | 1520 | 1046 | 0.94 | 0.48 | 3583 | 196 | 0.8 |
-| liberal | 1568 | 1046 | 0.36 | 0.55 | 3696 | 809 | 1.0 |
+| conservative | 1520 | 1046 | 0.94 | 0.48 | 3583 | 196 | 1.0 |
+| liberal | 1568 | 1046 | 0.36 | 0.55 | 3696 | 809 | 0.8 |
 | mid | 1546 | 1045 | 0.48 | 0.51 | 3630 | 559 | 0.9 |
 | PRESTUS | 1546 | 1046 | 0.52 | 0.51 | 3630 | 559 | 1.0 |
 | BabelBrain | 1562 | 1041 | 0.48 | 0.51 | 3630 | 559 | 0.85 |
 | kPlan | 1550 | 1045 | 0.52 | 0.51 | 3600 | 0 | 1.0 |
+
+Brain absorption fraction for conservative/liberal was corrected from the originally assigned literature bottom/top bound (0.8/1.0) to 1.0/0.8: the one-at-a-time sensitivity sweep (Analysis 2) shows a *higher* absorption fraction increases predicted brain heating (riseT_brain +25% for the top vs. bottom bound, Benchmark 1), so the bottom bound was the wrong choice for "conservative" (maximises heating). The corresponding skull property table (used in PRESTUS_itrusst_setups_skull.m) has an analogous correction for skull density, which was similarly assigned the wrong bound (a *lower* skull density increases heating by 25%, but conservative had been assigned the top bound).
 
 ---
 
