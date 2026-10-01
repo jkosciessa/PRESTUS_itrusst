@@ -11,6 +11,7 @@
 /data/*
 !/data/configs/
 !/data/configs/**
+!/data/tissue_*.csv
 
 # Exclude all archive directories
 /archive/*

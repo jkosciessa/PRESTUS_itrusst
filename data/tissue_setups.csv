@@ -1,0 +1,15 @@
+tissue,property,setup1,setup2
+brain,sound_speed,bottom,top
+brain,density,bottom,top
+brain,alpha_coeff,top,bottom
+brain,thermal_conductivity,bottom,top
+brain,specific_heat_capacity,bottom,top
+brain,perfusion,bottom,top
+brain,absorption_fraction,top,bottom
+skull,sound_speed,top,bottom
+skull,density,bottom,top
+skull,alpha_coeff,top,bottom
+skull,thermal_conductivity,bottom,top
+skull,specific_heat_capacity,bottom,top
+skull,perfusion,bottom,top
+skull,absorption_fraction,top,bottom

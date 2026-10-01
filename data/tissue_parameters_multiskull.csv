@@ -1,0 +1,13 @@
+tissue,level,sound_speed,density,alpha_coeff,specific_heat_capacity,thermal_conductivity,perfusion,absorption_fraction
+brain,bottom,1520,1041,0.36,3583,0.48,196,0.8
+brain,mid,1546,1045,0.48,3630,0.51,559,0.9
+brain,top,1568,1046,0.94,3696,0.55,809,1
+skull,bottom,2257,1178,6.9,1313,0.31,10,0.16
+skull,mid,2800,1850,13.3,1793,0.315,20,0.58
+skull,top,2822,1908,24.4,2626,0.32,30,1
+skull_trabecular,bottom,1850,1080,3.56,2060,0.29,2060,0.16
+skull_trabecular,mid,2200,1178,13.3,2274,0.31,2274,0.58
+skull_trabecular,top,2450,1350,20.84,2524,0.36,2524,1
+skull_cortical,bottom,2190,1800,4.74,826,0.3,826,0.16
+skull_cortical,mid,2850,1908,13.3,1313,0.32,1313,0.58
+skull_cortical,top,3360,2100,24.4,1650,0.36,1650,1

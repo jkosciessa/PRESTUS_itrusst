@@ -15,8 +15,7 @@ function make_parallel_plot(data, property_labels, setup_labels, setup_colors, .
 % Missing values (NaN) are skipped: the line breaks across that property
 % and is bridged with a dashed segment instead of being interpolated.
 %
-% Shared by PRESTUS_itrusst_setups_skull.m (skull properties) and
-% PRESTUS_itrusst_setups_brain.m (brain properties).
+% Used by PRESTUS_itrusst_setups_plot.m.
 
     n_setups = size(data, 1);
     n_props  = size(data, 2);

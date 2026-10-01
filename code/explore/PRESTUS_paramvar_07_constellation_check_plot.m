@@ -1,54 +1,19 @@
 % PRESTUS_PARAMVAR_07_CONSTELLATION_CHECK_PLOT
 %
-% Checks whether combining every tissue property at its individually
-% assigned "conservative"/"liberal" bound (data/configs/config_medium_
-% conservative.yaml / config_medium_liberal.yaml) actually produces the
-% expected combined outcome, or whether interactions between parameters
-% make the true combined simulation deviate from what a naive sum of the
-% one-at-a-time (OAT) effects would predict.
+% Checks whether combining every tissue property at its Setup 1 / Setup 2
+% bound (data/tissue_setups.csv) produces the combined outcome predicted by
+% summing the one-at-a-time (OAT) effects of Analysis 2.
 %
-% Method: the OAT sweep (Analysis 2; data/tussim/itrusst_protocol1a/
-% sub-00{1,2}) gives the effect of moving ONE property from mid to its
-% bottom or top bound, with every other property held at mid. Summing these
-% single-property effects - using whichever bound "conservative"/"liberal"
-% assigns to each property - gives an ADDITIVE PREDICTION for the fully
-% combined config. This is compared against the ACTUAL combined simulation
-% (Analysis 1 pipeline comparison; data/tussim/medium_conservative,
-% medium_liberal, medium_mid).
+% Prediction: sum over properties of [OAT outcome at the assigned bound -
+% mid], from data/tussim/itrusst_protocol1a/sub-00{1,2}. Actual: the
+% combined simulation (PRESTUS_pipeline_01_benchmark1_sim.m;
+% data/tussim/medium_setup1 / medium_setup2, relative to medium_reference).
+%   actual/predicted ~ 1 : additive
+%   actual/predicted > 1 : synergistic (combined more extreme than OAT)
+%   actual/predicted < 1 : sub-additive (e.g. multiplicative attenuation)
+%   sign mismatch        : the setup does not act as a worst/best case
 %
-%   actual/predicted ~ 1  : additive - OAT sensitivity fully explains the
-%                           combined outcome
-%   actual/predicted > 1  : synergistic - combining the assigned bounds is
-%                           MORE extreme than OAT would predict
-%   actual/predicted < 1  : sub-additive - combining bounds is LESS extreme
-%                           than OAT would predict (e.g. expected for
-%                           attenuation-like effects, which are inherently
-%                           multiplicative/exponential, not additive)
-%   sign(actual) ~= sign(predicted) : the constellation does not even move
-%                           the outcome in the intended direction - would
-%                           mean Setup A/B ("conservative"/"liberal") do
-%                           NOT reliably act as a worst/best case
-%
-% Bound assignment (bottom/top) per property is read directly from
-% data/configs/config_medium_conservative.yaml / config_medium_liberal.yaml
-% and matched against data/tissue_parameters.csv, so this check stays
-% correct as those configs are corrected/updated - it does not hardcode
-% which bound each property currently uses.
-%
-% NOTE: this script always reads the bound assignment from the CURRENT
-% config_medium_conservative.yaml / config_medium_liberal.yaml, but the
-% "actual" combined outcome comes from whatever simulation is currently on
-% disk under data/tussim/medium_conservative / medium_liberal. As of the
-% skull density / brain absorption fraction correction (see
-% PRESTUS_itrusst_setups_brain.m / _skull.m), those two are OUT OF SYNC:
-% the configs already reflect the corrected bounds, but the simulation
-% outputs on disk still reflect the OLD (pre-correction) bounds for those
-% two properties - so running this script now gives a mismatched,
-% not-directly-interpretable comparison for skull density / brain
-% absorption fraction specifically (the other 12 property/tissue
-% combinations are unaffected and still valid). Re-run PRESTUS_pipeline_01
-% _benchmark1_sim.m for 'conservative' and 'liberal' first so config and
-% simulation agree again, then re-run this script.
+% The OAT sweep and the combined runs must use the same tissue_parameters.csv.
 %
 % Output:
 %   figures/explore/constellation_check/constellation_check.{png,eps}
@@ -63,7 +28,6 @@ rootpath = pwd;
 
 pn.data    = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1a');
 pn.tussim  = fullfile(rootpath, 'data', 'tussim');
-pn.configs = fullfile(rootpath, 'data', 'configs');
 pn.figures = fullfile(rootpath, 'figures', 'explore', 'constellation_check');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
 pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
@@ -77,7 +41,6 @@ property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
 sweep_values      = 1:2; % 1 = bottom bound, 2 = top bound (tissue_parameters.csv)
 metrics           = {'riseT_brain', 'riseT_skull', 'Isppa_brain', 'Ipa_target'};
 
-params_table = readtable(fullfile(rootpath, 'data', 'tissue_parameters.csv'));
 
 %% ── Load OAT sweep results (single-property effects, others held at mid) ───
 
@@ -88,17 +51,18 @@ params_table = readtable(fullfile(rootpath, 'data', 'tissue_parameters.csv'));
 [res_s2, ~] = load_paramvar_results(fullfile(pn.data, 'sub-002'), 2, ...
     {'skull'}, {'_s'}, property_labels, property_suffixes, sweep_values, property_symbols);
 
-%% ── Read conservative/liberal bound assignment straight from the configs ───
+%% ── Setup 1 / Setup 2 bound per property (1 = bottom, 2 = top) ──────────────
 
-setup_names = {'conservative', 'liberal'};
+setup_names  = {'setup1', 'setup2'};
+setups_table = readtable(fullfile(rootpath, 'data', 'tissue_setups.csv'), 'TextType', 'char');
 bound = struct();
 for si = 1:numel(setup_names)
-    yaml_path = fullfile(pn.configs, ['config_medium_' setup_names{si} '.yaml']);
-    for p = 1:numel(property_labels)
-        bound.(setup_names{si}).brain.(property_labels{p}) = ...
-            config_bound_level(yaml_path, 'brain', property_labels{p}, params_table);
-        bound.(setup_names{si}).skull.(property_labels{p}) = ...
-            config_bound_level(yaml_path, 'skull', property_labels{p}, params_table);
+    for tissue = {'brain', 'skull'}
+        for p = 1:numel(property_labels)
+            row = strcmp(setups_table.tissue, tissue{1}) & strcmp(setups_table.property, property_labels{p});
+            bound.(setup_names{si}).(tissue{1}).(property_labels{p}) = ...
+                find(strcmp({'bottom', 'top'}, setups_table.(setup_names{si}){row}));
+        end
     end
 end
 
@@ -114,7 +78,7 @@ results = struct('benchmark', {}, 'setup', {}, 'metric', {}, ...
 
 for bi = 1:numel(benchmarks)
     bm = benchmarks(bi);
-    mid_vals = load_combined_outcome(pn.tussim, 'medium_mid', bm.sub_combined, metrics);
+    mid_vals = load_combined_outcome(pn.tussim, 'medium_reference', bm.sub_combined, metrics);
 
     for si = 1:numel(setup_names)
         setup_name  = setup_names{si};
@@ -181,65 +145,9 @@ plot_constellation_scatter(results, pn, 'constellation_check');
 
 %% ── Local functions ──────────────────────────────────────────────────────
 
-function level = config_bound_level(yaml_path, tissue, property_name, params_table)
-% Reads <property_name> for <tissue> from a config_medium_*.yaml file and
-% returns 1 if it matches the literature "bottom" bound (tissue_parameters
-% .csv), 2 if it matches "top", or NaN (with a warning) if it matches
-% neither (e.g. a value shared with "mid", or a genuine mismatch).
-    val = read_yaml_scalar(yaml_path, tissue, property_name);
-
-    tissue_mask = strcmp(params_table.tissue, tissue);
-    bottom_val  = params_table.(property_name)(tissue_mask & strcmp(params_table.level, 'bottom'));
-    top_val     = params_table.(property_name)(tissue_mask & strcmp(params_table.level, 'top'));
-
-    if abs(val - bottom_val) < 1e-6
-        level = 1;
-    elseif abs(val - top_val) < 1e-6
-        level = 2;
-    else
-        level = NaN;
-        warning('config_bound_level:noMatch', ...
-            '%s: %s.%s = %.6g matches neither bottom (%.6g) nor top (%.6g) - excluded from the additive prediction.', ...
-            yaml_path, tissue, property_name, val, bottom_val, top_val);
-    end
-end
-
-function val = read_yaml_scalar(yaml_path, section, key)
-% Minimal flat-YAML scalar reader for config_medium_*.yaml's fixed
-% structure (medium_properties: > {water,brain,skull}: > key: value, at
-% 2-space then 4-space indentation). Finds the <section> block (e.g.
-% "brain:") and returns the numeric value of <key> within it.
-    txt   = fileread(yaml_path);
-    lines = regexp(txt, '\r\n|\r|\n', 'split');
-    indent  = cellfun(@(l) numel(regexp(l, '^ *', 'match', 'once')), lines);
-    trimmed = strtrim(lines);
-
-    idx_start = find(indent == 2 & strcmp(trimmed, [section ':']), 1);
-    if isempty(idx_start)
-        error('read_yaml_scalar:noSection', 'Section "%s:" not found in %s', section, yaml_path);
-    end
-
-    rel_end = find(indent(idx_start+1:end) == 2, 1);
-    if isempty(rel_end)
-        idx_end = numel(lines) + 1;
-    else
-        idx_end = idx_start + rel_end;
-    end
-
-    val = NaN;
-    for i = (idx_start+1):(idx_end-1)
-        if indent(i) == 4 && startsWith(trimmed{i}, [key ':'])
-            parts = strsplit(trimmed{i}, ':');
-            val = str2double(strtrim(parts{2}));
-            return;
-        end
-    end
-    error('read_yaml_scalar:noKey', 'Key "%s" not found in section "%s:" of %s', key, section, yaml_path);
-end
-
 function vals = load_combined_outcome(pn_tussim, setup_folder, sub_id, metrics)
 % Reads the single-row sub-XXX_phantom.csv from a combined (all-properties-
-% at-once) simulation folder, e.g. data/tussim/medium_conservative/sub-101.
+% at-once) simulation folder, e.g. data/tussim/medium_setup1/sub-101.
     fn = fullfile(pn_tussim, setup_folder, sprintf('sub-%03d', sub_id), ...
         sprintf('sub-%03d_phantom.csv', sub_id));
     Tb = readtable(fn);
@@ -275,7 +183,7 @@ function plot_constellation_scatter(results, pn, fig_name)
     plotted_metrics = {};
     for i = 1:numel(results)
         r = results(i);
-        marker = 'o'; if strcmp(r.setup, 'liberal'), marker = 's'; end
+        marker = 'o'; if strcmp(r.setup, 'setup2'), marker = 's'; end
         scatter(r.predicted_delta, r.actual_delta, 80, color_map.(r.metric), marker, ...
             'filled', 'MarkerEdgeColor', 'k');
         if ~ismember(r.metric, plotted_metrics)
@@ -288,7 +196,7 @@ function plot_constellation_scatter(results, pn, fig_name)
     xlabel('Predicted \Delta (sum of OAT single-property effects)', 'Interpreter', 'tex');
     ylabel('Actual \Delta (combined simulation - mid)', 'Interpreter', 'tex');
     title({'Constellation check: additive OAT prediction vs. actual combined simulation', ...
-        'dashed = 1:1 (additive)   o = conservative   \Box = liberal'}, 'FontSize', 10, 'Interpreter', 'tex');
+        'dashed = 1:1 (additive)   o = setup 1   \Box = setup 2'}, 'FontSize', 10, 'Interpreter', 'tex');
     set(gca, 'Layer', 'top', 'Box', 'off');
 
     legend_h = gobjects(1, numel(plotted_metrics));
