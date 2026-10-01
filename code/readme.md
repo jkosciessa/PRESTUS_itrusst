@@ -31,7 +31,7 @@ sub-602 | layered 3D model (pipeline, `config_itrusst_protocol1_602.yaml`)
 pn = setup_itrusst_paths(rootpath, user)
 ```
 
-Sets up `pn.prestus` (`../v05/tools/PRESTUS`), `pn.kwave`, `pn.minimize`, `pn.nifti`, `pn.configs`, `pn.data`, `pn.path_seg`, `pn.code` and (for known users) `pn.simnibs`, and adds them to the MATLAB path. Call after `addpath(fullfile(rootpath, 'code', 'functions'))`.
+Sets up `pn.prestus` (`tools/PRESTUS`), `pn.kwave`, `pn.minimize`, `pn.nifti`, `pn.configs`, `pn.data`, `pn.path_seg`, `pn.code` and (for known users) `pn.simnibs`, and adds them to the MATLAB path. Call after `addpath(fullfile(rootpath, 'code', 'functions'))`.
 
 ### `load_paramvar_results.m`
 

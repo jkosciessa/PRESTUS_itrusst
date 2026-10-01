@@ -15,8 +15,8 @@
 # Exclude all archive directories
 /archive/*
 
-# Exclude local toolbox backups (PRESTUS is used from ../v05/tools/PRESTUS)
-/tools/
+# Exclude local toolbox backups (tools/PRESTUS is a submodule)
+/tools/PRESTUS_backup*
 
 # Exclude all /figures directories
 **/figures

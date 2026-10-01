@@ -21,6 +21,6 @@ Relevant scripts are called ```PRESTUS_pipeline```.
 
 Relevant scripts are called ```PRESTUS_thickness```.
 
-Shared functions live in `code/functions/`, side analyses in `code/explore/` and numerical checks in `code/debug/` (see [code/readme.md](code/readme.md)). Methods are documented in [doc/PRESTUS_itrusst_methods.md](doc/PRESTUS_itrusst_methods.md). PRESTUS itself is used from `../v05/tools/PRESTUS`.
+Shared functions live in `code/functions/`, side analyses in `code/explore/` and numerical checks in `code/debug/` (see [code/readme.md](code/readme.md)). Methods are documented in [doc/PRESTUS_itrusst_methods.md](doc/PRESTUS_itrusst_methods.md). PRESTUS is included as submodule `tools/PRESTUS` (cloned from `../v05/tools/PRESTUS`; update with `git -C tools/PRESTUS pull v05_local development`).
 
 Benchmark phantoms (`code/createPhantom.m`) follow the PRESTUS examples, see [here](https://github.com/Donders-Institute/PRESTUS/blob/development/examples/createPhantom.m). The code uses PRESTUS' ```phantom``` implementation (see [here](https://github.com/Donders-Institute/PRESTUS/blob/development/documentation/doc_medium.md)). 

@@ -10,9 +10,8 @@ if ismac
     rootpath = strrep(rootpath, '/project/', '/Volumes/');
 end
 
-pn.prestus         = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS');
+pn.prestus         = fullfile(rootpath, 'tools', 'PRESTUS'); % submodule, pulled from ../v05/tools/PRESTUS
 pn.prestus_fun     = fullfile(pn.prestus, 'functions');
-pn.prestus_profile = fullfile(pn.prestus, 'acoustic_profiling');
 pn.prestus_tools   = fullfile(pn.prestus, 'external');
 pn.kwave           = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave');
 pn.minimize        = fullfile(pn.prestus_tools, 'FEX-minimize');
@@ -25,7 +24,6 @@ pn.code            = fullfile(rootpath, 'code');
 
 addpath(genpath(pn.prestus));
 addpath(genpath(pn.prestus_fun));
-addpath(genpath(pn.prestus_profile));
 addpath(genpath(pn.prestus_tools));
 addpath(pn.kwave);
 addpath(pn.minimize);
