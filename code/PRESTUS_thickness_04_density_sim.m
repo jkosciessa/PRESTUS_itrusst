@@ -1,57 +1,19 @@
 clear all; close all; clc;
 
-% PRESTUS_PARAMVAR_11_DENSITY_THICKNESS_SIM
+% PRESTUS_THICKNESS_04_DENSITY_SIM
 %
-% Targeted follow-up on a signal from PRESTUS_paramvar_09_morris_
-% interactions_sim.m's pilot run: skull density was the only one of the
-% 14 tissue-property factors with a non-zero sigma (interaction/context-
-% dependence) in that pilot, based on just n=2 trajectories - too thin to
-% trust, but worth a cheap, targeted, controlled check rather than waiting
-% for a much larger Morris r to pin it down indirectly.
+% Skull density (bottom/mid/top) x skull thickness (1-12 mm, 0.5 mm steps;
+% phantoms from PRESTUS_thickness_01_createPhantoms.m), all other tissue
+% properties at their mid level: 3 x 23 = 69 independent evaluations with
+% heating. Follow-up to the non-zero Morris sigma for skull density
+% (explore/PRESTUS_paramvar_09/10). The 'mid' level reproduces the
+% acoustic-only thickness_02 sweep, now with heating.
 %
-% This script asks one specific version of "does skull density interact
-% with something else": does its effect on Isppa_brain/Ipa_target/riseT_
-% brain/riseT_skull change across the range of skull thickness? All other
-% tissue properties (brain and skull) are held at their literature
-% midpoint throughout, isolating skull density x skull thickness as a
-% clean 2-way design (3 density levels x 12 thicknesses = 36 evaluations),
-% not a statistical screen.
+% Thickness is baked into each phantom, so it is varied via subject_id.
+% Shortened thermal protocol (20 s stimulation, no post-stimulation period).
 %
-% GEOMETRY: reuses the existing thickness-sweep phantoms (subjects 301-
-% 312, skull thickness 1-12 mm, built by PRESTUS_thickness_01_
-% createPhantoms.m) rather than generating new ones. PRESTUS_thickness_02_
-% sim.m already ran an acoustic-only sweep across these phantoms at
-% all-mid tissue properties (modules.run_heating_sims=0) - this script
-% reruns that same geometry x mid-properties baseline (the 'mid' density
-% level here IS that reference point) but WITH heating enabled and with
-% skull density additionally varied to bottom/top, so this is a superset
-% of that earlier sweep's acoustic-only baseline, not a duplicate of it.
-%
-% Skull thickness itself is NOT a `parameters` field - it is baked into
-% each subject's final_tissues.nii.gz at phantom-creation time (see
-% PRESTUS_thickness_01_createPhantoms.m), so varying it here means
-% looping over subject_id, not a config field.
-%
-% CACHING: each of the 36 (thickness, density-level) combinations needs
-% its own fresh acoustic AND thermal solve - unlike PRESTUS_paramvar_08/
-% 09's acoustic/thermal decoupling trick, there is no shared acoustic
-% combo to reuse here, since both thickness (geometry) and density (an
-% acoustic-relevant property) change together. All 36 evaluations are
-% therefore submitted independently with no phase ordering / wait step.
-%
-% JOB SUBMISSION: "auto mode", same mechanism as PRESTUS_paramvar_08/09 -
-% hpc_detect_system() picks 'slurm'/'qsub' if a scheduler is on PATH, else
-% falls back to running locally via 'matlab'; every evaluation is
-% submitted individually via prestus_pipeline_start(parameters).
-%
-% Total: 36 evaluations (3 density levels x 12 thicknesses), well under
-% budget. Shortened thermal protocol (20s stim, 0s post-stim) and the same
-% storage-minimizing flags as PRESTUS_paramvar_08/09.
-%
-% Output: data/tussim/<variant_name>/sub-<subject_id>/sub-<subject_id>_
-% phantom<affix>.csv per evaluation; figures/paramvar/density_thickness_
-% design.csv (design table for PRESTUS_paramvar_12_density_thickness_
-% plot.m).
+% Output: data/tussim/<variant_name>/sub-XXX/sub-XXX_phantom<affix>.csv,
+% plus the design table read by PRESTUS_thickness_05_density_plot.m.
 
 user = 'julkos';
 
@@ -66,8 +28,7 @@ pn = setup_itrusst_paths(rootpath, user);
 
 setup_name    = 'itrusst_protocol1';
 variant_name  = 'itrusst_protocol1a_density_thickness';
-thickness_subjects = 301:312;              % thickness = subject_id - 300, in mm
-thicknesses_mm      = thickness_subjects - 300;
+[thickness_subjects, thicknesses_mm] = itrusst_thickness_subjects(1:0.5:12);
 density_levels_name = {'bottom', 'mid', 'top'};   % skull density levels to sweep
 
 %% ── Detect job-submission platform (auto mode) ──────────────────────────────
@@ -123,13 +84,11 @@ base_parameters.grid.default_dims = [70, 120] / base_parameters.grid.resolution_
 base_parameters.grid.pml_size = [20] / base_parameters.grid.resolution_mm;
 base_parameters.grid.axisymmetric = 1;
 
-% Shortened thermal protocol (see PRESTUS_paramvar_08/09 / doc/PRESTUS_
-% itrusst_methods.md, Analysis 4): 20s stimulation, 0s post-stim cool-off.
+% shortened thermal protocol: 20 s stimulation, no post-stimulation period
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
-base_parameters.hpc.timelimit = '00:30:00';  % see PRESTUS_paramvar_09's pilot run: 00:15:00 was NOT
-                                              % a safe margin for the thermal stage at this protocol
+base_parameters.hpc.timelimit = '00:30:00';  % 00:15:00 was too short for the thermal stage
 
 tissue_labels = {'brain', 'skull'};
 property_labels = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
@@ -156,7 +115,7 @@ writetable(design_rows, fullfile(pn.figures, 'density_thickness_design.csv'));
 fprintf('Density x thickness design: %d evaluations (%d thicknesses x %d density levels).\n', ...
     n_rows, numel(thickness_subjects), numel(density_levels_name));
 
-%% ── Submit every evaluation (no phase ordering / wait needed - see header) ──
+%% ── Submit every evaluation (all independent) ───────────────────────────────
 
 for row_i = 1:n_rows
     subject_id  = design_rows.subject_id(row_i);

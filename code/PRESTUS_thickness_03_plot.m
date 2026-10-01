@@ -8,9 +8,9 @@ rootpath = pwd;
 pn.figures = fullfile(rootpath, 'figures');
 pn.data = fullfile(rootpath, 'data', 'tussim','itrusst_protocol1');
 
-% Subjects 301 to 312 correspond to thickness 1 mm to 12 mm
-subjects = 301:312;
-thicknesses = 1:12; % Thickness in mm corresponding to subjects
+% sub-301..312 = 1..12 mm, sub-351..361 = 1.5..11.5 mm
+addpath(fullfile(rootpath, 'code', 'functions'));
+[subjects, thicknesses] = itrusst_thickness_subjects(1:0.5:12);
 
 % Preallocate vectors for intensity
 brain_intensity = nan(length(subjects), 1);
@@ -45,7 +45,7 @@ h = figure;
 set(gcf,'renderer','Painters');
 set(h, 'Units', 'normalized');
 set(h, 'Position', [0.25 0.25 0.15 0.2]);
-p1 = plot(thicknesses, target_intensity, 'k-', 'LineWidth', 2, 'MarkerSize', 8);
+p1 = plot(thicknesses, target_intensity, 'k-o', 'LineWidth', 2, 'MarkerSize', 4);
 % hold on;
 % p2 = plot(thicknesses, brain_intensity, '-', 'LineWidth', 2, 'Color', [0.5 0.5 0.5]);
 grid on;

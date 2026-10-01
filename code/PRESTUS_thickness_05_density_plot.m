@@ -1,20 +1,10 @@
-% PRESTUS_PARAMVAR_12_DENSITY_THICKNESS_PLOT
+% PRESTUS_THICKNESS_05_DENSITY_PLOT
 %
-% Analyses the design built and run by PRESTUS_paramvar_11_density_
-% thickness_sim.m: skull density (bottom/mid/top) x skull thickness
-% (1-12 mm, subjects 301-312), everything else held at midpoint.
-%
-% Joins figures/paramvar/density_thickness_design.csv against each row's
-% result CSV (data/tussim/<variant_name>/sub-<subject_id>/sub-<subject_id>
-% _phantom<output_affix>.csv), then plots each outcome (Isppa_brain,
-% Ipa_target, riseT_brain, riseT_skull) vs. thickness, one line per
-% density level. If skull density's effect is CONSTANT across thickness,
-% the three lines stay a fixed distance apart (no interaction); if the gap
-% between them widens or narrows with thickness, that IS the interaction
-% the Morris pilot's non-zero sigma for skull density was pointing at.
-%
-% Tolerates a partially completed run (missing result files are reported
-% and left as gaps in the line, not imputed).
+% Plots the skull density x thickness design of
+% PRESTUS_thickness_04_density_sim.m: each outcome (Isppa_brain, Ipa_target,
+% riseT_brain, riseT_skull) vs. skull thickness, one line per density level.
+% Parallel lines = no interaction; a widening/narrowing gap = interaction.
+% Missing or incomplete result files are reported and left as gaps.
 %
 % Output: figures/paramvar/density_thickness_<outcome>.{png,eps}
 
@@ -25,7 +15,7 @@ currentFile = mfilename('fullpath');
 cd(fullfile(pathstr, '..'));
 rootpath = pwd;
 
-variant_name = 'itrusst_protocol1a_density_thickness';   % must match PRESTUS_paramvar_11
+variant_name = 'itrusst_protocol1a_density_thickness';   % must match PRESTUS_thickness_04
 pn.results = fullfile(rootpath, 'data', 'tussim', variant_name);
 pn.figures = fullfile(rootpath, 'figures', 'paramvar');
 
@@ -35,9 +25,7 @@ level_colors = [0.00 0.45 0.74; 0.50 0.50 0.50; 0.85 0.10 0.10];   % blue / grey
 
 %% ── Load the design table and join results ─────────────────────────────────
 
-% Delimiter forced to ',' - readtable's auto-detection can misfire on
-% underscore-saturated headers/values (see PRESTUS_paramvar_13's fix for
-% the concrete failure this caused on a similarly-shaped design table).
+% force ',' delimiter: auto-detection can misfire on underscore-heavy values
 design = readtable(fullfile(pn.figures, 'density_thickness_design.csv'), 'Delimiter', ',', 'TextType', 'string');
 n_rows = height(design);
 

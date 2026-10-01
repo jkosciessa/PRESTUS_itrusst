@@ -1,6 +1,6 @@
 clear all; close all; clc;
 
-user = 'julkos' % julkos/marwim/sebrei
+user = 'julkos';
 
 % get root path (script must be run)
 currentFile = mfilename('fullpath');
@@ -9,31 +9,13 @@ cd(fullfile(pathstr,'..'))
 rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code', 'functions'));
-
-pn.prestus = fullfile(rootpath, '..', 'v05', 'tools', 'PRESTUS'); addpath(genpath(pn.prestus));
-pn.prestus_fun = fullfile(pn.prestus, 'functions'); addpath(genpath(pn.prestus_fun));
-pn.prestus_profile = fullfile(pn.prestus, 'acoustic_profiling'); addpath(genpath(pn.prestus_profile));
-pn.prestus_tools = fullfile(pn.prestus, 'toolboxes'); addpath(genpath(pn.prestus_tools));
-pn.kwave = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave'); addpath(pn.kwave);
-if strcmp(user, 'julkos')
-    pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
-elseif strcmp(user, 'marwim')
-    pn.simnibs = fullfile('/home', 'neuromod', 'marwim', 'miniconda3', 'envs', 'simnibs_env', 'bin');
-elseif strcmp(user, 'sebrei')
-    pn.simnibs = fullfile('/home', 'neuromod', 'sebrei', '.conda', 'envs', 'simnibs_env', 'bin');
-end
-pn.minimize = fullfile(pn.prestus_tools, 'FEX-minimize'); addpath(pn.minimize);
-pn.configs = fullfile(rootpath, 'data', 'configs');
-pn.data_path = fullfile(rootpath, 'data', 'bids');
-pn.path_seg = fullfile(rootpath, 'data', 'simnibs');
-pn.data = fullfile(rootpath, 'data');
-pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
+pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 
 setup_list = {['itrusst_protocol1']};
 
-all_subjects = 301:312;
+all_subjects = itrusst_thickness_subjects(1:0.5:12); % sub-301..312 = 1..12 mm, sub-351..361 = 1.5..11.5 mm
 intensities = 60;
 copy_positions = 1;
 calibrate = 0;

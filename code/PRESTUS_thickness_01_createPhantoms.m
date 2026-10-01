@@ -1,6 +1,8 @@
 % Create a 2D nifti image according to the desired tissue specification
 %
-% Creates skull media with different thickness (1–12 mm sweep).
+% Creates skull media with different thickness (1–12 mm sweep, 0.5 mm steps).
+% Subject IDs follow itrusst_thickness_subjects.m: sub-301..312 = 1..12 mm,
+% sub-351..361 = 1.5..11.5 mm.
 %
 % ── Array layout ─────────────────────────────────────────────────────────────
 %   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox  (full diameter)
@@ -33,19 +35,20 @@ nz  = round(120 / res);  % 240 vox — axial (z = 1: transducer face)
 skull_apex_z_mm = 30;
 distance_outer  = 75;   % outer radius of curvature [mm]
 
-cx = round(35 / res);                        % lateral beam axis: vox 140
-r_outer = distance_outer / res;              % 300 vox
-cz = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 420 (= 105 mm)
+cx = round(35 / res);                        % lateral beam axis: vox 70
+r_outer = distance_outer / res;              % 150 vox
+cz = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 210 (= 105 mm)
 
 [Xg, Zg] = ndgrid(1:nx, 1:nz);
 
 %% thickness sweep
 
-thickness = 1:1:12;   % [mm]
+addpath(fullfile(rootpath, 'code', 'functions'));
+[subject_ids, thickness] = itrusst_thickness_subjects(1:0.5:12);   % [mm]
 
 for i_thickness = 1:numel(thickness)
 
-    pn.benchmark3 = fullfile(rootpath, 'data', 'simnibs', sprintf('m2m_sub-3%02d', i_thickness));
+    pn.benchmark3 = fullfile(rootpath, 'data', 'simnibs', sprintf('m2m_sub-%03d', subject_ids(i_thickness)));
     if ~exist(pn.benchmark3, 'dir')
         mkdir(pn.benchmark3);
     end
@@ -65,8 +68,8 @@ for i_thickness = 1:numel(thickness)
     data(inner_mask)   = 1;   % soft tissue / brain
 
     write_phantom(data, res, fullfile(pn.benchmark3, 'final_tissues.nii.gz'));
-    fprintf('Benchmark 3 thickness %d mm (sub-3%02d) written -> %s\n', ...
-        thickness_current, i_thickness, pn.benchmark3);
+    fprintf('Benchmark 3 thickness %.1f mm (sub-%03d) written -> %s\n', ...
+        thickness_current, subject_ids(i_thickness), pn.benchmark3);
 
 end
 
