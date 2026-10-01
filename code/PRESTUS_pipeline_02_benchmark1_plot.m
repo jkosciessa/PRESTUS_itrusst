@@ -66,6 +66,7 @@ for i = 1:2
     ylim([min(maxT_mat(:))-0.5, max(maxT_mat(:))+0.5]);
     grid on;
     xtickangle(30);
+    ylim([0, 3.5])
 end
 figureName = ['pipeline_temperature'];
 h.Color = 'white';
@@ -103,7 +104,7 @@ for i = 1:2
     title(['benchmark ', num2str(i)], 'FontSize', 14);
     grid on;
     xtickangle(30);
-    ylim([0 30])
+    ylim([0 20])
 end
 figureName = ['pipeline_intensity_rescaled'];
 h.Color = 'white';
