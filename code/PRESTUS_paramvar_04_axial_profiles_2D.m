@@ -9,7 +9,7 @@
 % each tissue parameter affects the focal depth and peak values.
 %
 % Acoustic modality  (always present):
-%   NII suffix: _intensity.nii.gz
+%   NII suffix: _Ipa.nii.gz
 %   Metrics: peak ISPPA (W/cm²), focal distance (mm), FWHM (mm)
 %
 % Thermal modality   (present once thermal sims complete):
@@ -67,7 +67,7 @@ level_labels = {'bottom (min)', 'top (max)'};
 % Modalities: each specifies the NII suffix and axis label
 modalities = struct( ...
     'name',    {'acoustic',           'thermal'}, ...
-    'suffix',  {'_intensity.nii.gz',  '_heatrise.nii.gz'}, ...
+    'suffix',  {'_Ipa.nii.gz',        '_heatrise.nii.gz'}, ...
     'ylabel',  {'Intensity (W/cm²)',  '\DeltaT (°C)'}, ...
     'metric',  {'peak\_Isppa',        'peak\_dT'});
 
@@ -85,7 +85,7 @@ for s = 1:numel(subjects)
     fprintf('============================================================\n');
 
     % Determine grid parameters from first available intensity NII
-    ref_files = dir(fullfile(nii_dir, sprintf('%s_*_intensity.nii.gz', sub_str)));
+    ref_files = dir(fullfile(nii_dir, sprintf('%s_*_Ipa.nii.gz', sub_str)));
     if isempty(ref_files)
         warning('No intensity NII files found for %s — skipping.', sub_str);
         continue;
