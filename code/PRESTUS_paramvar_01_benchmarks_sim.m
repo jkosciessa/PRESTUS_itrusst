@@ -12,13 +12,10 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 
-% Each variant is a named combination of config and intensity:
-%   a: 500 kHz @ 60 W/cm2 (baseline)
-%   b: 500 kHz @ 30 W/cm2
-%   c: 250 kHz @ 60 W/cm2
-variant_names     = {'itrusst_protocol1a'};%, 'itrusst_protocol1b', 'itrusst_protocol1c'};
-variant_configs   = {'itrusst_protocol1'};%,  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
-variant_intensity = [60];%, 30, 60];
+% 500 kHz @ 60 W/cm2 (baseline)
+variant_names     = {'itrusst_protocol1a'};
+variant_configs   = {'itrusst_protocol1'};
+variant_intensity = [60];
 
 all_subjects = [001, 002, 303];
 calibrate = 0;

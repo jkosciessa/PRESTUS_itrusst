@@ -13,12 +13,8 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variants
 % Calibration is transducer-specific and does not depend on subject anatomy.
-% Each variant is a named combination of config and intensity:
-%   a: 500 kHz @ 60 W/cm2 (baseline)
-%   b: 500 kHz @ 30 W/cm2
-%   c: 250 kHz @ 60 W/cm2
-variant_configs   = {'itrusst_protocol1',  'itrusst_protocol1_30W',  'itrusst_protocol1_250kHz'};
-variant_intensity = [60, 30, 60];
+variant_configs   = {'itrusst_protocol1'};
+variant_intensity = [60];
 
 % Use a fixed subject_id for the reference free-water simulation
 subject_id = 1;

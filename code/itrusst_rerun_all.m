@@ -79,10 +79,7 @@ end
 
 % the calibrated drive goes into the configs the simulations load
 if strcmp(stage, 'calibrate') && isempty(failed)
-    itrusst_apply_calibration(pn, 'itrusst_protocol1', 60, ...
-        {'itrusst_protocol1', 'itrusst_protocol1_025mm', 'itrusst_protocol1_05mm', 'itrusst_protocol1_3D'});
-    itrusst_apply_calibration(pn, 'itrusst_protocol1_30W', 30);
-    itrusst_apply_calibration(pn, 'itrusst_protocol1_250kHz', 60);
+    itrusst_apply_calibration(pn, 'itrusst_protocol1', 60);
 end
 
 cd(rootpath);
