@@ -27,7 +27,7 @@ pn.nifti = (fullfile(rootpath, 'tools', 'nifti_toolbox')); addpath(pn.nifti);
 
 %% define variables to loop
 
-setup_list = {['itrusst_protocol1']};
+setup_list = {['itrusst_protocol']};
 
 all_subjects = [001:002, 303];
 intensities = 60;

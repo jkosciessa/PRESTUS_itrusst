@@ -13,7 +13,7 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 
-setup_list = {['itrusst_protocol1']};
+setup_list = {['itrusst_protocol']};
 
 all_subjects = itrusst_thickness_subjects(1:0.5:12); % sub-301..312 = 1..12 mm, sub-351..361 = 1.5..11.5 mm
 intensities = 60;

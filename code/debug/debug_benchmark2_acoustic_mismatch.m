@@ -81,7 +81,7 @@ if RUN_SIMS
 
     % Base parameters
     cd(fullfile(rootpath, 'data', 'configs'));
-    parameters_base = load_parameters('config_itrusst_protocol1.yaml');
+    parameters_base = load_parameters('config_itrusst_protocol.yaml');
     parameters_base.path.anat             = pn.path_seg;
     parameters_base.path.seg              = pn.path_seg;
     parameters_base.path.t1_pattern       = fullfile(sprintf('m2m_sub-%03d', subject_id), 'T1.nii.gz');

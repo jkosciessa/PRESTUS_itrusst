@@ -14,7 +14,7 @@ pn = setup_itrusst_paths(rootpath, user);
 
 % 500 kHz @ 60 W/cm2 (baseline)
 variant_names     = {'itrusst_protocol1a'};
-variant_configs   = {'itrusst_protocol1'};
+variant_configs   = {'itrusst_protocol'};
 variant_intensity = [60];
 
 all_subjects = [001, 002, 303];

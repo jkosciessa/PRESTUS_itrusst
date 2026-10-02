@@ -6,7 +6,7 @@ rootpath = pwd;
 
 pn.figures = fullfile(rootpath, 'figures', 'explore', 'multiskull');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
-pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol1', 'sub-003');
+pn.data = fullfile(rootpath, 'data', 'tussim', 'itrusst_protocol', 'sub-003');
 pn.code = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 
 % Define tissues and suffixes

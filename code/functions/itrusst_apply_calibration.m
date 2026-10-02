@@ -8,7 +8,7 @@ function itrusst_apply_calibration(pn, equipment_name, desired_intensity, config
 %
 % Inputs:
 %   pn                - path struct from setup_itrusst_paths (uses pn.configs, pn.data)
-%   equipment_name    - calibrated setup, e.g. 'itrusst_protocol1'
+%   equipment_name    - calibrated setup, e.g. 'itrusst_protocol'
 %   desired_intensity - calibrated intensity [W/cm^2], e.g. 60
 %   config_names      - (optional) configs to update; default {equipment_name}
 

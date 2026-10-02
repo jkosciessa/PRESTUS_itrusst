@@ -13,7 +13,7 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variants
 % Calibration is transducer-specific and does not depend on subject anatomy.
-variant_configs   = {'itrusst_protocol1'};
+variant_configs   = {'itrusst_protocol'};
 variant_intensity = [60];
 
 % Use a fixed subject_id for the reference free-water simulation

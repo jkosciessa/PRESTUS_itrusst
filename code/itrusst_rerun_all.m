@@ -41,7 +41,7 @@ switch stage
 
     case 'simulate'
         cal_dir = fullfile(pn.data, 'calibration', 'PRESTUS_virtual_parameters');
-        if isempty(dir(fullfile(cal_dir, 'itrusst_protocol1-F*mm-I60wpercm2.yaml')))
+        if isempty(dir(fullfile(cal_dir, 'itrusst_protocol-F*mm-I60wpercm2.yaml')))
             error('No calibration in %s: run itrusst_rerun_all(''calibrate'') first.', cal_dir);
         end
         steps = {'PRESTUS_paramvar_01_benchmarks_sim', ...
@@ -79,7 +79,7 @@ end
 
 % the calibrated drive goes into the configs the simulations load
 if strcmp(stage, 'calibrate') && isempty(failed)
-    itrusst_apply_calibration(pn, 'itrusst_protocol1', 60);
+    itrusst_apply_calibration(pn, 'itrusst_protocol', 60);
 end
 
 cd(rootpath);

@@ -59,7 +59,7 @@ level_labels  = {'low c_{skull} (bottom bound)', 'high c_{skull} (top bound)'};
 level_colors  = {[0.2 0.5 0.9], [0.9 0.3 0.2]};   % blue = low, red = high
 
 voxel_mm  = 0.5;
-trans_vox = 1;   % transducer face at z-voxel 1 (config_itrusst_protocol1.yaml)
+trans_vox = 1;   % transducer face at z-voxel 1 (config_itrusst_protocol.yaml)
 
 affix = @(lv) sprintf('%s%s%d', tissue_suffix, prop_suffix, lv);
 

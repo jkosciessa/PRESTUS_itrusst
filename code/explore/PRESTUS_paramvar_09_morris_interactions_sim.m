@@ -118,7 +118,7 @@ pn = setup_itrusst_paths(rootpath, user);
 %% ── Configuration ───────────────────────────────────────────────────────────
 
 subject_id   = 2;      % Benchmark 2 (brain+skull) only
-setup_name   = 'itrusst_protocol1';
+setup_name   = 'itrusst_protocol';
 variant_name = 'itrusst_protocol1a_morris';
 pilot_mode   = false;   % true: restrict to 2 trajectories (30 evaluations) for validation
 r            = 10;     % number of Morris trajectories; cost scales as 15*r evaluations

@@ -7,7 +7,7 @@ rootpath = pwd;
 % Updated paths for your data and figures
 pn.figures = fullfile(rootpath, 'figures', 'thickness');
 if ~isfolder(pn.figures); mkdir(pn.figures); end
-pn.data = fullfile(rootpath, 'data', 'tussim','itrusst_protocol1');
+pn.data = fullfile(rootpath, 'data', 'tussim','itrusst_protocol');
 
 % sub-301..312 = 1..12 mm, sub-351..361 = 1.5..11.5 mm
 addpath(fullfile(rootpath, 'code', 'functions'));

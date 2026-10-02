@@ -8,7 +8,7 @@
 %   dim 1 (x): lateral,  70 mm → 140 vox at 0.5 mm/vox  (full diameter)
 %   dim 2 (z): axial,   120 mm → 240 vox at 0.5 mm/vox  (z = 1: transducer)
 %
-% Mirrors the creation principle of createPhantom.m / explore_createPhantom025mm.m:
+% Mirrors the creation principle of createPhantom.m:
 %   no axis flip, no singleton dimension, same write_phantom convention.
 %
 % ── Benchmark geometry ───────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ end
 function write_phantom(data, res, out_path)
 % WRITE_PHANTOM  Save uint8 tissue array as a compressed NIfTI.
 % No singleton dimension: data is [nx × nz] (lateral × axial).
-% Matches createPhantom.m / explore_createPhantom025mm.m convention.
+% Matches createPhantom.m convention.
 
     tmp = strrep(out_path, '.nii.gz', '.nii');
     niftiwrite(double(data), tmp);

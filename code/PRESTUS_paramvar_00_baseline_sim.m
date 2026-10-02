@@ -13,7 +13,7 @@ pn = setup_itrusst_paths(rootpath, user);
 %% settings
 
 subject_id        = 002;
-setup_name        = 'itrusst_protocol1';
+setup_name        = 'itrusst_protocol';
 variant_name      = 'itrusst_protocol1a';
 
 %% load parameter file and adjust paths

@@ -1,9 +1,9 @@
 %% plot GM only
 
 % Load the three NIfTI files
-filename1 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-001/sub-001_final_isppa_orig_coord_b_c_1.nii.gz';
-filename2 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-001/sub-001_final_isppa_orig_coord_b_c_2.nii.gz';
-filename3 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-001/sub-001_final_isppa_orig_coord_b_k_1.nii.gz';
+filename1 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-001/sub-001_final_isppa_orig_coord_b_c_1.nii.gz';
+filename2 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-001/sub-001_final_isppa_orig_coord_b_c_2.nii.gz';
+filename3 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-001/sub-001_final_isppa_orig_coord_b_k_1.nii.gz';
 
 V1 = niftiread(filename1);
 V2 = niftiread(filename2);
@@ -39,9 +39,9 @@ xlim([0 100])
 %% add skull
 
 % Load the three NIfTI files
-filename1 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_isppa_orig_coord_b_c_1.nii.gz';
-filename2 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_isppa_orig_coord_b_c_2.nii.gz';
-filename3 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_isppa_orig_coord_b_k_1.nii.gz';
+filename1 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_isppa_orig_coord_b_c_1.nii.gz';
+filename2 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_isppa_orig_coord_b_c_2.nii.gz';
+filename3 = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_isppa_orig_coord_b_k_1.nii.gz';
 
 V1 = niftiread(filename1);
 V2 = niftiread(filename2);

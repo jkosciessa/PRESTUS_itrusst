@@ -47,7 +47,7 @@ for subject_id = all_subjects
         if subject_id == 602
             base_config = 'config_itrusst_protocol1_602.yaml';
         else
-            base_config = 'config_itrusst_protocol1.yaml';
+            base_config = 'config_itrusst_protocol.yaml';
         end
 
         parameters = load_parameters(base_config, pwd, ['config_',setup_name,'.yaml'], pwd);

@@ -1,9 +1,9 @@
 if ~isfolder('/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps'); mkdir('/Volumes/2425122.01/PRESTUS_itrusst/figures/debug/heating_maps'); end
 
 % Load the NIfTI files using niftiread (MATLAB R2017b+ built-in)
-mask_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_medium_masks_orig_coord_s_a0_1.nii.gz';
-img1_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_heating_orig_coord_s_a0_1.nii.gz';
-img2_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol1/sub-002/sub-002_final_heating_orig_coord_s_a0_2.nii.gz';
+mask_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_medium_masks_orig_coord_s_a0_1.nii.gz';
+img1_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_heating_orig_coord_s_a0_1.nii.gz';
+img2_file = '/Volumes/2425122.01/PRESTUS_itrusst/data/tussim/itrusst_protocol/sub-002/sub-002_final_heating_orig_coord_s_a0_2.nii.gz';
 
 mask = niftiread(mask_file);
 img1 = niftiread(img1_file);

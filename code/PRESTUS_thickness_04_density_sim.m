@@ -26,7 +26,7 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% ── Configuration ───────────────────────────────────────────────────────────
 
-setup_name    = 'itrusst_protocol1';
+setup_name    = 'itrusst_protocol';
 variant_name  = 'itrusst_protocol1a_density_thickness';
 [thickness_subjects, thicknesses_mm] = itrusst_thickness_subjects(1:0.5:12);
 density_levels_name = {'bottom', 'mid', 'top'};   % skull density levels to sweep

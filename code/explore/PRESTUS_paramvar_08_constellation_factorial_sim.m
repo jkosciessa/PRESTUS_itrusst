@@ -76,7 +76,7 @@ pn = setup_itrusst_paths(rootpath, user);
 %% ── Configuration ───────────────────────────────────────────────────────────
 
 subject_id   = 2;      % Benchmark 2 (brain+skull) only
-setup_name   = 'itrusst_protocol1';
+setup_name   = 'itrusst_protocol';
 variant_name = 'itrusst_protocol1a_density_crossover';
 pilot_mode   = false;   % true: restrict to a small validation subset (see header NOTE)
 
@@ -142,7 +142,7 @@ base_parameters.grid.axisymmetric = 1;
 base_parameters.subject_id = subject_id;
 
 % Shortened thermal protocol (see header NOTE): 20s stimulation, 0s
-% post-stimulation cool-off, instead of itrusst_protocol1's default 80s/80s.
+% post-stimulation cool-off, instead of itrusst_protocol's default 80s/80s.
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
