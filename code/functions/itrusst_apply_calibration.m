@@ -34,12 +34,12 @@ for c = 1:numel(config_names)
 
     % check that the drive now matches the calibration
     cfg = yaml.loadFile(config_file);
-    if cfg.transducer.annular.elem_amp ~= cal.transducer.annular.elem_amp || ...
+    if cfg.transducer.annular.elem_p_amp ~= cal.transducer.annular.elem_p_amp || ...
             cfg.transducer.annular.elem_phase_deg ~= cal.transducer.annular.elem_phase_deg
         error('Calibration was not applied correctly to %s.', config_file);
     end
-    fprintf('%s: elem_amp = %g, elem_phase_deg = %g (from %s)\n', config_names{c}, ...
-        cfg.transducer.annular.elem_amp, cfg.transducer.annular.elem_phase_deg, cal_file.name);
+    fprintf('%s: elem_p_amp = %g, elem_phase_deg = %g (from %s)\n', config_names{c}, ...
+        cfg.transducer.annular.elem_p_amp, cfg.transducer.annular.elem_phase_deg, cal_file.name);
 end
 
 end
