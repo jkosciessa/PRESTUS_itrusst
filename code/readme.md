@@ -21,7 +21,6 @@ sub-101/102 | 3D counterparts of sub-001/002 (pipeline comparison, 3D benchmarks
 sub-201/202 | 0.25 mm counterparts of sub-001/002 (debug)
 sub-301..312 | skull thickness 1..12 mm
 sub-351..361 | skull thickness 1.5..11.5 mm (see `itrusst_thickness_subjects.m`)
-sub-602 | layered 3D model (pipeline, `config_itrusst_protocol1_602.yaml`)
 
 ## shared utilities (`code/functions/`)
 

@@ -44,11 +44,7 @@ for subject_id = all_subjects
         
         cd(fullfile(rootpath, 'data', 'configs'));
 
-        if subject_id == 602
-            base_config = 'config_itrusst_protocol1_602.yaml';
-        else
-            base_config = 'config_itrusst_protocol.yaml';
-        end
+        base_config = 'config_itrusst_protocol.yaml';
 
         parameters = load_parameters(base_config, pwd, ['config_',setup_name,'.yaml'], pwd);
 
@@ -103,20 +99,11 @@ for subject_id = all_subjects
             parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
         end
         
-        if subject_id == 602 % for 3D run layered with C++ GPU code
-            parameters.simulation.code_type = 'cpp_gpu';
-            parameters.simulation.medium = 'layered';
-            parameters.grid.resolution_mm = 0.5;
-            parameters.grid.axisymmetric = 0;
-            jobtime = '02:00:00';
-            jobram = 20;
-        else
-            parameters.simulation.code_type = 'cpp_gpu';
-            parameters.simulation.medium = 'phantom';
-            parameters.grid.axisymmetric = 1;
-            jobtime = '04:00:00';
-            jobram = 16;
-        end
+        parameters.simulation.code_type = 'cpp_gpu';
+        parameters.simulation.medium = 'phantom';
+        parameters.grid.axisymmetric = 1;
+        jobtime = '04:00:00';
+        jobram = 16;
 
         % specify GPU setup if requested
         if contains(parameters.simulation.code_type, 'gpu')
