@@ -31,7 +31,7 @@ Tissue properties live in `data/tissue_parameters.csv` (bounds) and `data/tissue
 
 ```matlab
 addpath('code/functions');
-itrusst_backup_outputs(pwd, '<yymmdd>');  % data/tussim -> data/tussim_<yymmdd>, figures/* -> figures/backup/figures_<yymmdd>/
+itrusst_backup_outputs(pwd, '<yymmdd>');  % data/tussim, data/calibration -> *_<yymmdd>, figures/* -> figures/backup/figures_<yymmdd>/
 cd code
 itrusst_rerun_all('prepare')    % local: medium configs, thickness phantoms, range/setup figures
 itrusst_rerun_all('calibrate')  % cluster, blocking: free-water calibration -> protocol configs
