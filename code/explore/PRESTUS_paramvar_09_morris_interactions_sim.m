@@ -2,15 +2,13 @@ clear all; close all; clc;
 
 % PRESTUS_PARAMVAR_09_MORRIS_INTERACTIONS_SIM
 %
-% Benchmark 2 (brain+skull) ONLY. A Morris elementary-effects (one-factor-
-% at-a-time trajectory) screening design across all 14 tissue properties,
-% specifically to measure INTERACTION strength per property - the gap
-% PRESTUS_paramvar_08_constellation_factorial_sim.m's marginal (acoustic-
-% exhaustive x thermal-exhaustive-at-one-anchor) design leaves open. This
-% is the approach flagged earlier (alongside fractional-factorial and LHS+
-% surrogate designs) as the standard, budget-efficient tool for this
-% question, revisited here at the user's request rather than a bespoke
-% extension of the Analysis-4 design.
+% EXPLORATORY (side analysis, not part of the main chain or
+% itrusst_rerun_all). Benchmark 2 (brain+skull) ONLY. A Morris elementary-
+% effects (one-factor-at-a-time trajectory) screening design across all 14
+% tissue properties, to measure INTERACTION strength per property.
+% PRESTUS_paramvar_08_constellation_factorial_sim.m gives exact pairwise
+% interactions, but only for skull density x each other factor; this
+% design screens every factor's context-dependence at once.
 %
 % METHOD (Morris 1991 elementary effects, on the same 2-level bottom/top
 % literature-bound grid used throughout this project): r independent
@@ -35,72 +33,51 @@ clear all; close all; clc;
 % confound sigma with, unlike continuous Morris designs with >=3 levels -
 % sigma here is a clean interaction signal.)
 %
-% ACOUSTIC/THERMAL CACHING (same mechanism as PRESTUS_paramvar_08; see
-% doc/PRESTUS_itrusst_methods.md, Analysis 4, for the underlying
-% rationale): within each trajectory, the 6 acoustic-relevant factors
+% FACTOR ORDER: within each trajectory, the 6 acoustic-relevant factors
 % (sound_speed/density/alpha_coeff x brain/skull) are flipped FIRST (in
 % random relative order among themselves), then the 8 thermal-relevant
 % factors (thermal_conductivity/specific_heat_capacity/perfusion/
-% absorption_fraction x brain/skull) - a deliberate grouped ordering (a
-% valid Morris design choice; nothing requires a fully unconstrained
-% random factor order). This means only the first 7 points of each
-% trajectory (baseline + 6 acoustic flips) need a fresh k-Wave acoustic
-% solve; the remaining 8 (all-thermal-flips) points reuse the acoustic
-% cache from point 7, needing only the cheaper thermal-only re-solve. Every
-% point (all 15) runs the thermal stage, since elementary effects on
-% riseT_brain/riseT_skull require heating output throughout, not just
-% Isppa_brain/Ipa_target.
+% absorption_fraction x brain/skull) - a grouped ordering (a valid Morris
+% design choice). It was introduced for an acoustic-cache-reuse scheme and
+% is kept so that the design (rng_seed 42) stays the same as before.
+%
+% NO ACOUSTIC/THERMAL CACHING: every evaluation is a full, independent,
+% fresh acoustic + thermal simulation (as in PRESTUS_paramvar_08). The
+% earlier version of this script reused the acoustic cache of point 7 for
+% the 8 thermal-only points of each trajectory; on the axisymmetric
+% phantom grid every one of these cache-reusing jobs failed in
+% acoustic_analysis ("Arrays have incompatible sizes", cached 3D-expanded
+% pressure field vs. freshly built 2D medium; see PRESTUS_paramvar_08's
+% header). That run (data/tussim_261001/itrusst_protocol1a_morris, old
+% tissue ranges) therefore ended with 47/150 results and no elementary
+% effects for any thermal factor.
 %
 % JOB SUBMISSION: every evaluation is its own job, submitted via
 % prestus_pipeline_start(parameters) with parameters.platform set to
 % whatever hpc_detect_system() finds ('slurm'/'qsub' if a scheduler is on
-% PATH, else falls back to running locally/synchronously) - "auto mode",
-% the same dispatcher every other script in this project uses, no custom
-% batching or external submission wrapper. All 7 acoustic-cost evaluations
-% per trajectory are submitted first (phase 1: 7*r jobs); if running on an
-% actual scheduler, this script then BLOCKS (via the toolbox's own
-% hpc_wait_for_completion, polling squeue/sacct or qstat every 20s) until
-% every phase-1 job has finished, before submitting the 8*r thermal-only
-% evaluations (phase 2), each of which depends on its own trajectory's
-% acoustic cache already being written. On 'matlab' (no scheduler
-% detected), each prestus_pipeline_start call already runs synchronously,
-% so phase 1 is inherently complete before phase 2's loop starts.
+% PATH, else running locally/synchronously). No job depends on another, so
+% all are submitted at once.
 %
-% Total evaluations per trajectory: 15 (7 acoustic-cost + 8 thermal-cost).
-% At r=10 (default): 150 jobs total (70 phase-1 + 80 phase-2), ~2.7h of
-% compute (see PRESTUS_paramvar_08's header for the timing reference this
-% is grounded in), comfortably under the study's <=1000 job-count budget.
-% Increase r for more reliable mu*/sigma estimates (cost scales linearly,
-% not exponentially - this is the whole point of a screening design over
-% a full factorial).
+% COST: 15 evaluations per trajectory; r=10 (default) gives 150 jobs.
+% Reference timings (Benchmark 2, 0.5 mm axisymmetric, shortened thermal
+% protocol): 6-29 min per fresh evaluation (mean ~19 min in the
+% PRESTUS_paramvar_08 run), i.e. ~30-50 CPU job-hours (cpp_cpu) for r=10. Increase r
+% for more reliable mu*/sigma estimates (cost scales linearly).
 %
-% NOT deduplicated across trajectories: with r>~8, different trajectories'
-% acoustic-cost points will occasionally land on the same 6-bit acoustic
-% combo by chance (pigeonhole: e.g. 70 draws from only 64 possible combos
-% at r=10). Every acoustic-cost evaluation always requests its own fresh
-% solve regardless (parameters.modules.run_acoustic_sims=1); PRESTUS's own
-% io.overwrite_files='never' cache-file check opportunistically skips the
-% solve and loads an equivalent, already-written cache instead when
-% another evaluation happens to have completed first - a free efficiency
-% bonus with no correctness cost either way, since no evaluation ever
-% depends on that reuse actually happening.
+% Points shared between trajectories (same 14-factor combination, hence the
+% same output_affix) are submitted once.
 %
-% STORAGE: same reductions as PRESTUS_paramvar_08 (modules.
-% run_nifti_creation / generate_report disabled; io.save_thermal_matrices
-% disabled; io.save_acoustic_matrices enabled only for acoustic-cost
-% evaluations).
+% STORAGE: modules.run_nifti_creation / generate_report disabled;
+% io.save_thermal_matrices / io.save_acoustic_matrices disabled (nothing
+% reuses any evaluation's cache).
 %
-% ANALYSIS (not yet written - no results exist to analyse): once this
-% design has been run, mu*/sigma per factor can be computed directly from
-% the trajectory design table this script writes to data/tussim/
-% <variant_name>/morris_design.csv (columns: trajectory, step, tissue, property,
-% direction, output_affix) joined against each output_affix's riseT_
-% brain/riseT_skull/Isppa_brain/Ipa_target from its sub-002_phantom
-% <affix>.csv.
+% ANALYSIS: PRESTUS_paramvar_10_morris_analysis_plot.m joins the design
+% table this script writes (data/tussim/<variant_name>/morris_design.csv;
+% columns: trajectory, step, tissue, property, direction, output_affix)
+% against each output_affix's sub-002_phantom<affix>.csv.
 %
-% ALWAYS validate with pilot_mode = true (restricts to 2 trajectories)
-% before committing the full design - see PRESTUS_paramvar_08's header for
-% the same non-decoupled/non-cached cross-check this design needs too.
+% ALWAYS validate with pilot_mode = true (restricts to 2 trajectories, 30
+% evaluations) before committing the full design.
 %
 % Output: data/tussim/<variant_name>/sub-002/sub-002_phantom<affix>.csv
 % per evaluation; data/tussim/<variant_name>/morris_design.csv (trajectory design
@@ -168,12 +145,15 @@ base_parameters.simulation.medium = 'phantom';
 base_parameters.simulation.interactive = 0;
 base_parameters.simulation.code_type = 'cpp_cpu';
 base_parameters.simulation.precision = 'single';
-base_parameters.io.overwrite_files = 'never';   % lets an already-cached acoustic combo be loaded for free if another
-                                                 % evaluation happens to finish first (opportunistic only, see header NOTE)
+base_parameters.io.overwrite_files = 'never';
 base_parameters.io.overwrite_simnibs = 0;
 base_parameters.io.save_heatingvideo = 0;
 base_parameters.io.save_matrices = 0;
 base_parameters.io.save_thermal_matrices = 0;
+base_parameters.io.save_acoustic_matrices = 0;
+base_parameters.modules.run_source_setup  = 1;
+base_parameters.modules.run_acoustic_sims = 1;
+base_parameters.modules.run_heating_sims  = 1;
 base_parameters.modules.run_nifti_creation = 0;
 base_parameters.modules.generate_report = 0;
 base_parameters.grid.resolution_mm = 0.5;
@@ -187,10 +167,8 @@ base_parameters.subject_id = subject_id;
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
-base_parameters.hpc.timelimit = '00:30:00';  % NOT a "generous margin" at 00:15:00 as originally set:
-                                              % this pilot run had 4/14 completed evaluations killed by
-                                              % SLURM at 80-99% through the thermal stage (see PRESTUS_
-                                              % paramvar_10_morris_analysis_plot.m's "partial" report)
+base_parameters.hpc.timelimit = '00:45:00';  % fresh evaluations took up to 29 min (PRESTUS_paramvar_08);
+                                              % 00:15:00 and 00:30:00 both had jobs killed by SLURM
 
 %% ── Factor lists ─────────────────────────────────────────────────────────
 
@@ -221,8 +199,7 @@ design_rows = table('Size', [n_rows_total 6], ...
     'VariableNames', {'trajectory', 'step', 'tissue', 'property', 'direction', 'output_affix'});
 row_i = 0;
 
-specs_phase1 = struct('levels', {}, 'acoustic_cache_affix', {}, 'output_affix', {});
-specs_phase2 = struct('levels', {}, 'acoustic_cache_affix', {}, 'output_affix', {});
+specs = struct('levels', {}, 'output_affix', {});
 
 for tr = 1:n_traj
     baseline_levels = randi(2, 1, n_total);
@@ -231,7 +208,6 @@ for tr = 1:n_traj
     step_order = [acoustic_perm, thermal_perm]; % grouped: acoustic factors flipped first, in random order, then thermal
 
     levels = baseline_levels;
-    acoustic_affix_at_point7 = ''; % set once all 6 acoustic factors have been flipped
     for step = 0:n_total
         tissue = ""; property = ""; direction = "";
         if step > 0
@@ -242,54 +218,27 @@ for tr = 1:n_traj
             direction = string(ternary(levels(flip_idx) == 2, 'bottom_to_top', 'top_to_bottom'));
         end
 
-        acoustic_affix = combo_affix(acoustic_factors, levels(1:n_acoustic));
-        output_affix   = combo_affix(all_factors, levels);
+        output_affix = combo_affix(all_factors, levels);
 
         row_i = row_i + 1;
         design_rows(row_i, :) = {tr, step, tissue, property, direction, string(output_affix)};
 
-        if step <= n_acoustic
-            specs_phase1(end+1) = struct('levels', levels, 'acoustic_cache_affix', acoustic_affix, ...
-                'output_affix', output_affix); %#ok<AGROW>
-            if step == n_acoustic
-                acoustic_affix_at_point7 = acoustic_affix;
-            end
-        else
-            specs_phase2(end+1) = struct('levels', levels, 'acoustic_cache_affix', acoustic_affix_at_point7, ...
-                'output_affix', output_affix); %#ok<AGROW>
+        if ~any(strcmp({specs.output_affix}, output_affix)) % shared point: submit once
+            specs(end+1) = struct('levels', levels, 'output_affix', output_affix); %#ok<AGROW>
         end
     end
 end
 
 writetable(design_rows, fullfile(pn.path_sim, 'morris_design.csv'));
 
-fprintf('Morris design: %d trajectories x 15 points = %d evaluations (%d acoustic-cost, %d thermal-cost)%s.\n', ...
-    n_traj, n_traj * (n_total + 1), numel(specs_phase1), numel(specs_phase2), ternary(pilot_mode, ' [PILOT MODE]', ''));
+fprintf('Morris design: %d trajectories x 15 points = %d evaluations, %d unique jobs%s.\n', ...
+    n_traj, n_traj * (n_total + 1), numel(specs), ternary(pilot_mode, ' [PILOT MODE]', ''));
 
-%% ── Phase 1: submit every acoustic-cost evaluation, then wait ──────────────
+%% ── Submit every evaluation (independent jobs, no caching) ─────────────────
 
-phase1_job_ids = {}; % cell array: job_id is numeric for SLURM but a string for qsub
-for i = 1:numel(specs_phase1)
+for i = 1:numel(specs)
     parameters = build_parameters(base_parameters, all_factors, params_table, ...
-        specs_phase1(i).levels, true, specs_phase1(i).acoustic_cache_affix, specs_phase1(i).output_affix);
-    job_id = prestus_pipeline_start(parameters);
-    if ~isempty(job_id)
-        phase1_job_ids{end+1} = job_id; %#ok<AGROW>
-    end
-end
-
-if ~strcmp(hpc_type, 'matlab') && ~isempty(phase1_job_ids)
-    fprintf('Waiting for %d phase-1 jobs to complete before submitting phase 2...\n', numel(phase1_job_ids));
-    for j = 1:numel(phase1_job_ids)
-        hpc_wait_for_completion(phase1_job_ids{j}, hpc_type);
-    end
-end
-
-%% ── Phase 2: submit every thermal-only evaluation (all caches now exist) ───
-
-for i = 1:numel(specs_phase2)
-    parameters = build_parameters(base_parameters, all_factors, params_table, ...
-        specs_phase2(i).levels, false, specs_phase2(i).acoustic_cache_affix, specs_phase2(i).output_affix);
+        specs(i).levels, specs(i).output_affix);
     prestus_pipeline_start(parameters);
 end
 
@@ -316,8 +265,8 @@ function affix = combo_affix(factors, levels)
     end
 end
 
-function parameters = build_parameters(base_parameters, all_factors, params_table, ...
-    levels, run_fresh_acoustic, acoustic_cache_affix, output_affix)
+function parameters = build_parameters(base_parameters, all_factors, params_table, levels, output_affix)
+% Full, independent evaluation (fresh acoustic + thermal solve, see header).
     level_names = {'bottom', 'top'};
     parameters = base_parameters;
     for f = 1:numel(all_factors)
@@ -325,11 +274,5 @@ function parameters = build_parameters(base_parameters, all_factors, params_tabl
             params_table.(all_factors(f).property)(strcmp(params_table.tissue, all_factors(f).tissue) & ...
                                                      strcmp(params_table.level, level_names{levels(f)}));
     end
-
-    parameters.modules.run_source_setup  = run_fresh_acoustic;
-    parameters.modules.run_acoustic_sims = run_fresh_acoustic;
-    parameters.modules.run_heating_sims  = 1;   % every point needs heating output
-    parameters.io.acoustic_cache_affix   = acoustic_cache_affix;
-    parameters.io.output_affix           = output_affix;
-    parameters.io.save_acoustic_matrices = run_fresh_acoustic;
+    parameters.io.output_affix = output_affix;
 end
