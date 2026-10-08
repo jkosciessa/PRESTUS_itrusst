@@ -65,12 +65,6 @@ for subject_id = all_subjects
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
         parameters.pct.enabled = 0;
 
-        calibrate = 0;
-        if calibrate == 1
-            [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
-                itrusst_calibrate(pn, parameters, subject_id, desired_intensity, transducer_name);
-        end
-
         %% run soft-tissue simulation
 
         cd(fullfile(rootpath, 'data', 'configs'))
@@ -89,12 +83,6 @@ for subject_id = all_subjects
         parameters.io.overwrite_files = 'always';
         parameters.io.overwrite_simnibs = 0;
         parameters.io.save_heatingvideo = 0;
-
-        if calibrate == 1
-            parameters.transducer.annular.elem_amp = opt_source_amp; % use calibrated input intensity
-            parameters.transducer.annular.elem_phase_deg = opt_source_phase_deg;
-            parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
-        end
 
         parameters.modules.run_source_setup = 1;
         parameters.modules.run_acoustic_sims = 1;

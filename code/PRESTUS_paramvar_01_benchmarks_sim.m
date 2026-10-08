@@ -18,7 +18,6 @@ variant_configs   = {'itrusst_protocol'};
 variant_intensity = [60];
 
 all_subjects = [001, 002, 303];
-calibrate = 0;
 
 for subject_id = all_subjects
 
@@ -51,11 +50,6 @@ for subject_id = all_subjects
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
         parameters.pct.enabled = 0;
 
-        if calibrate == 1
-            [opt_source_amp, opt_source_phase_deg, opt_source_phase_rad] = ...
-                itrusst_calibrate(pn, parameters, subject_id, desired_intensity, setup_name);
-        end
-
         %% run layered phantom simulation
 
         cd(fullfile(rootpath, 'data','configs'));
@@ -76,12 +70,6 @@ for subject_id = all_subjects
         parameters.io.save_heatingvideo = 0;
         parameters.io.save_matrices = 0;
 
-        if calibrate == 1
-            parameters.transducer.annular.elem_amp = opt_source_amp; % use calibrated input intensity
-            parameters.transducer.annular.elem_phase_deg = opt_source_phase_deg;
-            parameters.transducer.annular.elem_phase_rad = opt_source_phase_rad;
-        end
-        
         %% iterate over tissue parameters
         % benchmark sub-001: brain
         % benchmark sub-002: brain & skull
