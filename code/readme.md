@@ -4,12 +4,13 @@
 |---|---|
 | `code/` | main analysis chain (all stages: `itrusst_rerun_all.m`, see top-level README): phantoms, calibration, `PRESTUS_paramvar_00-04`, `PRESTUS_pipeline_01-02`, `PRESTUS_thickness_01-07`, setup/range figures |
 | `code/functions/` | shared helpers called by the scripts (no script runs from here) |
+| `code/paper/` | panels of the paper figures (`paper_fig*`, `paper_supp_fig*`), stage `itrusst_rerun_all('plot-paper')`; output in `figures/paper/fig<N>/` |
 | `code/explore/` | side analyses not (yet) used: `PRESTUS_paramvar_06-10/13`, skull sound-speed case study, sub-303 sweep, multiskull, per-voxel `plot_sub*` |
 | `code/debug/` | numerical checks (0.25 mm / 0.5 mm / 3D resolution, 2D vs 3D, calibration 2D vs 3D, benchmark 2 mismatch) and stale scripts with hard-coded paths |
 
 Scripts must be run as files (they resolve `rootpath` from their own location) and add `code/functions` to the path themselves.
 
-Figures are written to `figures/<family>/` with the same split: `tissue_ranges/`, `setups/`, `pipeline/`, `paramvar/`, `thickness/`, `explore/<topic>/`, `debug/<topic>/`. Design tables of multi-run designs are written next to their simulation output in `data/tussim/<variant>/`.
+Figures are written to `figures/<family>/` with the same split: `paper/`, `tissue_ranges/`, `setups/`, `pipeline/`, `paramvar/`, `thickness/`, `explore/<topic>/`, `debug/<topic>/`. Design tables of multi-run designs are written next to their simulation output in `data/tussim/<variant>/`.
 
 ## model overview
 
@@ -68,3 +69,23 @@ Tissue properties of a setup (`setup1`, `setup2`, `reference`, `bottom`, `top`) 
 ### `itrusst_backup_outputs.m`
 
 Moves `data/tussim`, `data/calibration` and `figures/*` aside under a date tag before a rerun, keeping the I/O paths.
+
+### paper panels (`code/paper/`, helpers `paper_*.m` in `code/functions/`)
+
+Panels at print size (8 pt Helvetica, axes boxes fixed in cm via `paper_style.m`), saved as vector PDF + 300 dpi PNG by `paper_save.m` for assembly in Illustrator. Run them all with `itrusst_rerun_all('plot-paper')` (independent of the slower diagnostic `plot` stage). Schematics, icons, legends and frames are added there. BabelBrain panels (benchmark 2 = sub-002, collaborator results in `data/pichardo/`, see `load_babelbrain_benchmark2.m`) are drawn next to their PRESTUS counterparts on a shared y-range; `paper_placeholder.m` (empty panel with the neighbouring axes) remains for collaborator panels without data.
+
+| script | panels |
+|---|---|
+| `paper_fig1_property_ranges` | Fig. 1: property ranges per tissue (`data/tissue_parameters.csv`; attenuation at 500 kHz in dB/cm) |
+| `paper_fig1_property_ranges_bone` | Fig. 1 variant: literature values per tissue class, skull split into cortical / trabecular / layer unclear (ITRUSST acoustic-properties table, `measurements.csv`, status 'included') |
+| `paper_fig23_axial_profiles` | Figs. 2/3: vertical on-axis I_SPPA / heat-rise profiles, sub-001 vs sub-002, mean and range across paramvar runs |
+| `paper_fig234_paramvar_panels` | Figs. 2-4: paramvar range panels with reference-medium lines (`paper_reference_metrics.m`) + BabelBrain counterparts of the sub-002 panels (`bb_ppw`: 9 PPW run by default, 6 PPW as convergence check) |
+| `paper_fig3_heating_difference_maps` | Fig. 3: heat-rise maps top - bottom level for skull absorption fraction and attenuation (sub-002) |
+| `paper_fig4_thickness` | Fig. 4: brain I_SPPA vs skull thickness |
+| `paper_fig5_setups` | Fig. 5: parallel plots of Setup A/B (= setup1/setup2) and toolbox defaults; brain I_SPPA and temperature rise, 3D benchmarks |
+| `paper_supp_fig1_focus` | Supp. Fig. 1: focal distance / -3 dB volume range panels; on-axis I_SPPA and -3 dB focal masks for low/high skull sound speed (sub-002) |
+| `paper_supp_fig2_density_thickness` | Supp. Fig. 2: skull temperature rise vs thickness for low/high skull density (`itrusst_protocol1a_density_thickness`) |
+
+Two inputs are not tracked in the repository: the BabelBrain CSVs (default `data/pichardo/`, override with `setenv('ITRUSST_BABELBRAIN_DIR', '<folder>')`) and the ITRUSST acoustic-properties table (default `../itrusst_acousticproperties/literature_web/data/measurements.csv`, override with `setenv('ITRUSST_MEASUREMENTS_CSV', '<file>')`). Scripts that need them stop with an error naming the missing path and the variable (`itrusst_input_path.m`).
+
+Thermal reference lines need a reference-medium (`_baseline`) run, which `PRESTUS_paramvar_00_baseline_sim.m` provides for sub-002 only; for sub-001 and sub-352 only the acoustic reference is drawn.

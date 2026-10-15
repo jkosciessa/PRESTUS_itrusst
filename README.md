@@ -37,6 +37,7 @@ itrusst_rerun_all('prepare')    % local: medium configs, thickness phantoms, ran
 itrusst_rerun_all('calibrate')  % cluster, blocking: free-water calibration -> protocol configs
 itrusst_rerun_all('simulate')   % cluster: submits all simulations
 itrusst_rerun_all('plot')       % once all jobs have finished
+itrusst_rerun_all('plot-paper') % paper figure panels only (figures/paper/)
 ```
 
 The backup matters: several simulations use `overwrite_files: never` and would otherwise skip conditions with existing outputs. Side analyses in `code/explore/` and `code/debug/` are not part of the rerun.

@@ -7,6 +7,7 @@ function itrusst_rerun_all(stage)
 %                                   % calibration, copied into the protocol configs
 %   itrusst_rerun_all('simulate')   % cluster: submits all simulations and returns
 %   itrusst_rerun_all('plot')       % after all simulation jobs have finished
+%   itrusst_rerun_all('plot-paper') % paper figure panels only (code/paper/, fast)
 %
 % Run the stages in this order. Before the first stage, move the previous
 % outputs aside with itrusst_backup_outputs(rootpath, '<yymmdd>'), as several
@@ -17,7 +18,7 @@ function itrusst_rerun_all(stage)
 % reported and the remaining steps of the stage still run.
 
 if nargin < 1
-    error('Specify a stage: ''prepare'', ''calibrate'', ''simulate'' or ''plot''.');
+    error('Specify a stage: ''prepare'', ''calibrate'', ''simulate'', ''plot'' or ''plot-paper''.');
 end
 
 user = 'julkos';
@@ -63,6 +64,16 @@ switch stage
                  'PRESTUS_thickness_03_plot', ...
                  'PRESTUS_thickness_05_density_plot', ...
                  'PRESTUS_thickness_07_soundspeed_plot'};
+
+    case 'plot-paper'
+        steps = {'paper/paper_fig1_property_ranges', ...
+                 'paper/paper_fig23_axial_profiles', ...
+                 'paper/paper_fig234_paramvar_panels', ...
+                 'paper/paper_fig3_heating_difference_maps', ...
+                 'paper/paper_fig4_thickness', ...
+                 'paper/paper_fig5_setups', ...
+                 'paper/paper_supp_fig1_focus', ...
+                 'paper/paper_supp_fig2_density_thickness'};
 
     otherwise
         error('Unknown stage ''%s''.', stage);
