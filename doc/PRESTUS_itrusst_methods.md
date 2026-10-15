@@ -121,6 +121,8 @@ To characterise the relationship between skull thickness and transcranial acoust
 
 As a follow-up, skull density was varied across its bottom, reference and top levels on every thickness phantom (all other properties at their reference values, heating enabled, shortened 20 s thermal protocol; `PRESTUS_thickness_04_density_sim.m` / `_05_density_plot.m`), to test whether the effect of skull density depends on skull thickness.
 
+Skull sound speed was swept at 9 evenly spaced values between its bottom and top bound plus the reference value (2190–2871 m/s) on the 3, 6.5 and 9 mm phantoms (sub-303/356/309; all other properties at their reference values, heating enabled, shortened 20 s thermal protocol; `PRESTUS_thickness_06_soundspeed_sim.m` / `_07_soundspeed_plot.m`). Motivation: on sub-002 the reference value transmits less intensity to the brain than either bound, in PRESTUS and BabelBrain, consistent with a skull-layer resonance (transmission minimum at an odd multiple of λ/4 in bone, maximum at multiples of λ/2). A plane-wave layer estimate (normal incidence, reference density and attenuation, 500 kHz) predicts transmission rising monotonically with sound speed at 3 mm, a minimum near 2680 m/s at 6.5 mm, and a maximum near 2230 m/s at 9 mm; the plot overlays this estimate on brain I_SPPA.
+
 ---
 
 ## Analysis 4: Interactions Between Tissue Properties (exploratory)
