@@ -56,7 +56,7 @@ clear all; close all; clc;
 % (nothing reuses any evaluation's cache, so nothing needs to persist it).
 %
 % SIMULATION DURATION: shortened thermal protocol (ptrd=20s, no post-
-% stimulation cool-off) - see doc/PRESTUS_itrusst_methods.md, Analysis 4.
+% stimulation cool-off) - see README.md, Methods, Analysis 4.
 %
 % ALWAYS validate with pilot_mode = true first (restricts to 2 of the 13
 % factors = 8 evaluations) before committing the full 52-evaluation design.

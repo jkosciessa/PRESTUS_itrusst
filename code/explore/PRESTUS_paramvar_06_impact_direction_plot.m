@@ -1,7 +1,7 @@
 % PRESTUS_PARAMVAR_06_IMPACT_DIRECTION_PLOT
 %
 % For every one-at-a-time (OAT) tissue-property perturbation from Analysis 2
-% (see doc/PRESTUS_itrusst_methods.md), determines whether moving a
+% (see README.md, Methods), determines whether moving a
 % parameter from its literature "bottom" bound to its "top" bound (per
 % data/tissue_parameters.csv) INCREASES or DECREASES these outcomes:
 %   - Isppa_brain      : intensity (spatial-peak pulse-average), wherever it

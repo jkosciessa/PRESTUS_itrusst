@@ -162,8 +162,8 @@ base_parameters.grid.pml_size = [20] / base_parameters.grid.resolution_mm;
 base_parameters.grid.axisymmetric = 1;
 base_parameters.subject_id = subject_id;
 
-% Shortened thermal protocol (see PRESTUS_paramvar_08 / doc/PRESTUS_itrusst_
-% methods.md, Analysis 4): 20s stimulation, 0s post-stimulation cool-off.
+% Shortened thermal protocol (see PRESTUS_paramvar_08 / README.md, Methods,
+% Analysis 4): 20s stimulation, 0s post-stimulation cool-off.
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
