@@ -16,14 +16,14 @@ pn.code = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 %% Configuration
 
 variant_names    = {'itrusst_protocol1a', 'itrusst_protocol1b', 'itrusst_protocol1c'};
-all_subjects     = [001, 002, 303];
+all_subjects     = [001, 002, 352];
 
 % Tissue definitions (same for all subjects; sub-001 has brain only)
 tissue_labels_sub001 = {'brain'};
 tissue_suffixes_sub001 = {'_b'};
 
-tissue_labels_sub002303 = {'brain', 'skull'};
-tissue_suffixes_sub002303 = {'_b', '_s'};
+tissue_labels_skull = {'brain', 'skull'};
+tissue_suffixes_skull = {'_b', '_s'};
 
 % Property definitions (consistent with simulation script)
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
@@ -53,8 +53,8 @@ for i_variant = 1:length(variant_names)
             tissue_labels   = tissue_labels_sub001;
             tissue_suffixes = tissue_suffixes_sub001;
         else
-            tissue_labels   = tissue_labels_sub002303;
-            tissue_suffixes = tissue_suffixes_sub002303;
+            tissue_labels   = tissue_labels_skull;
+            tissue_suffixes = tissue_suffixes_skull;
         end
 
         n_conds = length(tissue_labels) * length(property_labels);

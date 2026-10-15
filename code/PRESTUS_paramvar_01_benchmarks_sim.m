@@ -17,7 +17,7 @@ variant_names     = {'itrusst_protocol1a'};
 variant_configs   = {'itrusst_protocol'};
 variant_intensity = [60];
 
-all_subjects = [001, 002, 303];
+all_subjects = [001, 002, 352];   % sub-352 = 2.5 mm skull, most transmissive thickness (paper_fig4_thickness.m)
 
 for subject_id = all_subjects
 
