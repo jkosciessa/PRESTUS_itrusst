@@ -45,6 +45,14 @@ Reads `sub-XXX_phantom<affix>.csv` per tissue x property x sweep level and retur
 
 Same inputs as `load_paramvar_results`; reads the heatrise NIfTIs at the empirical focus voxel (`riseT_focus`) and at the fixed nominal target (`riseT_target`).
 
+### `load_babelbrain_benchmark2.m`
+
+```matlab
+[results, ref, xlabels] = load_babelbrain_benchmark2(data_dir, ppw, tissue_labels, property_labels, property_symbols)
+```
+
+Reads the BabelBrain paramvar results of benchmark 2 (Sam Pichardo; newest `data/pichardo/Benchmark2-<date>-<ppw>PPW.csv`, 6 or 9 points per wavelength) in the layout of `load_paramvar_results` (rows LOW/HIGH = sweep level 1/2). Fields `Isppa_brain`, `MI_brain`, `riseT_brain`, `riseT_skull`, `riseT_target` (fixed target), `CEM43_brain`, `CEM43_skull`; `ref` holds the `Reference` row. PRESTUS vs BabelBrain 6/9 PPW differences: `PRESTUS_paramvar_02_benchmark2_babelbrain_plot.m` (`figures/paramvar/babelbrain/`).
+
 ### `plot_metric_with_patches.m`, `make_parallel_plot.m`
 
 Range plot (min-max patch per condition, bottom/top levels as dots; brain grey, skull red) and parallel-coordinates plot of the setup property tables.
