@@ -29,9 +29,9 @@ medium_properties:
     perfusion: 559
     absorption_fraction: 0.865
   skull:
-    sound_speed: 2800
-    density: 1850
-    alpha_coeff: 8
+    sound_speed: 2550
+    density: 1775
+    alpha_coeff: 12
     alpha_power: 1
     thermal_conductivity: 0.315
     specific_heat_capacity: 1793
