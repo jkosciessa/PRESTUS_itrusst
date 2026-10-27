@@ -27,9 +27,9 @@ tissue_suffixes_skull = {'_b', '_s'};
 
 % Property definitions (consistent with simulation script)
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                     'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                     'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
-property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\alpha^{abs}'};
 
 sweep_values  = 1:2;
 scatter_levels = [1, 2];

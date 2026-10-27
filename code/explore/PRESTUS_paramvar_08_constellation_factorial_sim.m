@@ -12,7 +12,7 @@ clear all; close all; clc;
 % METHOD: for each of the other 13 factors (5 other acoustic-relevant:
 % skull sound_speed/alpha_coeff, brain sound_speed/density/alpha_coeff;
 % 8 thermal-relevant: thermal_conductivity/specific_heat_capacity/
-% perfusion/absorption_fraction x brain/skull), a 2x2 grid is run: skull
+% perfusion/absorption_coeff x brain/skull), a 2x2 grid is run: skull
 % density (bottom/top) x that factor (bottom/top), with every OTHER
 % property held at its literature midpoint. This is a direct, exact
 % (not screened/statistical) interaction estimate per pair:
@@ -84,7 +84,7 @@ tissue_labels = {'brain', 'skull'};
 tissue_suffixes = {'_b', '_s'};
 acoustic_properties = {'sound_speed', 'density', 'alpha_coeff'};
 acoustic_suffixes   = {'_c_', '_rho_', '_a0_'};
-thermal_properties  = {'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+thermal_properties  = {'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 thermal_suffixes    = {'_k_', '_heatc_', '_perf_', '_abs_'};
 
 %% ── Detect job-submission platform (auto mode) ──────────────────────────────

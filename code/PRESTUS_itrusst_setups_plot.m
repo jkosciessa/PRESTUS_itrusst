@@ -31,9 +31,9 @@ if ~isfolder(pn.figures); mkdir(pn.figures); end
 freq_mhz = 0.5; % itrusst protocol 1
 
 property_fields = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                   'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                   'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_labels = {'Sound Speed', 'Density', 'Att. (dB/cm)', 'Thermal conduct.', ...
-                   'Specific Heat', 'Perf.', 'Abs. %'};
+                   'Specific Heat', 'Perf.', 'Abs. (dB/cm)'};
 
 setup_labels = {'Setup 1', 'Setup 2', 'PRESTUS', 'BabelBrain', 'k-Plan'};
 setup_colors = {[0.70 0.00 0.00], [0.00 0.60 0.50], [0.00 0.45 0.74], ...
@@ -61,6 +61,7 @@ for t = 1:numel(tissue_labels)
             data(s, p) = m.(property_fields{p});
         end
         data(s, strcmp(property_fields, 'alpha_coeff')) = m.alpha_coeff * freq_mhz^m.alpha_power;
+        data(s, strcmp(property_fields, 'absorption_coeff')) = m.absorption_coeff * freq_mhz^m.alpha_power;
     end
     data(strcmp(setup_labels, 'k-Plan'), strcmp(property_fields, 'perfusion')) = NaN; % not reported
 

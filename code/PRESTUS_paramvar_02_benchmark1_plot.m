@@ -13,9 +13,9 @@ subject_id       = 1;
 tissue_labels    = {'brain'};
 tissue_suffixes  = {'_b'};
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                     'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                     'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
-property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\alpha^{abs}'};
 sweep_values      = 1:2;
 
 [results, xlabels] = load_paramvar_results(pn.data, subject_id, ...

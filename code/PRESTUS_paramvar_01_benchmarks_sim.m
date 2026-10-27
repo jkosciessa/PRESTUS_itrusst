@@ -89,7 +89,7 @@ for subject_id = all_subjects
         % Define property labels and short suffixes
         property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
-                           'absorption_fraction'};
+                           'absorption_coeff'};
         property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 
         % define loops
@@ -140,7 +140,8 @@ for subject_id = all_subjects
                     parameters.grid.resolution_mm = 0.5;
                     parameters.grid.default_dims = [70, 120]/parameters.grid.resolution_mm;
                     parameters.grid.pml_size = [20]/parameters.grid.resolution_mm; % 20 mm PML, matches primary pipeline configs
-                    parameters.hpc.timelimit = '04:00:00';
+                    parameters.hpc.timelimit = '01:45:00'; % runs took <= 72 min
+                    parameters.hpc.memorylimit = 8;        % peak RAM <= 3.8 GB
                     parameters.grid.axisymmetric = 1;
   
                     parameters.subject_id = subject_id;

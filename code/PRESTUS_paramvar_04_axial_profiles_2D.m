@@ -57,9 +57,9 @@ subjects = struct( ...
     'tissue_suffixes', {{'_b'},        {'_b', '_s'}});
 
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                     'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                     'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
-property_symbols  = {'c', '\rho', '\alpha_0', '\kappa', 'c_p', '\omega', '\beta'};
+property_symbols  = {'c', '\rho', '\alpha_0', '\kappa', 'c_p', '\omega', '\alpha^{abs}'};
 
 level_colors = {[0.2 0.5 0.9], [0.9 0.3 0.2]};   % blue = bottom, red = top
 level_labels = {'bottom (min)', 'top (max)'};

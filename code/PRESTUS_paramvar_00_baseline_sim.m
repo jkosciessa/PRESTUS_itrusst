@@ -47,7 +47,7 @@ if ~exist(pn.outputs_folder, 'dir'); mkdir(pn.outputs_folder); end
 
 tissue_labels   = {'brain', 'skull'};
 property_labels = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                   'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                   'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 
 params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));
 for t = 1:length(tissue_labels)

@@ -23,10 +23,10 @@ params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));
 tissue_labels    = {'brain', 'skull'};
 tissue_suffixes  = {'b', 's'};
 property_labels  = {'sound_speed', 'density', 'alpha_coeff', 'specific_heat_capacity', ...
-                     'thermal_conductivity', 'perfusion', 'absorption_fraction'};
-property_symbols = {'c', '\rho', '\alpha', 'c_p', '\kappa', '\omega', '\beta'};
+                     'thermal_conductivity', 'perfusion', 'absorption_coeff'};
+property_symbols = {'c', '\rho', '\alpha', 'c_p', '\kappa', '\omega', '\alpha^{abs}'};
 property_units   = {'m/s', 'kg/m^3', 'dB/(MHz^y cm)', 'J/(kg K)', ...
-                     'W/(m K)', 'mL/min/kg', 'fraction (0-1)'};
+                     'W/(m K)', 'mL/min/kg', 'dB/(MHz^y cm)'};
 
 %% 1. Build a results table (bottom / mid / top per tissue x property)
 

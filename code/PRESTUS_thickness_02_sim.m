@@ -78,7 +78,7 @@ for subject_id = all_subjects
         % Define property labels and short suffixes
         property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
-                           'absorption_fraction'};
+                           'absorption_coeff'};
         property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 
         % define loops
@@ -112,6 +112,8 @@ for subject_id = all_subjects
         parameters.grid.pml_size = [20]/parameters.grid.resolution_mm; % 20 mm PML, matches primary pipeline configs
 
         parameters.modules.run_heating_sims = 0;
+        parameters.hpc.timelimit = '00:20:00'; % acoustic only: runs took <= 7 min
+        parameters.hpc.memorylimit = 6;        % peak RAM <= 2.4 GB
 
         parameters.subject_id = subject_id;
         prestus_pipeline_start(parameters);

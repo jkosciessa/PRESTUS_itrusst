@@ -2,7 +2,8 @@ function [results, ref, xlabels] = load_babelbrain_benchmark2(data_dir, ppw, ...
     tissue_labels, property_labels, property_symbols)
 % BabelBrain results of the one-at-a-time parameter variation on benchmark 2
 % (skull + brain phantom, = PRESTUS sub-002), provided by Sam Pichardo as
-% data/pichardo/Benchmark2-<Mon-dd-yyyy>-<ppw>PPW.csv (newest date is used).
+% data/pichardo/Benchmark2-<Mon dd yyyy>-<ppw>PPW.csv (date fields separated by
+% spaces or hyphens; newest date is used).
 %
 % Same layout as load_paramvar_results: conditions are tissue x property
 % (tissue outer loop), rows are the LOW / HIGH level (= sweep level 1 / 2,
@@ -14,7 +15,8 @@ function [results, ref, xlabels] = load_babelbrain_benchmark2(data_dir, ppw, ...
 %   tissue_labels     - e.g. {'brain','skull'}
 %   property_labels   - PRESTUS property names: sound_speed, density,
 %                       alpha_coeff, thermal_conductivity,
-%                       specific_heat_capacity, perfusion, absorption_fraction
+%                       specific_heat_capacity, perfusion, absorption_coeff
+%                       (absorption_fraction, deprecated, maps to the same column)
 %   property_symbols  - (optional) TeX symbols, labels become 'sym_{b|s}'
 %
 % Outputs:
@@ -47,7 +49,7 @@ cols = {'Isppa_brain',  'Max. Intensity Brain'
 % BabelBrain name per PRESTUS property
 bb_prop = struct('sound_speed', 'SoS', 'density', 'Density', 'alpha_coeff', 'Attenuation', ...
     'thermal_conductivity', 'Thermal Conductivity', 'specific_heat_capacity', 'Specific Heat', ...
-    'perfusion', 'Perfusion', 'absorption_fraction', 'Absorption');
+    'perfusion', 'Perfusion', 'absorption_coeff', 'Absorption', 'absorption_fraction', 'Absorption');
 levels = {'LOW', 'HIGH'};
 
 T = readtable(csv_file, 'VariableNamingRule', 'preserve', 'TextType', 'char', 'Delimiter', ',');
@@ -105,9 +107,10 @@ if isempty(files)
 end
 dates = NaT(numel(files), 1);
 for f = 1:numel(files)
-    tok = regexp(files(f).name, '^Benchmark2-(\w{3}-\d{1,2}-\d{4})-', 'tokens', 'once');
+    % date fields are separated by '-' or ' ' (both occur in delivered files)
+    tok = regexp(files(f).name, '^Benchmark2-(\w{3})[- ](\d{1,2})[- ](\d{4})-', 'tokens', 'once');
     if ~isempty(tok)
-        dates(f) = datetime(tok{1}, 'InputFormat', 'MMM-dd-yyyy', 'Locale', 'en_US');
+        dates(f) = datetime(strjoin(tok, '-'), 'InputFormat', 'MMM-dd-yyyy', 'Locale', 'en_US');
     end
 end
 [~, i_new] = max(dates);

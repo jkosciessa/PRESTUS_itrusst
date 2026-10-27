@@ -37,7 +37,7 @@ clear all; close all; clc;
 % (sound_speed/density/alpha_coeff x brain/skull) are flipped FIRST (in
 % random relative order among themselves), then the 8 thermal-relevant
 % factors (thermal_conductivity/specific_heat_capacity/perfusion/
-% absorption_fraction x brain/skull) - a grouped ordering (a valid Morris
+% absorption_coeff x brain/skull) - a grouped ordering (a valid Morris
 % design choice). It was introduced for an acoustic-cache-reuse scheme and
 % is kept so that the design (rng_seed 42) stays the same as before.
 %
@@ -105,7 +105,7 @@ tissue_labels = {'brain', 'skull'};
 tissue_suffixes = {'_b', '_s'};
 acoustic_properties = {'sound_speed', 'density', 'alpha_coeff'};
 acoustic_suffixes   = {'_c_', '_rho_', '_a0_'};
-thermal_properties  = {'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+thermal_properties  = {'thermal_conductivity', 'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 thermal_suffixes    = {'_k_', '_heatc_', '_perf_', '_abs_'};
 
 %% ── Detect job-submission platform (auto mode) ──────────────────────────────

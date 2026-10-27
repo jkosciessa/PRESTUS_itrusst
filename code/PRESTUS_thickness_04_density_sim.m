@@ -86,11 +86,12 @@ base_parameters.grid.axisymmetric = 1;
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
-base_parameters.hpc.timelimit = '00:30:00';  % 00:15:00 was too short for the thermal stage
+base_parameters.hpc.timelimit = '00:45:00';  % runs took <= 29 min; 00:30:00 left no margin
+base_parameters.hpc.memorylimit = 6;         % peak RAM <= 3.1 GB
 
 tissue_labels = {'brain', 'skull'};
 property_labels = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                    'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                    'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 
 %% ── Build the design table + job specs ──────────────────────────────────────
 

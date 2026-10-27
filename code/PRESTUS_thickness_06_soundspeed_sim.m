@@ -98,11 +98,12 @@ base_parameters.grid.axisymmetric = 1;
 base_parameters.timing.ptrd = 20;
 base_parameters.timing.post_ptri_dur = 0;
 
-base_parameters.hpc.timelimit = '00:30:00';  % as PRESTUS_thickness_04
+base_parameters.hpc.timelimit = '00:45:00';  % as PRESTUS_thickness_04
+base_parameters.hpc.memorylimit = 6;
 
 tissue_labels = {'brain', 'skull'};
 property_labels = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                    'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                    'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 
 %% ── Build the design table ──────────────────────────────────────────────────
 

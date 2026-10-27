@@ -50,7 +50,7 @@ pn.data      = fullfile(rootpath, 'data', 'tussim', variant_name, sub_str);
 tissue_labels      = {'brain', 'skull'};
 tissue_suffixes    = {'_b', '_s'};
 property_labels    = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                      'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                      'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_suffixes  = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 magnitude_suffixes = {'1', '2'}; % bottom, top
 

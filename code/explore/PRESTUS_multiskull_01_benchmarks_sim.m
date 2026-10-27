@@ -110,7 +110,7 @@ for subject_id = all_subjects
         % Define property labels and short suffixes
         property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
-                           'absorption_fraction'};
+                           'absorption_coeff'};
         property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
 
         % define loops

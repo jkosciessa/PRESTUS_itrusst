@@ -73,9 +73,9 @@ pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 %% ── OAT sweep definitions (matches PRESTUS_paramvar_01_benchmarks_sim.m) ────
 
 property_labels   = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                     'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                     'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
-property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\beta'};
+property_symbols  = {'c', '\rho', '\alpha', '\kappa', 'c_p', '\omega', '\alpha^{abs}'};
 sweep_values      = 1:2; % 1 = bottom bound, 2 = top bound (tissue_parameters.csv)
 
 %% ── Load OAT sweep results ───────────────────────────────────────────────
