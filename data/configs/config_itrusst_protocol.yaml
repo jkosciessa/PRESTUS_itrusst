@@ -15,8 +15,11 @@ transducer:
   focal_distance_ep: 55.42562584220407
   focal_distance_bowl: 64.0
   focal_distance_offset: 8.57437415779593
-  annular: {elem_n: 1.0, elem_id_mm: 0.0, elem_od_mm: 64.0, elem_p_amp: 68361.0, elem_phase_deg: 295.7391672580492,
-    curv_radius_mm: 64.0, dist_geom_ep_mm: 55.42562584220407, depth_mm: 1.0, elem_phase_rad: 5.161622195759169}
+  annular: {elem_n: 1.0, elem_id_mm: 0.0, elem_od_mm: 64.0, elem_p_amp: 71980.5390625,
+    elem_phase_deg: 295.7391672580492, curv_radius_mm: 64.0, dist_geom_ep_mm: 55.42562584220407,
+    depth_mm: 1.0, elem_phase_rad: 5.161622195759169}
+  target_isppa_wcm2: 60.0   # free-water ISPPA the annular drive above was calibrated for (itrusst_apply_calibration)
+  tx_calibration: {isppa_wcm2: 60.0, phase_source: library, isppa_source: library}
 
 modules:
   run_source_setup: 1
@@ -43,6 +46,7 @@ medium_properties:
     alpha_power: 2
     thermal_conductivity: 0.60
     specific_heat_capacity: 4178
+    absorption_coeff: 0.0022 # [dB/(cm MHz^y)], used with thermal.absorption_model: coefficient
   brain:
     sound_speed: 1546
     density: 1045
@@ -50,6 +54,7 @@ medium_properties:
     alpha_power: 1
     thermal_conductivity: 0.51
     specific_heat_capacity: 3630
+    absorption_coeff: 0.186 # reference (data/tissue_parameters.csv); analysis scripts and medium configs override
   skull:
     sound_speed: 2800
     density: 1850
@@ -57,6 +62,7 @@ medium_properties:
     alpha_power: 1
     thermal_conductivity: 0.32
     specific_heat_capacity: 1313
+    absorption_coeff: 2.8 # reference (data/tissue_parameters.csv); analysis scripts and medium configs override
   skull_trabecular: # trabecular bone
     sound_speed: 2200 # [m/s]
     density: 1178 # [kg/m^3]
@@ -65,6 +71,7 @@ medium_properties:
     thermal_conductivity: 0.31 # [W/m/°C]
     specific_heat_capacity: 2274 # [J/kg/°C]
     perfusion: 30
+    absorption_coeff: 2.8 # whole-skull reference (data/tissue_parameters.csv); absorption_fraction deprecated
     absorption_fraction: 0.58
   skull_cortical: # cortical bone
     sound_speed: 2850 # [m/s]
@@ -74,6 +81,7 @@ medium_properties:
     thermal_conductivity: 0.32 # [W/m/°C]
     specific_heat_capacity: 1313 # [J/kg/°C]
     perfusion: 10
+    absorption_coeff: 2.8 # whole-skull reference (data/tissue_parameters.csv); absorption_fraction deprecated
     absorption_fraction: 0.58
 
 timing:
@@ -89,6 +97,7 @@ timing:
   equal_step_duration: 0
 
 thermal:
+  absorption_model: coefficient # heat deposition from medium_properties.*.absorption_coeff; absorption_fraction is deprecated here
   cem43_iso: 1
   temp_0:
     water: 37
