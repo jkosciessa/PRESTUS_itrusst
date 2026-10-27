@@ -18,7 +18,7 @@ sub-001 | soft-tissue only, 64 mm focus (2D axisymmetric, 0.5 mm)
 sub-002 | soft-tissue + skull, 64 mm focus (2D axisymmetric, 0.5 mm)
 sub-003 | soft-tissue + skull with cortical/trabecular layers (multiskull, explore)
 
-sub-101/102 | 3D counterparts of sub-001/002 (pipeline comparison, 3D benchmarks)
+sub-101/102 | 3D phantoms of sub-001/002 (pipeline comparison; axisymmetric acoustics, thermal on the radially expanded 3D field)
 sub-201/202 | 0.25 mm counterparts of sub-001/002 (debug)
 sub-301..312 | skull thickness 1..12 mm
 sub-351..361 | skull thickness 1.5..11.5 mm (see `itrusst_thickness_subjects.m`)
@@ -80,11 +80,14 @@ Panels at print size (8 pt Helvetica, axes boxes fixed in cm via `paper_style.m`
 | `paper_fig1_property_ranges_bone` | Fig. 1 variant: literature values per tissue class, skull split into cortical / trabecular / layer unclear (ITRUSST acoustic-properties table, `measurements.csv`, status 'included') |
 | `paper_fig23_axial_profiles` | Figs. 2/3: vertical on-axis I_SPPA / heat-rise profiles, sub-001 vs sub-002, mean and range across paramvar runs |
 | `paper_fig234_paramvar_panels` | Figs. 2-4: paramvar range panels with reference-medium lines (`paper_reference_metrics.m`) + BabelBrain counterparts of the sub-002 panels (`bb_ppw`: 9 PPW run by default, 6 PPW as convergence check) |
-| `paper_fig3_heating_difference_maps` | Fig. 3: heat-rise maps top - bottom level for skull absorption fraction and attenuation (sub-002) |
+| `paper_fig3_heating_difference_maps` | Fig. 3: heat-rise maps top - bottom level for skull absorption coefficient and attenuation (sub-002) |
 | `paper_fig4_thickness` | Fig. 4: brain I_SPPA vs skull thickness |
 | `paper_fig5_setups` | Fig. 5: parallel plots of Setup A/B (= setup1/setup2) and toolbox defaults; brain I_SPPA and temperature rise, 3D benchmarks |
+| `paper_fig5_tool_heating_maps` | Fig. 5 (candidate): heat-rise maps of the toolbox defaults (PRESTUS, k-Plan*, BabelBrain*) and their pairwise differences in the plane through the beam axis, sub-101/102 |
 | `paper_supp_fig1_focus` | Supp. Fig. 1: focal distance / -3 dB volume range panels; on-axis I_SPPA and -3 dB focal masks for low/high skull sound speed (sub-002) |
 | `paper_supp_fig2_density_thickness` | Supp. Fig. 2: skull temperature rise vs thickness for low/high skull density (`itrusst_protocol1a_density_thickness`) |
+| `paper_supp_fig2_density_resonance` | Supp. Fig. 2 (combined): (a) skull temperature rise vs thickness for low/high density with the 1D-model high/low ratio of peak heat deposition (right axis); (b) 1D pressure profiles at lambda/2 and 3/4 lambda (`suppfig2_density_combined`) |
+| `paper_supp_fig3_attenuation_frequency` | Supp. Fig. 3: reported skull attenuation (dB/cm) vs frequency, (a) whole skull / layer not separated, (b) cortical tables and diploë, with the Table 1 LOW-HIGH range at 0.5 MHz; 0-2.3 MHz and 0-1 MHz versions (`data/literature_skull-attenuation_values.csv`) |
 
 Two inputs are not tracked in the repository: the BabelBrain CSVs (default `data/pichardo/`, override with `setenv('ITRUSST_BABELBRAIN_DIR', '<folder>')`) and the ITRUSST acoustic-properties table (default `../itrusst_acousticproperties/literature_web/data/measurements.csv`, override with `setenv('ITRUSST_MEASUREMENTS_CSV', '<file>')`). Scripts that need them stop with an error naming the missing path and the variable (`itrusst_input_path.m`).
 

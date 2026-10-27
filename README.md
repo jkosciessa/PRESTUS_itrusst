@@ -51,7 +51,7 @@ Transcranial focused ultrasound (TUS) simulations were conducted using PRESTUS (
 
 Two-dimensional axisymmetric phantoms were constructed at 0.5 mm isotropic resolution and stored as NIfTI volumes in SimNIBS m2m-folder format (`final_tissues.nii.gz`). The active simulation domain spanned 70 × 120 mm (140 × 240 voxels laterally and axially), with a 20 mm perfectly-matched layer (PML; 40 voxels at 0.5 mm resolution) appended externally by k-Wave to absorb outgoing waves.
 
-Two standard benchmarks were used. **Benchmark 1** modelled a water–soft tissue interface, with soft tissue (label 1) beginning at 30 mm depth from the proximal domain edge. **Benchmark 2** modelled a transcranial geometry comprising a water column, a hemispherical skull annulus (inner radius 68.5 mm, outer radius 75 mm from the geometric centre), and brain tissue filling the interior. Both phantoms were treated as 2D axisymmetric (cylindrical symmetry) to reduce computation time. For the pipeline comparison (Analysis 1), three-dimensional counterparts of both benchmarks (sub-101, sub-102; 140 × 140 × 240 voxels at 0.5 mm) were simulated with C++ GPU code.
+Two standard benchmarks were used. **Benchmark 1** modelled a water–soft tissue interface, with soft tissue (label 1) beginning at 30 mm depth from the proximal domain edge. **Benchmark 2** modelled a transcranial geometry comprising a water column, a hemispherical skull annulus (inner radius 68.5 mm, outer radius 75 mm from the geometric centre), and brain tissue filling the interior. Both phantoms were treated as 2D axisymmetric (cylindrical symmetry) to reduce computation time. For the pipeline comparison (Analysis 1), three-dimensional phantoms of both benchmarks (sub-101, sub-102; 140 × 140 × 240 voxels at 0.5 mm) were used. Their acoustic simulations were also axisymmetric (140 × 240 half-plane grid, C++ GPU code); the pressure field was expanded radially to 3D, and the thermal simulation ran on the 140 × 140 × 240 grid.
 
 #### Transducer
 
@@ -63,11 +63,11 @@ The source amplitude was calibrated once per protocol by a free-water acoustic s
 
 > Isppa = p²_max / (2ρc) × 10⁻⁴  [W/cm²]
 
-A linear correction factor was then applied to scale the source pressure amplitude (`elem_p_amp`) to achieve the target intensity of 60 W/cm². The calibrated amplitude and phase are copied into the `annular` block of `data/configs/config_itrusst_protocol.yaml` (`itrusst_apply_calibration`) and used by all subsequent tissue simulations.
+Because intensity scales with the square of the source pressure in the linear simulation, the source pressure amplitude (`elem_p_amp`) was multiplied by √(60 W/cm² / Isppa) to reach the target intensity of 60 W/cm². The transducer has a single element, so its phase has no effect and was kept from the config. The calibrated amplitude and phase are written to `data/calibration/PRESTUS_virtual_parameters/` (`save_optimized_values`), then copied into the `annular` block of `data/configs/config_itrusst_protocol.yaml` (`itrusst_apply_calibration`) and used by all subsequent tissue simulations.
 
 #### Acoustic simulation
 
-Acoustic pressure fields were computed using k-Wave (v1.4.1), a pseudospectral time-domain solver implementing the linearised pressure–velocity equations in heterogeneous media. Simulations used a Courant-Friedrichs-Lewy (CFL) stability number of 0.15 and were run with the k-Wave C++ binaries: CPU (`cpp_cpu`) for calibration, the one-at-a-time sweep and the thickness sweeps, GPU (`cpp_gpu`) for the reference-medium baseline and the 3D pipeline comparison. The output of each acoustic simulation was the spatial maximum pressure field p_max(x) across all time steps, from which the following metrics were derived per tissue compartment:
+Acoustic pressure fields were computed using k-Wave (v1.4.1), a pseudospectral time-domain solver implementing the linearised pressure–velocity equations in heterogeneous media. Simulations used a Courant-Friedrichs-Lewy (CFL) stability number of 0.15 and were run with the k-Wave C++ binaries: CPU (`cpp_cpu`) for calibration, the one-at-a-time sweep and the thickness sweeps, GPU (`cpp_gpu`) for the reference-medium baseline and the pipeline comparison. The output of each acoustic simulation was the spatial maximum pressure field p_max(x) across all time steps, from which the following metrics were derived per tissue compartment:
 
 - **Isppa** [W/cm²]: spatial peak pulse-average intensity = p²_max / (2ρc)
 - **Ipa_target** [W/cm²]: mean intensity averaged over a circular target region
@@ -83,7 +83,9 @@ Thermal simulations were performed using k-Wave's `kWaveDiffusion` solver, which
 
 where ρ is density, c is specific heat capacity, k is thermal conductivity, ω is the blood perfusion coefficient [s⁻¹], T_blood = 37°C, and Q is the acoustic heat deposition rate:
 
-> Q = α × p²_max / (ρ × c) × absorption_fraction  [W/m³]
+> Q = α_abs × p²_max / (ρ × c)  [W/m³]
+
+where α_abs is the absorption coefficient [Np/m] at the source frequency, set per tissue as `absorption_coeff` [dB/(MHz^y·cm)] with the tissue's attenuation power law y (`thermal.absorption_model: coefficient`, set in `config_itrusst_protocol.yaml` and the medium configs). Earlier revisions used a fraction of the attenuation (Q = α × p²_max / (ρ × c) × absorption_fraction); the absorption fraction is deprecated.
 
 The sonication timing followed a pulse-train paradigm: pulse duration (PD) 20 ms, pulse repetition interval (PRI) 200 ms, pulse train duration (PTD) 200 ms, pulse train repetition interval (PTRI) 200 ms, and total pulse-train repetition duration (PTRD) 80 s, followed by an 80 s post-PTRI cooldown. Thermal modelling time steps were 20 ms during the pulse and 1 s post-pulse. Thermal outputs included maximum temperature rise (maxT, riseT), end-of-sonication temperature (endT), and thermal dose expressed as Cumulative Equivalent Minutes at 43°C (CEM43) computed both by the k-Wave native method and per ISO 13 standards. All metrics were extracted per tissue compartment (brain, skull, skin) and written to per-subject CSV summary tables.
 
@@ -95,7 +97,7 @@ To quantify how assumptions about tissue acoustic and thermal properties propaga
 
 | Configuration | Rationale |
 |---|---|
-| **setup 1** | Per property, the literature bound that maximises predicted brain heating |
+| **setup 1** | Per property, the literature bound that maximises predicted brain heating (within the literature bounds; the kPlan defaults exceed setup 1 in brain and skull absorption) |
 | **setup 2** | Per property, the opposite bound (minimises predicted heating) |
 | **reference** | Literature reference values |
 | **PRESTUS** | PRESTUS toolbox defaults |
@@ -104,31 +106,31 @@ To quantify how assumptions about tissue acoustic and thermal properties propaga
 
 The literature values (bottom/reference/top per tissue and property) are kept in `data/tissue_parameters.csv` (source table: `data/tissue_parameters_source.md`), and the bound used by setup 1 and setup 2 per property in `data/tissue_setups.csv`. The bound directions follow the one-at-a-time effect on brain heating (Analysis 2). `config_medium_setup1/reference/setup2.yaml` are generated from these files (`code/functions/itrusst_write_medium_configs.m`); the tool defaults are hand-written `config_medium_<tool>.yaml` files. Water is identical across configurations (c = 1482 m/s, ρ = 994 kg/m³, α = 0.00055 dB/cm at 500 kHz with y = 2).
 
-For each configuration, acoustic and thermal simulations were run on the 3D versions of Benchmark 1 (soft tissue only, sub-101) and Benchmark 2 (skull + brain, sub-102) at a target intensity of 60 W/cm² (`PRESTUS_pipeline_01_benchmark1_sim.m`). Simulation outputs (maxT, Ipa_target) were extracted from per-subject CSV tables and compared across configurations.
+For each configuration, acoustic and thermal simulations were run on the 3D phantoms of Benchmark 1 (soft tissue only, sub-101) and Benchmark 2 (skull + brain, sub-102) at a target intensity of 60 W/cm² (`PRESTUS_pipeline_01_benchmark1_sim.m`; axisymmetric acoustics, thermal simulation on the radially expanded 3D field). Simulation outputs (maxT, Ipa_target) were extracted from per-subject CSV tables and compared across configurations.
 
-Attenuation is specified at 500 kHz and converted to PRESTUS' 1 MHz coefficient α₀ = α(500 kHz) / 0.5^y (dB/(MHz^y·cm); y = 1 for brain and skull). Both are listed below.
+Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 MHz coefficients α₀ = α(500 kHz) / 0.5^y and α_abs,0 = α_abs(500 kHz) / 0.5^y (dB/(MHz^y·cm); y = 1 for brain and skull). Both are listed below. PRESTUS uses its v05 default absorption coefficients (`config/config_default.yaml`; brain = attenuation, a conservative and provisional default; skull 3.78 dB/(MHz·cm) after Pinton et al., 2012) and its default brain power law y = 1.2. BabelBrain and kPlan specify absorption as a fraction of attenuation; their absorption coefficients are that fraction × the tool's own α₀ (BabelBrain: brain 0.85, skull 0.163; kPlan: 1.0, 1.0). All tool configurations are simulated with `thermal.absorption_model: coefficient` like the literature setups.
 
 **Brain properties by configuration:**
 
-| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | Absorption fraction |
-|---|---|---|---|---|---|---|---|---|
-| setup 1 | 1520 | 1040 | 0.493 | 0.986 | 0.48 | 3525 | 196 | 1.0 |
-| setup 2 | 1568 | 1050 | 0.236 | 0.472 | 0.55 | 3718 | 809 | 0.73 |
-| reference | 1560 | 1040 | 0.30 | 0.60 | 0.51 | 3630 | 559 | 0.865 |
-| PRESTUS | 1546 | 1046 | 0.26 | 0.52 | 0.51 | 3630 | 559 | 1.0 |
-| BabelBrain | 1562 | 1041 | 0.24 | 0.48 | 0.51 | 3630 | 559 | 0.85 |
-| kPlan | 1550 | 1045 | 0.26 | 0.52 | 0.51 | 3600 | 0 | 1.0 |
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | α_abs @ 500 kHz (dB/cm) | α_abs,0 (dB/(MHz·cm)) |
+|---|---|---|---|---|---|---|---|---|---|
+| setup 1 | 1520 | 1040 | 0.493 | 0.986 | 0.48 | 3525 | 196 | 0.231 | 0.462 |
+| setup 2 | 1573 | 1050 | 0.236 | 0.472 | 0.55 | 3718 | 809 | 0.045 | 0.09 |
+| reference | 1560 | 1040 | 0.30 | 0.60 | 0.51 | 3630 | 559 | 0.093 | 0.186 |
+| PRESTUS | 1546 | 1046 | 0.257 | 0.59 (y = 1.2) | 0.51 | 3630 | 559 | 0.257 | 0.59 (y = 1.2) |
+| BabelBrain | 1562 | 1041 | 0.24 | 0.48 | 0.51 | 3630 | 559 | 0.204 | 0.408 |
+| kPlan | 1550 | 1045 | 0.26 | 0.52 | 0.51 | 3600 | 0 | 0.26 | 0.52 |
 
 **Skull properties by configuration:**
 
-| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | Absorption fraction |
-|---|---|---|---|---|---|---|---|---|
-| setup 1 | 2871 | 1080 | 11.7 | 23.4 | 0.30 | 826 | 0 | 1.0 |
-| setup 2 | 2190 | 1991 | 3.22 | 6.44 | 0.36 | 2524 | 30 | 0.16 |
-| reference | 2550 | 1775 | 6.0 | 12.0 | 0.315 | 1793 | 20 | 0.58 |
-| PRESTUS | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1793 | 20 | 0.28 |
-| BabelBrain | 2800 | 1850 | 6.65 | 13.3 | 0.315 | 1793 | 20 | 0.163 |
-| kPlan | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1300 | 0 | 1.0 |
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | α_abs @ 500 kHz (dB/cm) | α_abs,0 (dB/(MHz·cm)) |
+|---|---|---|---|---|---|---|---|---|---|
+| setup 1 | 2871 | 1080 | 11.7 | 23.4 | 0.30 | 826 | 0 | 4.02 | 8.04 |
+| setup 2 | 2190 | 1991 | 4.02 | 8.04 | 0.36 | 2524 | 30 | 1.05 | 2.10 |
+| reference | 2550 | 1775 | 6.0 | 12.0 | 0.315 | 1793 | 20 | 1.40 | 2.80 |
+| PRESTUS | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1793 | 20 | 1.89 | 3.78 |
+| BabelBrain | 2800 | 1850 | 6.65 | 13.3 | 0.315 | 1793 | 20 | 1.08 | 2.17 |
+| kPlan | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1300 | 0 | 6.65 | 13.3 |
 
 The skull reference sound speed, density and attenuation are the mean of the cortical and trabecular bone values of Aubry et al. (2022) rather than literature-table values (`data/tissue_parameters_source.md`).
 
@@ -146,7 +148,7 @@ To isolate the contribution of individual tissue parameters to simulation output
 | Thermal conductivity | k | W/m/K |
 | Specific heat capacity | c_p | J/kg/K |
 | Blood perfusion | ω | mL/min/kg |
-| Absorption fraction | — | — |
+| Absorption coefficient | α_abs,0 | dB/(MHz^y·cm) |
 
 Parameter bounds were drawn from a literature-informed tissue property table (`tissue_parameters.csv`). Brain parameters were perturbed for Benchmark 1 (sub-001); both brain and skull parameters were perturbed for Benchmark 2 (sub-002) and for the 2.5 mm thickness phantom (sub-352, the most transmissive skull thickness; see Analysis 3). For each perturbation, a separate simulation was run with a unique output filename affix encoding the tissue, parameter, and bound level (e.g., `_b_c_1` = brain sound speed lower bound; `_s_a0_2` = skull attenuation upper bound). One protocol variant was evaluated (`itrusst_protocol1a`: `config_itrusst_protocol.yaml`, 500 kHz, 60 W/cm²; outputs in `data/tussim/itrusst_protocol1a/`).
 
