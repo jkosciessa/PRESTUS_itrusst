@@ -50,7 +50,7 @@ distance_inner  = distance_outer - thickness;
 cx      = round(35 / res);                       % lateral beam axis: vox 140
 r_outer = distance_outer / res;                  % 300 vox
 r_inner = distance_inner / res;                  % 274 vox
-cz      = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 420 (= 105 mm)
+cz      = skull_apex_z_mm / res + 1 + r_outer;   % centre of curvature: vox 421 (= 105 mm depth; apex vox 121 = 30 mm)
 
 % Skull subdivision
 t_cort = 2;    % cortical layer thickness [mm]

@@ -32,6 +32,11 @@
 %     Centre of curvature             : 30 + 75 = 105 mm (on the brain side)
 %     Brain fills everything inside the inner skull surface.
 %
+% ── Depth convention ────────────────────────────────────────────────────────
+%   Voxel z lies at depth (z − 1)·res from the bowl apex (trans_pos z = 1;
+%   focus at vox 1 + 64/res = 129). A layer from depth d covers voxels
+%   d/res + 1 onwards, as for the benchmark 1 interface (vox 61 = 30 mm).
+%
 % See also: CREATEPHANTOM3D, PRESTUS_PARAMVAR_01_BENCHMARKS_SIM
 
 %% paths
@@ -70,28 +75,28 @@ fprintf('Benchmark 1 written -> %s\n', pn.benchmark1);
 % The skull is a spherical cap convex toward the transducer (anatomically
 % realistic orientation).  The centre of curvature lies on the brain side:
 %
-%   cz  =  apex_depth + r_outer  =  30/res + 150  =  60 + 150  =  210 vox
+%   cz  =  apex_depth/res + 1 + r_outer  =  60 + 1 + 150  =  211 vox
 %        (= 105 mm, safely inside the 120-mm domain)
 %
-% At the beam axis (Xg = cx):
-%   skull outer surface : Zg = cz − r_outer = 210 − 150 =  60 vox ( 30.0 mm)
-%   skull inner surface : Zg = cz − r_inner = 210 − 137 =  73 vox ( 36.5 mm)
-%   skull thickness     : 73 − 60 = 13 vox = 6.5 mm
-%   brain onset         : Zg = 74 vox (37.0 mm)
+% At the beam axis (Xg = cx), skull = r_inner < dist <= r_outer:
+%   skull voxels        : Zg = 61 … 73 (cz − r_outer … cz − r_inner − 1)
+%   skull outer surface : vox 61 (30.0 mm), same depth as the benchmark 1 interface
+%   skull thickness     : 13 vox = 6.5 mm
+%   brain onset         : vox 74 (36.5 mm)
 %
 % The skull shell does not wrap to the posterior side of the domain because
-% cz + r_outer = 210 + 150 = 360 vox > nz = 240.
+% cz + r_outer = 211 + 150 = 361 vox > nz = 240.
 
 cx      = round(35 / res);     % lateral beam axis: vox 70 (= 35 mm)
 r_inner = 68.5 / res;          % inner skull radius: 137 vox
 r_outer = 75.0 / res;          % outer skull radius: 150 vox
-cz      = 30 / res + r_outer;  % centre of curvature: 210 vox (= 105 mm)
+cz      = 30 / res + 1 + r_outer;  % centre of curvature: 211 vox (= 105 mm depth)
 
 [Xg, Zg] = ndgrid(1:nx, 1:nz);
 dist      = sqrt((Xg - cx).^2 + (Zg - cz).^2);
 
-skull_mask = (dist >= r_inner) & (dist <= r_outer);  % spherical shell
-brain_mask = (dist < r_inner);                        % interior of shell
+skull_mask = (dist > r_inner) & (dist <= r_outer);   % spherical shell, 13 vox on axis
+brain_mask = (dist <= r_inner);                       % interior of shell
 
 data2 = zeros(nx, nz, 'uint8');
 data2(skull_mask) = 4;    % cortical bone

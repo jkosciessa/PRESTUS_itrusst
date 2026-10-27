@@ -14,7 +14,9 @@
 % ── Benchmark geometry ───────────────────────────────────────────────────────
 %   Outer skull surface held constant at r_outer = 75 mm, apex at 30 mm depth.
 %   Inner surface varies: distance_inner = 75 - thickness.
-%   cz + r_outer = 210 + 150 = 360 vox > nz = 240 → sphere truncated by domain,
+%   Voxel z lies at depth (z − 1)·res (createPhantom.m): the outer apex is
+%   vox 61 (30.0 mm) and the skull covers thickness/res voxels on axis.
+%   cz + r_outer = 211 + 150 = 361 vox > nz = 240 → sphere truncated by domain,
 %   no half-cap guard needed.
 
 %% path management
@@ -37,7 +39,7 @@ distance_outer  = 75;   % outer radius of curvature [mm]
 
 cx = round(35 / res);                        % lateral beam axis: vox 70
 r_outer = distance_outer / res;              % 150 vox
-cz = skull_apex_z_mm / res + r_outer;       % centre of curvature: vox 210 (= 105 mm)
+cz = skull_apex_z_mm / res + 1 + r_outer;   % centre of curvature: vox 211 (= 105 mm depth)
 
 [Xg, Zg] = ndgrid(1:nx, 1:nz);
 
