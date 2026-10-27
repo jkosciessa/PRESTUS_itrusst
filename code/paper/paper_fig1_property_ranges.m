@@ -2,9 +2,9 @@
 %
 % Paper Fig. 1 (right): literature ranges of brain (grey) and skull (red)
 % tissue properties from data/tissue_parameters.csv, one axis per property
-% (bottom-top bar, reference 'mid' value as black dot). Attenuation is
-% shown at the protocol frequency (500 kHz) in dB/cm, absorption fraction
-% in %.
+% (bottom-top bar, reference 'mid' value as black dot). Attenuation
+% and absorption coefficient are shown at the protocol frequency (500 kHz)
+% in dB/cm.
 %
 % The benchmark schematic (Fig. 1, left) is drawn in Illustrator.
 %
@@ -27,11 +27,11 @@ freq_mhz = 0.5;
 
 props = struct( ...
     'field', {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-              'specific_heat_capacity', 'perfusion', 'absorption_fraction'}, ...
+              'specific_heat_capacity', 'perfusion', 'absorption_coeff'}, ...
     'label', {'sound speed', 'density', 'attenuation', {'thermal', 'conductivity'}, ...
-              {'specific heat', 'capacity'}, 'perfusion', {'absorption', 'fraction'}}, ...
-    'unit',  {'m/s', 'kg/m^3', 'dB/cm', 'W/(m K)', 'J/(kg K)', 'mL/min/kg', '%'}, ...
-    'ylim',  {[1500 3000], [1000 2000], [0 12], [0.25 0.6], [500 4000], [0 900], [0 100]});
+              {'specific heat', 'capacity'}, 'perfusion', {'absorption', 'coefficient'}}, ...
+    'unit',  {'m/s', 'kg/m^3', 'dB/cm', 'W/(m K)', 'J/(kg K)', 'mL/min/kg', 'dB/cm'}, ...
+    'ylim',  {[1500 3000], [1000 2000], [0 12], [0.25 0.6], [500 4000], [0 900], [0 4]});
 
 T = readtable(fullfile(pn.data, 'tissue_parameters.csv'), 'TextType', 'char');
 tissues = {'brain', 'skull'};
@@ -52,10 +52,8 @@ for p = 1:numel(props)
         for l = 1:3
             row = rows & strcmp(T.level, levels{l});
             v = T.(props(p).field)(row);
-            if strcmp(props(p).field, 'alpha_coeff')
+            if ismember(props(p).field, {'alpha_coeff', 'absorption_coeff'})
                 v = v * freq_mhz ^ T.alpha_power(row);
-            elseif strcmp(props(p).field, 'absorption_fraction')
-                v = 100 * v;
             end
             vals(t, l) = v;
         end

@@ -2,7 +2,7 @@
 %
 % Paper Fig. 3 (right): maps of the heat-rise difference between the top
 % and bottom level of a skull property (sub-002, itrusst_protocol1a), with
-% the skull outline. Shown for skull absorption fraction (Fig. 3a) and
+% the skull outline. Shown for skull absorption coefficient (Fig. 3a) and
 % skull attenuation (Fig. 3b). The colour range is symmetric around zero
 % (black: cooler, red: warmer with the top level).
 %
@@ -26,7 +26,7 @@ pn.figures = fullfile(rootpath, 'figures', 'paper', 'fig3');
 
 maps = struct( ...
     'affix', {'_s_abs_',                    '_s_a0_'}, ...
-    'title', {'skull absorption fraction',  'skull attenuation'}, ...
+    'title', {'skull absorption',           'skull attenuation'}, ...
     'name',  {'fig3_diffmap_skull_absorption', 'fig3_diffmap_skull_attenuation'});
 depth_lim   = [0 90];   % mm from the transducer
 lateral_lim = [-35 35]; % mm from the axis

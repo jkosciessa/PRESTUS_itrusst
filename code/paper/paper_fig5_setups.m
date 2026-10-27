@@ -34,7 +34,7 @@ S = paper_style();
 
 freq_mhz = 0.5;
 property_fields = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                   'specific_heat_capacity', 'perfusion', 'absorption_fraction'};
+                   'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
 property_labels = {'Sound speed', 'Density', 'Attenuation', 'Thermal conduct.', ...
                    'Specific heat', 'Perfusion', 'Absorption'};
 
@@ -55,6 +55,7 @@ for tissue = {'skull', 'brain'}
             data(s, p) = m.(property_fields{p});
         end
         data(s, 3) = m.alpha_coeff * freq_mhz ^ m.alpha_power;
+        data(s, 7) = m.absorption_coeff * freq_mhz ^ m.alpha_power; % dB/cm at 500 kHz
     end
     data(strcmp(rows, 'k-Plan*'), strcmp(property_fields, 'perfusion')) = NaN; % not reported
 

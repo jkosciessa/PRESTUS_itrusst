@@ -12,10 +12,15 @@
 %   unclear    : whole, frontal, parietal, temporal, occipital (layer not given)
 %   cortical   : cortical, cortical (outer table), cortical (inner table)
 %   trabecular : cancellous, diploë
-% Brain pools all divisions (incl. proxy tissues for absorption fraction).
-% Attenuation is tabulated at 0.5 MHz (dB/cm), absorption fraction in %.
+% Brain pools all divisions.
+% Attenuation and absorption coefficient are tabulated at 0.5 MHz (dB/cm).
+%
+% Two versions: with brain (Fig. 1 variant) and bone only (Supp. Fig. 3a;
+% no brain class, axis limits fitted to the bone values, legend at the
+% upper left corner).
 %
 % Output: figures/paper/fig1/fig1_property_ranges_bone.{pdf,png}
+%         figures/paper/supp_fig3/suppfig3a_property_ranges_bone_only.{pdf,png}
 
 %% paths
 
@@ -25,18 +30,18 @@ cd(fullfile(pathstr, '..', '..'));
 rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code', 'functions'));
-pn.figures = fullfile(rootpath, 'figures', 'paper', 'fig1');
 
 %% properties (order and axis limits as in paper_fig1_property_ranges)
 
 props = struct( ...
     'field', {'sound_speed', 'density', 'attenuation', 'thermal_conductivity', ...
-              'specific_heat', 'perfusion', 'absorption_fraction'}, ...
+              'specific_heat', 'perfusion', 'absorption_coefficient'}, ...
     'label', {'sound speed', 'density', 'attenuation', {'thermal', 'conductivity'}, ...
-              {'specific heat', 'capacity'}, 'perfusion', {'absorption', 'fraction'}}, ...
-    'unit',  {'m/s', 'kg/m^3', 'dB/cm', 'W/(m K)', 'J/(kg K)', 'mL/min/kg', '%'}, ...
-    'scale', {1, 1, 1, 1, 1, 1, 100}, ...
-    'ylim',  {[1500 3000], [1000 2000], [0 12], [0.25 0.6], [500 4000], [0 900], [0 100]});
+              {'specific heat', 'capacity'}, 'perfusion', {'absorption', 'coefficient'}}, ...
+    'unit',  {'m/s', 'kg/m^3', 'dB/cm', 'W/(m K)', 'J/(kg K)', 'mL/min/kg', 'dB/cm'}, ...
+    'scale', {1, 1, 1, 1, 1, 1, 1}, ...
+    'ylim',  {[1500 3000], [1000 2000], [0 12], [0.25 0.6], [500 4000], [0 900], [0 4]}, ...
+    'ylim_bone', {[2000 3000], [1000 2000], [0 12], [0.25 0.4], [500 3000], [0 40], [0 4]});
 
 lit_file = itrusst_input_path(fullfile(rootpath, '..', 'itrusst_acousticproperties', 'literature_web', 'data', 'measurements.csv'), ...
     'ITRUSST_MEASUREMENTS_CSV', 'ITRUSST acoustic-properties table (measurements.csv)');
@@ -46,13 +51,27 @@ T = T(strcmp(T.status, 'included'), :);
 %% tissue classes
 
 S = paper_style();
-cls = struct( ...
+cls_all = struct( ...
     'name',  {'brain', 'skull', 'unclear', 'cortical', 'trabecular'}, ...
     'tissue',{'brain', 'skull', 'skull', 'skull', 'skull'}, ...
     'div',   {{}, {}, {'whole', 'frontal', 'parietal', 'temporal', 'occipital'}, ...
               {'cortical', 'cortical (outer table)', 'cortical (inner table)'}, ...
               {'cancellous', 'diploë'}}, ...
-    'color', {S.brain, S.skull, [0.85 0.62 0.62], [0.42 0.00 0.00], [0.93 0.40 0.15]});
+    'color', {S.brain, S.skull, [0.85 0.62 0.62], [0.42 0.00 0.00], [0.93 0.40 0.15]}, ...
+    'label', {'brain', 'skull (all)', 'skull (layer unclear)', 'skull cortical', 'skull trabecular'});
+
+V = struct( ...
+    'name',     {'fig1_property_ranges_bone', 'suppfig3a_property_ranges_bone_only'}, ...
+    'dir',      {fullfile(rootpath, 'figures', 'paper', 'fig1'), fullfile(rootpath, 'figures', 'paper', 'supp_fig3')}, ...
+    'brain',    {true, false}, ...
+    'ylim',     {'ylim', 'ylim_bone'}, ...
+    'legend_x', {1.0, 0.15});   % legend start (cm): axes edge / figure corner
+
+for iv = 1:numel(V)
+cls = cls_all;
+if ~V(iv).brain
+    cls = cls_all(~strcmp({cls_all.name}, 'brain'));
+end
 
 %% plot
 
@@ -64,7 +83,7 @@ bw = 0.34; % half bar width
 for p = 1:numel(props)
     ax = axes(h, 'Units', 'centimeters', 'Position', [left0 + (p-1)*(ax_w + ax_gap), bottom0, ax_w, ax_h]);
     hold(ax, 'on');
-    yl = props(p).ylim;
+    yl = props(p).(V(iv).ylim);
     for c = 1:n_cls
         rows = strcmp(T.tissue, cls(c).tissue) & strcmp(T.property, props(p).field);
         if ~isempty(cls(c).div)
@@ -104,7 +123,7 @@ for p = 1:numel(props)
     end
 
     % ticks follow the nominal limits; the axis only grows to show outliers
-    yt = linspace(props(p).ylim(1), props(p).ylim(2), 6);
+    yt = linspace(props(p).(V(iv).ylim)(1), props(p).(V(iv).ylim)(2), 6);
     ytl = repmat({''}, 1, numel(yt));
     ytl([1 end]) = {num2str(yt(1)), num2str(yt(end))};
     set(ax, 'XLim', [0.4 n_cls + 0.6], 'YLim', yl, 'YTick', yt, 'YTickLabel', ytl, ...
@@ -115,19 +134,19 @@ for p = 1:numel(props)
 end
 
 % legend (top row)
-lx = left0; ly = bottom0 + ax_h + 0.9;
+lx = V(iv).legend_x; ly = bottom0 + ax_h + 0.9;
 ann = axes(h, 'Units', 'centimeters', 'Position', [0 0 h.Position(3:4)], 'Visible', 'off', ...
     'XLim', [0 h.Position(3)], 'YLim', [0 h.Position(4)]);
 hold(ann, 'on');
-labels = {'brain', 'skull (all)', 'skull (layer unclear)', 'skull cortical', 'skull trabecular'};
 for c = 1:n_cls
     patch(ann, lx + [0 0.35 0.35 0], ly + [-0.12 -0.12 0.12 0.12], cls(c).color, 'EdgeColor', 'none');
-    th = text(ann, lx + 0.5, ly, labels{c}, 'Color', cls(c).color, 'FontWeight', 'bold', ...
+    th = text(ann, lx + 0.5, ly, cls(c).label, 'Color', cls(c).color, 'FontWeight', 'bold', ...
         'VerticalAlignment', 'middle', 'Units', 'data');
     lx = th.Extent(1) + th.Extent(3) + 0.5;
 end
 plot(ann, lx + 0.2, ly, 'o', 'MarkerSize', 2.2, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k');
 text(ann, lx + 0.4, ly, 'literature value', 'VerticalAlignment', 'middle');
 
-paper_save(h, pn.figures, 'fig1_property_ranges_bone');
+paper_save(h, V(iv).dir, V(iv).name);
 close(h);
+end

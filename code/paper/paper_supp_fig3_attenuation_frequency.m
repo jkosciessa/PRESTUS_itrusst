@@ -21,10 +21,19 @@
 %
 % Background: the shaded band marks frequencies common in neuromodulation
 % (0.2-0.65 MHz); the dotted line marks 0.5 MHz, the simulation frequency.
-% Horizontal bars at 0.5 MHz mark the skull attenuation LOW / reference /
-% HIGH of Table 1, read from data/tissue_parameters.csv.
+% The yellow band marks the skull attenuation LOW-HIGH range of Table 1 at
+% 0.5 MHz (dashed: reference), read from data/tissue_parameters.csv and drawn
+% across the width of the grey band. Both panels share the y axis. In (a),
+% series of one study share a hue (light to dark shades); in (b), colour marks
+% the layer (outer table, cortical with tables not separated, inner table:
+% dark to light blue; diploë: orange) and the marker the study. Legend order
+% is chronological.
 %
-% Output: figures/paper/supp_fig3/suppfig3_skull_attenuation_frequency.{pdf,png}
+% Two versions: 0-2.3 MHz (all values; lines run on beyond the axis), and
+% 0-1 MHz with the values above 1 MHz left out (series without values up to
+% 1 MHz drop out; the script lists them).
+%
+% Output: figures/paper/supp_fig3/suppfig3_skull_attenuation_frequency{,_0-1MHz}.{pdf,png}
 %         (PDF is vector, see paper_save) and the plotted values (dB/cm)
 %         as ..._plotted.csv
 
@@ -42,7 +51,6 @@ pn.figures = fullfile(rootpath, 'figures', 'paper', 'supp_fig3');
 
 np2db  = 20 / log(10);                                     % 8.686 dB per Np
 pooled = {'ammi2008', 'riis2022', 'gimeno2019'};           % one value per skull/location
-xl     = [0 2.3];                                          % MHz
 fband  = [0.2 0.65];                                       % common neuromodulation frequencies (MHz)
 fsim   = 0.5;                                              % simulation frequency (MHz)
 
@@ -116,64 +124,133 @@ P.panel(contains(P.layer, {'whole', 'temporal'})) = 'a';
 %% style
 
 S = paper_style();
+
+% series in chronological order of the studies (legend order follows)
+yr = cellfun(@(s) str2double(regexp(s, '\d{4}', 'match', 'once')), P.study);
+[~, io] = sort(yr);                                         % sort is stable
+P = P(io, :);
+
+% (a) one hue per study (chronological); several series of one study get
+% shades of that hue, from lighter to darker
 studies = unique(P.study, 'stable');
-cmap = [0.00 0.45 0.74; 0.85 0.33 0.10; 0.93 0.69 0.13; 0.49 0.18 0.56; 0.47 0.67 0.19; ...
-        0.30 0.75 0.93; 0.64 0.08 0.18; 0.25 0.25 0.25; 0.85 0.45 0.70; 0.55 0.40 0.20; 0.00 0.60 0.50];
+cmap = [0.00 0.45 0.74; 0.47 0.67 0.19; 0.00 0.60 0.50; 0.49 0.18 0.56; 0.64 0.08 0.18; ...
+        0.25 0.25 0.25; 0.55 0.40 0.20; 0.85 0.33 0.10; 0.30 0.75 0.93; 0.85 0.45 0.70; 0.93 0.69 0.13];  % no yellow before the 11th study: yellow marks Table 1
 assert(numel(studies) <= size(cmap, 1), 'more studies than colours');
 col = containers.Map(studies, num2cell(cmap(1:numel(studies), :), 2));
+shade = [-0.35 0.5];                                        % lightest (mix with white) / darkest (mix with black)
+
+% (b) colour by layer (cortical blues, diploë orange), marker by study;
+% several series of one study and layer get shades of the layer colour
+lcol = struct('outer', [0.03 0.27 0.58], 'cortical', [0.13 0.47 0.80], ...
+              'inner', [0.42 0.68 0.90], 'diploe', [0.90 0.40 0.05]);
+shade_b = [-0.3 0.35];
+smark = {'o', 'd', 's', '^', 'v', 'p', 'h'};                % markers per study in (b), chronological
+bstud = unique(P.study(P.panel == 'b'), 'stable');
+assert(numel(bstud) <= numel(smark), 'more studies in (b) than markers');
+mrk = containers.Map(bstud, smark(1:numel(bstud)));
+
 bandcol = [0.93 0.93 0.93];
+bndcol  = [1.00 0.92 0.45];                                 % Table 1 LOW-HIGH range
 
-%% plot
+%% plot: full range, and 0-1 MHz with the values above 1 MHz left out
 
-h = paper_figure([18 12]);
-pos = {[1.3 5.4 6.6 6.0], [10.3 5.4 6.6 6.0]};
-ttl = {'whole skull or layer not separated', 'cortical tables and diploë'};
-for ip = 1:2
-    ax = axes('Units', 'centimeters', 'Position', pos{ip}); hold(ax, 'on');
-    pnl = char('a' + ip - 1);
-    Pp = P(P.panel == pnl, :);
-    top = Pp.db_cm + fillmissing(Pp.db_cm_sd, 'constant', 0);
-    yl  = [0 1.05 * max([top(Pp.freq_mhz <= xl(2)); bnd(:)])];
+V = struct('fmax', {2.3, 1}, 'xtick', {0:0.5:2, 0:0.2:1}, 'crop', {false, true}, ...
+           'name', {'suppfig3_skull_attenuation_frequency', 'suppfig3_skull_attenuation_frequency_0-1MHz'});
+for iv = 1:numel(V)
+    xl = [0 V(iv).fmax];
+    Pv = P;
+    if V(iv).crop; Pv = P(P.freq_mhz <= V(iv).fmax, :); end
 
-    % background: neuromodulation band and simulation frequency
-    patch(ax, fband([1 2 2 1]), [0 0 1e3 1e3], bandcol, 'EdgeColor', 'none', 'HandleVisibility', 'off');
-    plot(ax, [fsim fsim], [0 1e3], ':', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+    h = paper_figure([18 12]);
+    x0  = [1.3 10.3];                                       % left edge of the axes (cm)
+    w   = 6.9; ah = 5.6;                                    % axes width / height (cm)
+    ttl = {'whole skull or layer not separated', 'cortical tables (blue) and diploë (orange)'};
+    ax = gobjects(1, 2); lg = gobjects(1, 2);
+    ymax = max(bnd);
+    for ip = 1:2
+        ax(ip) = axes('Units', 'centimeters', 'Position', [x0(ip) 1 w ah]); hold(ax(ip), 'on');
+        pnl = char('a' + ip - 1);
+        Pp = Pv(Pv.panel == pnl, :);
+        top = Pp.db_cm + fillmissing(Pp.db_cm_sd, 'constant', 0);
+        ymax = max([ymax; top(Pp.freq_mhz <= xl(2))]);
 
-    hl = gobjects(0); lab = {};
-    for s = unique(Pp.series, 'stable')'
-        Q = sortrows(Pp(strcmp(Pp.series, s{1}), :), 'freq_mhz');
-        c = col(Q.study{1});
-        ls = '-';
-        if contains(Q.layer{1}, 'diplo'); ls = '--'; end
-        if Q.il(1); ls = ':'; end
-        mfc = c; if Q.il(1); mfc = 'w'; end
-        e = errorbar(ax, Q.freq_mhz, Q.db_cm, Q.db_cm_sd, 'LineStyle', ls, 'Color', c, ...
-            'Marker', layer_marker(Q.layer{1}), 'MarkerSize', 3.5, 'MarkerFaceColor', mfc, ...
-            'LineWidth', 0.8, 'CapSize', 2);
-        hl(end+1) = e; %#ok<AGROW>
-        lab{end+1} = Q.label{1}; %#ok<AGROW>
+        % background: neuromodulation band, Table 1 skull attenuation at the
+        % simulation frequency (LOW-HIGH shaded across the band, reference
+        % dashed) and the simulation frequency, all beneath the data
+        patch(ax(ip), fband([1 2 2 1]), [0 0 1e3 1e3], bandcol, 'EdgeColor', 'none', 'HandleVisibility', 'off');
+        patch(ax(ip), fband([1 2 2 1]), bnd([1 1 3 3]), bndcol, 'EdgeColor', 'none', 'HandleVisibility', 'off');
+        plot(ax(ip), fband, bnd([2 2]), '--', 'Color', 'k', 'LineWidth', 0.8, 'HandleVisibility', 'off');
+        plot(ax(ip), [fsim fsim], [0 1e3], ':', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+
+        series = unique(Pp.series, 'stable');
+        first  = cellfun(@(s) find(strcmp(Pp.series, s), 1), series);
+        grp    = Pp.study(first);                           % colour group: study (a), study and layer (b)
+        if pnl == 'b'; grp = strcat(grp, '|', cellfun(@layer_class, Pp.layer(first), 'UniformOutput', false)); end
+        hl = gobjects(0); lab = {};
+        for is = 1:numel(series)
+            Q = sortrows(Pp(strcmp(Pp.series, series{is}), :), 'freq_mhz');
+            if pnl == 'a'
+                c = col(Q.study{1}); sh = shade; m = layer_marker(Q.layer{1});
+            else
+                c = lcol.(layer_class(Q.layer{1})); sh = shade_b; m = mrk(Q.study{1});
+            end
+            same = find(strcmp(grp, grp{is}));
+            if numel(same) > 1
+                t = sh(1) + diff(sh) * (find(same == is) - 1) / (numel(same) - 1);
+                if t < 0; c = c + (1 - c) * -t; else; c = c * (1 - t); end
+            end
+            ls = '-';
+            if contains(Q.layer{1}, 'diplo'); ls = '--'; end
+            if Q.il(1); ls = ':'; end
+            mfc = c; if Q.il(1); mfc = 'w'; end
+            hl(end+1) = errorbar(ax(ip), Q.freq_mhz, Q.db_cm, Q.db_cm_sd, 'LineStyle', ls, 'Color', c, ...
+                'Marker', m, 'MarkerSize', 3.5, 'MarkerFaceColor', mfc, 'LineWidth', 0.8, 'CapSize', 2); %#ok<AGROW>
+            lab{end+1} = Q.label{1}; %#ok<AGROW>
+        end
+
+        set(ax(ip), 'Layer', 'top', 'XTick', V(iv).xtick);  % axes above the shaded band
+        xlim(ax(ip), xl);
+        xlabel(ax(ip), 'frequency (MHz)'); ylabel(ax(ip), 'attenuation (dB/cm)');
+        title(ax(ip), sprintf('(%s) %s', pnl, ttl{ip}));
+        lg(ip) = legend(ax(ip), hl, lab, 'Box', 'off', 'FontSize', 6, 'Interpreter', 'none', ...
+            'Units', 'centimeters', 'NumColumns', 1);
+        lg(ip).ItemTokenSize = [14 6];
     end
+    set(ax, 'YLim', [0 1.05 * ymax]);                       % common y axis, panels comparable
 
-    % Table 1 bounds at the simulation frequency (on top of the data)
-    bw = 0.09;                                              % half width of the bars (MHz)
-    hb = plot(ax, fsim + [-bw bw; -bw bw]', [bnd([1 3]); bnd([1 3])], '-', 'Color', 'k', 'LineWidth', 1.6);
-    hr = plot(ax, fsim + [-bw bw], bnd([2 2]), '--', 'Color', 'k', 'LineWidth', 1.0);
-    hl(end+1) = hb(1); lab{end+1} = 'Table 1 LOW / HIGH (0.5 MHz)'; %#ok<AGROW>
-    hl(end+1) = hr;    lab{end+1} = 'Table 1 reference (0.5 MHz)';  %#ok<AGROW>
+    % key shared by both panels (dummy handles in a hidden axes)
+    axk = axes('Units', 'centimeters', 'Position', [0 0 1 1], 'Visible', 'off'); hold(axk, 'on');
+    gk = [0.45 0.45 0.45];
+    hk = [patch(axk, NaN, NaN, bandcol, 'EdgeColor', 'none'), ...
+          plot(axk, NaN, NaN, '--', 'Color', gk, 'LineWidth', 0.8), ...
+          patch(axk, NaN, NaN, bndcol, 'EdgeColor', 'none'), ...
+          plot(axk, NaN, NaN, '--', 'Color', 'k', 'LineWidth', 0.8), ...
+          plot(axk, NaN, NaN, ':o',  'Color', gk, 'MarkerFaceColor', 'w', 'MarkerSize', 3.5, 'LineWidth', 0.8)];
+    labk = {sprintf('common TUS frequencies (%.1f–%.2f MHz)', fband), ...
+            'dashed: diploë', ...
+            sprintf('Table 1 skull LOW–HIGH (at %.1f MHz)', fsim), ...
+            sprintf('Table 1 skull reference (at %.1f MHz)', fsim), ...
+            'open, dotted: includes reflection [IL]'};
+    lgk = legend(axk, hk, labk, 'Box', 'off', 'FontSize', 6, 'Units', 'centimeters', 'NumColumns', 3);
+    lgk.ItemTokenSize = [22 6];                             % long enough to show the dashes
 
-    xlim(ax, xl); ylim(ax, yl);
-    set(ax, 'Layer', 'top');                                % axes above the shaded band
-    xlabel(ax, 'frequency (MHz)'); ylabel(ax, 'attenuation (dB/cm)');
-    title(ax, sprintf('(%s) %s', pnl, ttl{ip}));
-    lg = legend(ax, hl, lab, 'Box', 'off', 'FontSize', 6, 'Interpreter', 'none', ...
-        'Units', 'centimeters', 'NumColumns', 2);
-    lg.ItemTokenSize = [14 6];
-    lg.Position(1:2) = [pos{ip}(1) - 1.0, pos{ip}(2) - 1.3 - lg.Position(4)];   % below the axes
+    % layout from the bottom: series legends, axes, titles, key
+    lh = max(arrayfun(@(l) l.Position(4), lg));
+    yb = 0.2 + lh + 1.2;                                    % axes bottom, room for the x label
+    for ip = 1:2
+        ax(ip).Position = [x0(ip) yb w ah];
+        lg(ip).Position(1:2) = [x0(ip) - 1.0, yb - 1.1 - lg(ip).Position(4)];
+    end
+    yk = yb + ah + 0.7;                                     % key above the titles
+    lgk.Position(1:2) = [(18 - lgk.Position(3)) / 2, yk];
+    h.Position(4) = yk + lgk.Position(4) + 0.1;
+
+    paper_save(h, pn.figures, V(iv).name);
+    writetable(Pv(:, {'study', 'ref_key', 'label', 'specimen', 'layer', 'panel', 'il', 'freq_mhz', 'db_cm', 'db_cm_sd', 'n'}), ...
+        fullfile(pn.figures, [V(iv).name '_plotted.csv']));
+    dropped = setdiff(unique(P.label), unique(Pv.label));
+    if ~isempty(dropped); fprintf('  %s: no values up to %g MHz for %s\n', V(iv).name, V(iv).fmax, strjoin(dropped, '; ')); end
 end
-
-paper_save(h, pn.figures, 'suppfig3_skull_attenuation_frequency');
-writetable(P(:, {'study', 'ref_key', 'label', 'specimen', 'layer', 'panel', 'il', 'freq_mhz', 'db_cm', 'db_cm_sd', 'n'}), ...
-    fullfile(pn.figures, 'suppfig3_skull_attenuation_frequency_plotted.csv'));
 
 %% local functions
 
@@ -184,5 +261,14 @@ elseif contains(layer, 'inner');    m = 's';
 elseif contains(layer, 'diplo');    m = '^';
 elseif contains(layer, 'cortical'); m = 'd';
 else;                               m = 'o';
+end
+end
+
+function c = layer_class(layer)
+% colour class per bone layer in (b): outer, inner, cortical (tables not separated), diploe
+if contains(layer, 'outer');        c = 'outer';
+elseif contains(layer, 'inner');    c = 'inner';
+elseif contains(layer, 'diplo');    c = 'diploe';
+else;                               c = 'cortical';
 end
 end
