@@ -30,6 +30,14 @@ addpath(pn.minimize);
 addpath(pn.nifti);
 addpath(fullfile(pn.code, 'functions'));
 
+% the configs set thermal.absorption_model: coefficient; an older PRESTUS ignores
+% that field and deposits 100% of attenuation as heat
+if exist('thermal_absorption_model', 'file') ~= 2
+    error('setup_itrusst_paths:noAbsorptionCoeff', ...
+        ['PRESTUS in %s does not support thermal.absorption_model (functions/thermal/' ...
+         'thermal_absorption_model.m missing); update the submodule from ../v05/tools/PRESTUS.'], pn.prestus);
+end
+
 if nargin >= 2 && strcmp(user, 'julkos')
     pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
 end
