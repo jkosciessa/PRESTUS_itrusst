@@ -34,10 +34,6 @@ cd(fullfile(pathstr, '..'));
 rootpath = pwd;
 
 addpath(fullfile(rootpath, 'code', 'functions'));
-addpath('/project/2425122.01/v05/tools/nifti_toolbox');
-if isfolder('/Volumes/2425122.01/v05/tools/nifti_toolbox')
-    addpath('/Volumes/2425122.01/v05/tools/nifti_toolbox');
-end
 
 pn.figures = fullfile(rootpath, 'figures', 'paramvar', 'axial_profiles');
 if ~isfolder(pn.figures); mkdir(pn.figures); end

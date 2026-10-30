@@ -13,7 +13,7 @@ if ismac
     rootpath = strrep(rootpath, '/project/', '/Volumes/');
 end
 
-pn.prestus         = fullfile(rootpath, 'tools', 'PRESTUS'); % submodule, pulled from ../v05/tools/PRESTUS
+pn.prestus         = fullfile(rootpath, 'tools', 'PRESTUS'); % submodule
 pn.prestus_fun     = fullfile(pn.prestus, 'functions');
 pn.prestus_tools   = fullfile(pn.prestus, 'external');
 pn.kwave           = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave');
@@ -36,7 +36,7 @@ addpath(fullfile(pn.code, 'functions'));
 if exist('thermal_absorption_model', 'file') ~= 2
     error('setup_itrusst_paths:noAbsorptionCoeff', ...
         ['PRESTUS in %s does not support thermal.absorption_model (functions/thermal/' ...
-         'thermal_absorption_model.m missing); update the submodule from ../v05/tools/PRESTUS.'], pn.prestus);
+         'thermal_absorption_model.m missing); update the submodule (git submodule update --init --recursive).'], pn.prestus);
 end
 
 % job submission: the scheduler on the PATH (slurm/qsub), otherwise in MATLAB

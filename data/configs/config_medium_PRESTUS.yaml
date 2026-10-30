@@ -2,7 +2,7 @@ simulation:
   medium: phantom
 
 # Heat deposition from the absorption coefficient [dB/(cm MHz^y)], y = alpha_power.
-# Brain and skull follow the PRESTUS v05 defaults (config/config_default.yaml); water is
+# Brain and skull follow the PRESTUS v0.6.1 defaults (config/config_default.yaml); water is
 # shared by all configurations.
 thermal:
   absorption_model: coefficient
@@ -26,12 +26,12 @@ medium_properties:
   brain:
     sound_speed: 1546
     density: 1046
-    alpha_coeff: 0.59 # PRESTUS v05 default (alpha_power 1.2): 0.257 dB/cm at 500 kHz
+    alpha_coeff: 0.59 # PRESTUS v0.6.1 default (alpha_power 1.2): 0.257 dB/cm at 500 kHz
     alpha_power: 1.2
     thermal_conductivity: 0.51
     specific_heat_capacity: 3630
     perfusion: 559
-    absorption_coeff: 0.59 # PRESTUS v05 default (= alpha_coeff, all attenuation absorbed)
+    absorption_coeff: 0.59 # PRESTUS v0.6.1 default (= alpha_coeff, all attenuation absorbed)
   skull:
     sound_speed: 2800
     density: 1850
@@ -40,4 +40,4 @@ medium_properties:
     thermal_conductivity: 0.32
     specific_heat_capacity: 1793
     perfusion: 20
-    absorption_coeff: 3.78 # PRESTUS v05 default (Pinton et al., 2012: 2.7 + 0.2 x 5.4 shear)
+    absorption_coeff: 3.78 # PRESTUS v0.6.1 default (Pinton et al., 2012: 2.7 + 0.2 x 5.4 shear)
