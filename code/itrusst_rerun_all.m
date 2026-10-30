@@ -3,11 +3,14 @@ function itrusst_rerun_all(stage)
 %
 %   itrusst_rerun_all('prepare')    % local, minutes: medium configs, thickness
 %                                   % phantoms, tissue-range and setup figures
-%   itrusst_rerun_all('calibrate')  % cluster, blocks until done: free-water
+%   itrusst_rerun_all('calibrate')  % blocks until done: free-water
 %                                   % calibration, copied into the protocol configs
-%   itrusst_rerun_all('simulate')   % cluster: submits all simulations and returns
+%   itrusst_rerun_all('simulate')   % submits all simulations and returns (without
+%                                   % a scheduler: runs them in MATLAB, see
+%                                   % setup_itrusst_paths)
 %   itrusst_rerun_all('plot')       % after all simulation jobs have finished
-%   itrusst_rerun_all('plot-paper') % paper figure panels only (code/paper/, fast)
+%   itrusst_rerun_all('plot-paper') % paper figure panels only (code/paper/,
+%                                   % absorption next to attenuation; fast)
 %
 % Run the stages in this order. Before the first stage, move the previous
 % outputs aside with itrusst_backup_outputs(rootpath, '<yymmdd>'), as several
@@ -50,7 +53,7 @@ switch stage
                  'PRESTUS_thickness_02_sim', ...
                  'PRESTUS_thickness_04_density_sim', ...
                  'PRESTUS_thickness_06_soundspeed_sim', ...
-                 'PRESTUS_paramvar_00_baseline_sim'}; % runs locally on the GPU (platform 'matlab')
+                 'PRESTUS_paramvar_00_baseline_sim'};
 
     case 'plot'
         steps = {'PRESTUS_paramvar_02_benchmark1_plot', ...
@@ -75,7 +78,9 @@ switch stage
                  'paper/paper_supp_fig1_focus', ...
                  'paper/paper_supp_fig2_density_thickness', ...
                  'paper/paper_supp_fig2_density_resonance', ...
-                 'paper/paper_supp_fig3_attenuation_frequency'};
+                 'paper/paper_supp_fig3a_property_ranges_bone', ...
+                 'paper/paper_supp_fig3_attenuation_frequency', ...
+                 'paper/paper_supp_table_setups'};
 
     otherwise
         error('Unknown stage ''%s''.', stage);
