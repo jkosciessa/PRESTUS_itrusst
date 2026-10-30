@@ -29,3 +29,5 @@ figures_ppw12/
 *.DS_STORE
 *.m~
 *.asv
+# SMB pending-delete stubs (file open elsewhere while replaced)
+.smbdelete*

@@ -4,7 +4,7 @@
 |---|---|
 | `code/` | main analysis chain (all stages: `itrusst_rerun_all.m`, see top-level README): phantoms, calibration, `PRESTUS_paramvar_00-04`, `PRESTUS_pipeline_01-02`, `PRESTUS_thickness_01-07`, setup/range figures |
 | `code/functions/` | shared helpers called by the scripts (no script runs from here) |
-| `code/paper/` | panels of the paper figures (`paper_fig*`, `paper_supp_fig*`), stage `itrusst_rerun_all('plot-paper')`; output in `figures/paper/fig<N>/` |
+| `code/paper/` | panels of the paper figures (`paper_fig*`, `paper_supp_fig*`), absorption placed directly after attenuation, and the supplementary table of setup and toolbox-default properties (`paper_supp_table_setups`), stage `itrusst_rerun_all('plot-paper')`; output in `figures/paper/fig<N>/`, `figures/paper/supp_fig<N>/` and `figures/paper/supp_table/` |
 | `code/explore/` | side analyses not (yet) used: `PRESTUS_paramvar_06-10/13`, skull sound-speed case study, sub-303 sweep, multiskull, per-voxel `plot_sub*` |
 | `code/debug/` | numerical checks (0.25 mm / 0.5 mm / 3D resolution, 2D vs 3D, calibration 2D vs 3D, benchmark 2 mismatch) and stale scripts with hard-coded paths |
 
@@ -31,7 +31,7 @@ sub-351..361 | skull thickness 1.5..11.5 mm (see `itrusst_thickness_subjects.m`)
 pn = setup_itrusst_paths(rootpath, user)
 ```
 
-Sets up `pn.prestus` (`tools/PRESTUS`), `pn.kwave`, `pn.minimize`, `pn.nifti`, `pn.configs`, `pn.data`, `pn.path_seg`, `pn.code` and (for known users) `pn.simnibs`, and adds them to the MATLAB path. Call after `addpath(fullfile(rootpath, 'code', 'functions'))`.
+Sets up `pn.prestus` (`tools/PRESTUS`), `pn.kwave`, `pn.minimize`, `pn.nifti`, `pn.configs`, `pn.data`, `pn.path_seg`, `pn.code`, `pn.simnibs` (SimNIBS binaries for known users, otherwise empty; the phantoms need none) and `pn.platform` (job submission: `slurm`/`qsub` if a scheduler is on the PATH, otherwise `matlab`; `setenv('ITRUSST_PLATFORM', 'matlab')` forces local runs), and adds the toolbox folders to the MATLAB path. Call after `addpath(fullfile(rootpath, 'code', 'functions'))`.
 
 ### `load_paramvar_results.m`
 
@@ -62,9 +62,9 @@ Range plot (min-max patch per condition, bottom/top levels as dots; brain grey, 
 
 Free-water calibration of the annular transducer to a target intensity; copy of the calibrated drive (`annular: {...}` block of `data/calibration/PRESTUS_virtual_parameters/<setup>-F*mm-I*wpercm2.yaml`) into `config_<setup>.yaml`; mapping between skull thickness (mm) and thickness-phantom subject IDs.
 
-### `itrusst_tissue_properties.m`, `itrusst_write_medium_configs.m`
+### `itrusst_tissue_properties.m`, `itrusst_write_medium_configs.m`, `itrusst_resolve_absorption.m`, `itrusst_level_absorption_coeff.m`
 
-Tissue properties of a setup (`setup1`, `setup2`, `reference`, `bottom`, `top`) from `data/tissue_parameters.csv` + `tissue_setups.csv`; generation of `data/configs/config_medium_<setup>.yaml` from them.
+Tissue properties of a setup (`heat_max`, `heat_min`, `trans_max`, `trans_min`, `reference`, `bottom`, `top`) from `data/tissue_parameters.csv` + `tissue_setups.csv`; generation of `data/configs/config_medium_<setup>.yaml` from them. `itrusst_resolve_absorption.m` sets each tissue's `absorption_coeff`: brain from `absorption_fraction` × the attenuation it is combined with, skull and water from their coefficient, capped at the attenuation (absorption ≤ 100 %). It is applied to every assembled medium (setups, one-at-a-time sweep, thickness sweeps, baseline). `itrusst_level_absorption_coeff.m` gives the brain coefficient per CSV level (fraction × attenuation of the same level) for the range figures. The factorial and Morris designs (`explore/PRESTUS_paramvar_08`, `_09`) still call the removed `itrusst_cap_absorption.m` and need the same migration before they are rerun.
 
 ### `itrusst_backup_outputs.m`
 
@@ -72,23 +72,23 @@ Moves `data/tussim`, `data/calibration` and `figures/*` aside under a date tag b
 
 ### paper panels (`code/paper/`, helpers `paper_*.m` in `code/functions/`)
 
-Panels at print size (8 pt Helvetica, axes boxes fixed in cm via `paper_style.m`), saved as vector PDF + 300 dpi PNG by `paper_save.m` for assembly in Illustrator. Run them all with `itrusst_rerun_all('plot-paper')` (independent of the slower diagnostic `plot` stage). Schematics, icons, legends and frames are added there. BabelBrain panels (benchmark 2 = sub-002, collaborator results in `data/pichardo/`, see `load_babelbrain_benchmark2.m`) are drawn next to their PRESTUS counterparts on a shared y-range; `paper_placeholder.m` (empty panel with the neighbouring axes) remains for collaborator panels without data.
+Panels at print size (8 pt Helvetica, axes boxes fixed in cm via `paper_style.m`), saved as vector PDF + 300 dpi PNG by `paper_save.m` for assembly in Illustrator. Properties are ordered sound speed, density, attenuation, absorption, thermal conductivity, specific heat capacity, perfusion. Run them all with `itrusst_rerun_all('plot-paper')` (independent of the slower diagnostic `plot` stage). Schematics, icons, legends and frames are added there. BabelBrain panels (benchmark 2 = sub-002, collaborator results in `data/pichardo/`, see `load_babelbrain_benchmark2.m`) are drawn next to their PRESTUS counterparts on a shared y-range; `paper_placeholder.m` (empty panel with the neighbouring axes) remains for collaborator panels without data.
 
 | script | panels |
 |---|---|
-| `paper_fig1_property_ranges` | Fig. 1: property ranges per tissue (`data/tissue_parameters.csv`; attenuation at 500 kHz in dB/cm) |
-| `paper_fig1_property_ranges_bone` | Fig. 1 variant: literature values per tissue class, skull split into cortical / trabecular / layer unclear (ITRUSST acoustic-properties table, `measurements.csv`, status 'included') |
+| `paper_fig1_property_ranges` | Fig. 1: property ranges per tissue (`data/tissue_parameters.csv`; attenuation and absorption at 500 kHz in dB/cm) |
 | `paper_fig23_axial_profiles` | Figs. 2/3: vertical on-axis I_SPPA / heat-rise profiles, sub-001 vs sub-002, mean and range across paramvar runs |
 | `paper_fig234_paramvar_panels` | Figs. 2-4: paramvar range panels with reference-medium lines (`paper_reference_metrics.m`) + BabelBrain counterparts of the sub-002 panels (`bb_ppw`: 9 PPW run by default, 6 PPW as convergence check) |
 | `paper_fig3_heating_difference_maps` | Fig. 3: heat-rise maps top - bottom level for skull absorption coefficient and attenuation (sub-002) |
 | `paper_fig4_thickness` | Fig. 4: brain I_SPPA vs skull thickness |
-| `paper_fig5_setups` | Fig. 5: parallel plots of Setup A/B (= setup1/setup2) and toolbox defaults; brain I_SPPA and temperature rise, 3D benchmarks |
-| `paper_fig5_tool_heating_maps` | Fig. 5 (candidate): heat-rise maps of the toolbox defaults (PRESTUS, k-Plan*, BabelBrain*) and their pairwise differences in the plane through the beam axis, sub-101/102 |
+| `paper_fig5_setups` | Fig. 5: parallel plots of Temp-H/Temp-L (= heat_max/heat_min), Trans-L and toolbox defaults; brain I_SPPA and temperature rise, 3D benchmarks |
 | `paper_supp_fig1_focus` | Supp. Fig. 1: focal distance / -3 dB volume range panels; on-axis I_SPPA and -3 dB focal masks for low/high skull sound speed (sub-002) |
 | `paper_supp_fig2_density_thickness` | Supp. Fig. 2: skull temperature rise vs thickness for low/high skull density (`itrusst_protocol1a_density_thickness`) |
 | `paper_supp_fig2_density_resonance` | Supp. Fig. 2 (combined): (a) skull temperature rise vs thickness for low/high density with the 1D-model high/low ratio of peak heat deposition (right axis); (b) 1D pressure profiles at lambda/2 and 3/4 lambda (`suppfig2_density_combined`) |
+| `paper_supp_fig3a_property_ranges_bone` | Supp. Fig. 3a: literature values per bone class, cortical / trabecular / layer unclear (ITRUSST acoustic-properties table, `measurements.csv`, status 'included'); no brain class, as the table gives brain absorption as a coefficient and the simulations as a fraction of attenuation |
 | `paper_supp_fig3_attenuation_frequency` | Supp. Fig. 3: reported skull attenuation (dB/cm) vs frequency, (a) whole skull / layer not separated, (b) cortical tables and diploë, with the Table 1 LOW-HIGH range at 0.5 MHz; 0-2.3 MHz and 0-1 MHz versions (`data/literature_skull-attenuation_values.csv`) |
+| `paper_supp_table_setups` | Supp. table: brain and skull properties of Temp-H/Temp-L, Trans-H/Trans-L, the reference and the toolbox defaults as simulated (`data/configs/config_medium_<setup>.yaml`; `figures/paper/supp_table/`) |
 
-Two inputs are not tracked in the repository: the BabelBrain CSVs (default `data/pichardo/`, override with `setenv('ITRUSST_BABELBRAIN_DIR', '<folder>')`) and the ITRUSST acoustic-properties table (default `../itrusst_acousticproperties/literature_web/data/measurements.csv`, override with `setenv('ITRUSST_MEASUREMENTS_CSV', '<file>')`). Scripts that need them stop with an error naming the missing path and the variable (`itrusst_input_path.m`).
+Two inputs are not tracked in the repository: the BabelBrain CSVs (default `data/pichardo/`, override with `setenv('ITRUSST_BABELBRAIN_DIR', '<folder>')`) and the ITRUSST acoustic-properties table (default `../itrusst_properties/literature_web/data/measurements.csv`, a clone of `itrusst_acousticproperties`, override with `setenv('ITRUSST_MEASUREMENTS_CSV', '<file>')`). Scripts that need them stop with an error naming the missing path and the variable (`itrusst_input_path.m`).
 
-Thermal reference lines need a reference-medium (`_baseline`) run, which `PRESTUS_paramvar_00_baseline_sim.m` provides for sub-002 only; for sub-001 and sub-352 only the acoustic reference is drawn.
+Thermal reference lines need a reference-medium (`_baseline`) run, which `PRESTUS_paramvar_00_baseline_sim.m` provides for sub-001, sub-002 and sub-352.

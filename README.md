@@ -22,20 +22,22 @@ Benchmark phantoms (`code/createPhantom.m`) follow the PRESTUS examples, see [he
 
 ## Rerunning after a change of tissue parameters
 
-Tissue properties live in `data/tissue_parameters.csv` (bounds) and `data/tissue_setups.csv` (which bound setup 1/2 use); the `config_medium_<setup>.yaml` files are generated from them. After editing the CSVs:
+Tissue properties live in `data/tissue_parameters.csv` (bounds) and `data/tissue_setups.csv` (which bound each setup uses: heat_max, heat_min, trans_max, trans_min); the `config_medium_<setup>.yaml` files are generated from them. After editing the CSVs:
 
 ```matlab
 addpath('code/functions');
 itrusst_backup_outputs(pwd, '<yymmdd>');  % data/tussim, data/calibration -> *_<yymmdd>, figures/* -> figures/backup/figures_<yymmdd>/
 cd code
 itrusst_rerun_all('prepare')    % local: medium configs, thickness phantoms, range/setup figures
-itrusst_rerun_all('calibrate')  % cluster, blocking: free-water calibration -> protocol configs
-itrusst_rerun_all('simulate')   % cluster: submits all simulations
+itrusst_rerun_all('calibrate')  % blocking: free-water calibration -> protocol configs
+itrusst_rerun_all('simulate')   % submits all simulations (runs them in turn without a scheduler)
 itrusst_rerun_all('plot')       % once all jobs have finished
 itrusst_rerun_all('plot-paper') % paper figure panels only (figures/paper/)
 ```
 
-The backup matters: several simulations use `overwrite_files: never` and would otherwise skip conditions with existing outputs. Side analyses in `code/explore/` and `code/debug/` are not part of the rerun.
+The backup matters: several simulations use `overwrite_files: never` and would otherwise skip conditions with existing outputs.
+
+Without a cluster, the stages run in MATLAB: `setup_itrusst_paths` submits to SLURM/qsub when `sbatch`/`qsub` is on the PATH and otherwise sets the PRESTUS platform to `matlab` (`setenv('ITRUSST_PLATFORM', 'matlab')` forces this on a cluster node). Local runs are slow: the sweeps run one simulation after another, and a CPU run with heating took 70–105 min on the cluster nodes; and `PRESTUS_pipeline_01_benchmark1_sim.m` sets `code_type = 'cpp_gpu'` (set `'cpp_cpu'` without an NVIDIA GPU). `user = 'julkos'` in the scripts only selects the SimNIBS path on the Donders cluster, which the phantoms do not use. Side analyses in `code/explore/` and `code/debug/` are not part of the rerun.
 
 ## Methods
 
@@ -85,7 +87,7 @@ where ρ is density, c is specific heat capacity, k is thermal conductivity, ω 
 
 > Q = α_abs × p²_max / (ρ × c)  [W/m³]
 
-where α_abs is the absorption coefficient [Np/m] at the source frequency, set per tissue as `absorption_coeff` [dB/(MHz^y·cm)] with the tissue's attenuation power law y (`thermal.absorption_model: coefficient`, set in `config_itrusst_protocol.yaml` and the medium configs). Earlier revisions used a fraction of the attenuation (Q = α × p²_max / (ρ × c) × absorption_fraction); the absorption fraction is deprecated.
+where α_abs is the absorption coefficient [Np/m] at the source frequency, passed to PRESTUS per tissue as `absorption_coeff` [dB/(MHz^y·cm)] with the tissue's attenuation power law y (`thermal.absorption_model: coefficient`, set in `config_itrusst_protocol.yaml` and the medium configs). Brain absorption is specified as a fraction of attenuation (`absorption_fraction`; 29 / 77 / 100 %), skull absorption as a coefficient. `itrusst_resolve_absorption.m` converts the brain fraction with the attenuation it is combined with (α_abs = fraction × α), because PRESTUS applies one absorption model per run.
 
 The sonication timing followed a pulse-train paradigm: pulse duration (PD) 20 ms, pulse repetition interval (PRI) 200 ms, pulse train duration (PTD) 200 ms, pulse train repetition interval (PTRI) 200 ms, and total pulse-train repetition duration (PTRD) 80 s, followed by an 80 s post-PTRI cooldown. Thermal modelling time steps were 20 ms during the pulse and 1 s post-pulse. Thermal outputs included maximum temperature rise (maxT, riseT), end-of-sonication temperature (endT), and thermal dose expressed as Cumulative Equivalent Minutes at 43°C (CEM43) computed both by the k-Wave native method and per ISO 13 standards. All metrics were extracted per tissue compartment (brain, skull, skin) and written to per-subject CSV summary tables.
 
@@ -97,7 +99,7 @@ To quantify how assumptions about tissue acoustic and thermal properties propaga
 
 | Configuration | Rationale |
 |---|---|
-| **setup 1** | Per property, the literature bound that maximises predicted brain heating (within the literature bounds; the kPlan defaults exceed setup 1 in brain and skull absorption) |
+| **setup 1** | Per property, the literature bound that maximises predicted brain heating (within the literature bounds; the kPlan defaults exceed setup 1 in skull absorption) |
 | **setup 2** | Per property, the opposite bound (minimises predicted heating) |
 | **reference** | Literature reference values |
 | **PRESTUS** | PRESTUS toolbox defaults |
@@ -114,9 +116,9 @@ Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 
 
 | Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | α_abs @ 500 kHz (dB/cm) | α_abs,0 (dB/(MHz·cm)) |
 |---|---|---|---|---|---|---|---|---|---|
-| setup 1 | 1520 | 1040 | 0.493 | 0.986 | 0.48 | 3525 | 196 | 0.231 | 0.462 |
-| setup 2 | 1573 | 1050 | 0.236 | 0.472 | 0.55 | 3718 | 809 | 0.045 | 0.09 |
-| reference | 1560 | 1040 | 0.30 | 0.60 | 0.51 | 3630 | 559 | 0.093 | 0.186 |
+| setup 1 | 1520 | 1040 | 0.493 | 0.986 | 0.48 | 3525 | 196 | 0.493 | 0.986 |
+| setup 2 | 1573 | 1050 | 0.154 | 0.308 | 0.55 | 3718 | 809 | 0.045 | 0.09 |
+| reference | 1560 | 1040 | 0.30 | 0.60 | 0.51 | 3630 | 559 | 0.231 | 0.462 |
 | PRESTUS | 1546 | 1046 | 0.257 | 0.59 (y = 1.2) | 0.51 | 3630 | 559 | 0.257 | 0.59 (y = 1.2) |
 | BabelBrain | 1562 | 1041 | 0.24 | 0.48 | 0.51 | 3630 | 559 | 0.204 | 0.408 |
 | kPlan | 1550 | 1045 | 0.26 | 0.52 | 0.51 | 3600 | 0 | 0.26 | 0.52 |
@@ -127,10 +129,10 @@ Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 
 |---|---|---|---|---|---|---|---|---|---|
 | setup 1 | 2871 | 1080 | 11.7 | 23.4 | 0.30 | 826 | 0 | 4.02 | 8.04 |
 | setup 2 | 2190 | 1991 | 4.02 | 8.04 | 0.36 | 2524 | 30 | 1.05 | 2.10 |
-| reference | 2550 | 1775 | 6.0 | 12.0 | 0.315 | 1793 | 20 | 1.40 | 2.80 |
+| reference | 2550 | 1775 | 6.0 | 12.0 | 0.316 | 1793 | 20 | 1.40 | 2.80 |
 | PRESTUS | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1793 | 20 | 1.89 | 3.78 |
 | BabelBrain | 2800 | 1850 | 6.65 | 13.3 | 0.315 | 1793 | 20 | 1.08 | 2.17 |
-| kPlan | 2800 | 1850 | 6.65 | 13.3 | 0.32 | 1300 | 0 | 6.65 | 13.3 |
+| kPlan | 2627 | 1850 | 6.65 | 13.3 | 0.32 | 1300 | 0 | 6.65 | 13.3 |
 
 The skull reference sound speed, density and attenuation are the mean of the cortical and trabecular bone values of Aubry et al. (2022) rather than literature-table values (`data/tissue_parameters_source.md`).
 
@@ -150,7 +152,7 @@ To isolate the contribution of individual tissue parameters to simulation output
 | Blood perfusion | ω | mL/min/kg |
 | Absorption coefficient | α_abs,0 | dB/(MHz^y·cm) |
 
-Parameter bounds were drawn from a literature-informed tissue property table (`tissue_parameters.csv`). Brain parameters were perturbed for Benchmark 1 (sub-001); both brain and skull parameters were perturbed for Benchmark 2 (sub-002) and for the 2.5 mm thickness phantom (sub-352, the most transmissive skull thickness; see Analysis 3). For each perturbation, a separate simulation was run with a unique output filename affix encoding the tissue, parameter, and bound level (e.g., `_b_c_1` = brain sound speed lower bound; `_s_a0_2` = skull attenuation upper bound). One protocol variant was evaluated (`itrusst_protocol1a`: `config_itrusst_protocol.yaml`, 500 kHz, 60 W/cm²; outputs in `data/tussim/itrusst_protocol1a/`).
+Parameter bounds were drawn from a literature-informed tissue property table (`tissue_parameters.csv`). Brain absorption is a fraction of the attenuation it is combined with (`itrusst_resolve_absorption.m`): with attenuation at reference, its bounds are 0.087 and 0.30 dB/cm at 500 kHz (29 and 100 %), and the brain attenuation bounds scale the reference absorption (77 %) to 0.119 and 0.380 dB/cm. Skull absorption is a coefficient, capped at the attenuation. Brain parameters were perturbed for Benchmark 1 (sub-001); both brain and skull parameters were perturbed for Benchmark 2 (sub-002) and for the 2.5 mm thickness phantom (sub-352, the most transmissive skull thickness; see Analysis 3). For each perturbation, a separate simulation was run with a unique output filename affix encoding the tissue, parameter, and bound level (e.g., `_b_c_1` = brain sound speed lower bound; `_s_a0_2` = skull attenuation upper bound). One protocol variant was evaluated (`itrusst_protocol1a`: `config_itrusst_protocol.yaml`, 500 kHz, 60 W/cm²; outputs in `data/tussim/itrusst_protocol1a/`).
 
 Output metrics extracted for each perturbation included Ipa_target, maxT, Isppa_brain, riseT_brain, and real focal distance. All simulations used C++ CPU code in single-precision floating point.
 
