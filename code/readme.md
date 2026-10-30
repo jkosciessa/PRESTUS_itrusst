@@ -8,9 +8,9 @@
 
 Scripts must be run as files (they resolve `rootpath` from their own location) and add `code/functions` to the path themselves.
 
-`code/explore/` (side analyses) and `code/debug/` (numerical checks) are kept locally and not tracked.
+Side analyses (`code/explore/`) and numerical checks (`code/debug/`) are not part of this repository.
 
-Figures are written to `figures/<family>/` with the same split: `paper/`, `tissue_ranges/`, `setups/`, `pipeline/`, `paramvar/`, `thickness/`, `explore/<topic>/`, `debug/<topic>/`. Design tables of multi-run designs are written next to their simulation output in `data/tussim/<variant>/`.
+Figures are written to `figures/<family>/` with the same split: `paper/`, `tissue_ranges/`, `setups/`, `pipeline/`, `paramvar/`, `thickness/`. Design tables of multi-run designs are written next to their simulation output in `data/tussim/<variant>/`.
 
 ## model overview
 
@@ -18,10 +18,8 @@ All models are digital phantoms: tissue-label volumes (`data/simnibs/m2m_sub-XXX
 
 sub-001 | soft-tissue only, 64 mm focus (2D axisymmetric, 0.5 mm)
 sub-002 | soft-tissue + skull, 64 mm focus (2D axisymmetric, 0.5 mm)
-sub-003 | soft-tissue + skull with cortical/trabecular layers (multiskull, explore)
 
 sub-101/102 | 3D phantoms of sub-001/002 (pipeline comparison; axisymmetric acoustics, thermal on the radially expanded 3D field)
-sub-201/202 | 0.25 mm counterparts of sub-001/002 (debug)
 sub-301..312 | skull thickness 1..12 mm
 sub-351..361 | skull thickness 1.5..11.5 mm (see `itrusst_thickness_subjects.m`)
 
@@ -66,7 +64,7 @@ Free-water calibration of the annular transducer to a target intensity; copy of 
 
 ### `itrusst_tissue_properties.m`, `itrusst_write_medium_configs.m`, `itrusst_resolve_absorption.m`, `itrusst_level_absorption_coeff.m`
 
-Tissue properties of a setup (`heat_max`, `heat_min`, `trans_max`, `trans_min`, `reference`, `bottom`, `top`) from `data/tissue_parameters.csv` + `tissue_setups.csv`; generation of `data/configs/config_medium_<setup>.yaml` from them. `itrusst_resolve_absorption.m` sets each tissue's `absorption_coeff`: brain from `absorption_fraction` × the attenuation it is combined with, skull and water from their coefficient, capped at the attenuation (absorption ≤ 100 %). It is applied to every assembled medium (setups, one-at-a-time sweep, thickness sweeps, baseline). `itrusst_level_absorption_coeff.m` gives the brain coefficient per CSV level (fraction × attenuation of the same level) for the range figures. The factorial and Morris designs (`explore/PRESTUS_paramvar_08`, `_09`, untracked) use the same resolution.
+Tissue properties of a setup (`heat_max`, `heat_min`, `trans_max`, `trans_min`, `reference`, `bottom`, `top`) from `data/tissue_parameters.csv` + `tissue_setups.csv`; generation of `data/configs/config_medium_<setup>.yaml` from them. `itrusst_resolve_absorption.m` sets each tissue's `absorption_coeff`: brain from `absorption_fraction` × the attenuation it is combined with, skull and water from their coefficient, capped at the attenuation (absorption ≤ 100 %). It is applied to every assembled medium (setups, one-at-a-time sweep, thickness sweeps, baseline). `itrusst_level_absorption_coeff.m` gives the brain coefficient per CSV level (fraction × attenuation of the same level) for the range figures.
 
 ### `itrusst_backup_outputs.m`
 
