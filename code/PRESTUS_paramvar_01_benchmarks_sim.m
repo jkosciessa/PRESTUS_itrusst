@@ -112,17 +112,29 @@ for subject_id = all_subjects
                                 
                 % Loop over sweep values for the current property
                 for v = 1:numel(magnitude)
-                    % Set all properties to mid setting (baseline)
+                    % Set all properties to mid setting (baseline); absorption_fraction
+                    % holds the brain absorption (empty for skull)
+                    baseline_labels = [property_labels, {'absorption_fraction'}];
                     for tissue_bl = 1:length(tissue_labels)
-                        for pp = 1:length(property_labels)
-                            parameters.medium_properties.(tissue_labels{tissue_bl}).(property_labels{pp}) = ...
-                                params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue_labels{tissue_bl}) & strcmp(params_table.level,'mid')));
+                        for pp = 1:length(baseline_labels)
+                            parameters.medium_properties.(tissue_labels{tissue_bl}).(baseline_labels{pp}) = ...
+                                params_table.(baseline_labels{pp})(find(strcmp(params_table.tissue,tissue_labels{tissue_bl}) & strcmp(params_table.level,'mid')));
                         end
                     end
-                    
-                    % Vary only the current property to BOTTOM/TOP
-                    parameters.medium_properties.(tissue).(property) = ...
-                        params_table.(property_labels{p})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,magnitude{v})));
+
+                    % Vary only the current property to BOTTOM/TOP; brain absorption
+                    % is varied as its fraction of the mid attenuation
+                    swept = property;
+                    if strcmp(property, 'absorption_coeff') && ...
+                            isnan(parameters.medium_properties.(tissue).absorption_coeff)
+                        swept = 'absorption_fraction';
+                    end
+                    parameters.medium_properties.(tissue).(swept) = ...
+                        params_table.(swept)(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,magnitude{v})));
+
+                    % brain absorption = fraction x attenuation (an attenuation sweep
+                    % scales it); skull absorption capped at the attenuation
+                    parameters.medium_properties = itrusst_resolve_absorption(parameters.medium_properties);
 
                     % Create filename affix
                     parameters.io.output_affix = ...
@@ -135,7 +147,7 @@ for subject_id = all_subjects
                     parameters.grid.resolution_mm = 0.5;
                     parameters.grid.default_dims = [70, 120]/parameters.grid.resolution_mm;
                     parameters.grid.pml_size = [20]/parameters.grid.resolution_mm; % 20 mm PML, matches primary pipeline configs
-                    parameters.hpc.timelimit = '01:45:00'; % runs took <= 72 min
+                    parameters.hpc.timelimit = '03:00:00'; % 2026-10-29 batch: thermal ~98 min under node load; 01:45:00 killed 15 runs
                     parameters.hpc.memorylimit = 8;        % peak RAM <= 3.8 GB
                     parameters.grid.axisymmetric = 1;
   

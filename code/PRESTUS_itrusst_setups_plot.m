@@ -1,16 +1,17 @@
 % PRESTUS_ITRUSST_SETUPS_PLOT
 %
 % Parallel-coordinates plots of the brain and skull properties per setup:
-% Setup 1 / Setup 2 (literature bounds; data/tissue_parameters.csv +
-% tissue_setups.csv, via itrusst_tissue_properties.m) and the tool defaults
+% Temp-H / Temp-L (heat_max / heat_min: bounds that maximise / minimise brain
+% heating; data/tissue_parameters.csv + tissue_setups.csv, via
+% itrusst_tissue_properties.m) and the tool defaults
 % PRESTUS / BabelBrain / k-Plan (data/configs/config_medium_<tool>.yaml).
 % Attenuation is shown at the protocol frequency (500 kHz), i.e.
 % alpha_coeff * f^alpha_power in dB/cm. k-Plan does not report perfusion
 % (its config uses 0), so it is shown as missing.
 %
 % Per tissue, two figures: all axes min (bottom) to max (top), and a version
-% with the axes flipped where Setup 1 uses the bottom bound, so that Setup 1
-% and Setup 2 trace the upper and lower envelope.
+% with the axes flipped where Temp-H uses the bottom bound, so that Temp-H
+% and Temp-L trace the upper and lower envelope.
 %
 % Output: figures/setups/itrusst_table_parallel_<tissue>[_flipped].{png,eps}
 
@@ -35,11 +36,14 @@ property_fields = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivit
 property_labels = {'Sound Speed', 'Density', 'Att. (dB/cm)', 'Thermal conduct.', ...
                    'Specific Heat', 'Perf.', 'Abs. (dB/cm)'};
 
-setup_labels = {'Setup 1', 'Setup 2', 'PRESTUS', 'BabelBrain', 'k-Plan'};
+% the acoustic-only transmission setups (trans_max / trans_min) are shown in
+% paper/paper_fig5_setups.m and paper/paper_supp_table_setups.m
+setups       = {'heat_max', 'heat_min'}; % tissue_setups.csv columns
+setup_labels = {'Temp-H', 'Temp-L', 'PRESTUS', 'BabelBrain', 'k-Plan'};
 setup_colors = {[0.70 0.00 0.00], [0.00 0.60 0.50], [0.00 0.45 0.74], ...
                 [0.49 0.18 0.56], [0.47 0.67 0.19]};
 
-media = {itrusst_tissue_properties('setup1', pn.data), itrusst_tissue_properties('setup2', pn.data)};
+media = cellfun(@(s) itrusst_tissue_properties(s, pn.data), setups, 'UniformOutput', false);
 tool_configs = {'PRESTUS', 'BabelBrain', 'kPlan'};
 for i = 1:numel(tool_configs)
     cfg = yaml.loadFile(fullfile(pn.configs, ['config_medium_' tool_configs{i} '.yaml']));
@@ -68,11 +72,15 @@ for t = 1:numel(tissue_labels)
     make_parallel_plot(data, property_labels, setup_labels, setup_colors, ...
         [], pn, ['itrusst_table_parallel_' tissue]);
 
-    % flip the axes on which Setup 1 uses the bottom bound
+    % flip the axes on which Temp-H uses the bottom bound
     flip_cols = [];
     for p = 1:numel(property_fields)
         row = strcmp(setups_table.tissue, tissue) & strcmp(setups_table.property, property_fields{p});
-        if strcmp(setups_table.setup1{row}, 'bottom')
+        if ~any(row) && strcmp(property_fields{p}, 'absorption_coeff')
+            % brain absorption is set as absorption_fraction (x alpha_coeff)
+            row = strcmp(setups_table.tissue, tissue) & strcmp(setups_table.property, 'absorption_fraction');
+        end
+        if strcmp(setups_table.heat_max{row}, 'bottom')
             flip_cols(end+1) = p; %#ok<AGROW>
         end
     end

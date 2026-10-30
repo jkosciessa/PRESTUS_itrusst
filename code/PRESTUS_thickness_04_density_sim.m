@@ -78,7 +78,8 @@ base_parameters.hpc.memorylimit = 6;         % peak RAM <= 3.1 GB
 
 tissue_labels = {'brain', 'skull'};
 property_labels = {'sound_speed', 'density', 'alpha_coeff', 'thermal_conductivity', ...
-                    'specific_heat_capacity', 'perfusion', 'absorption_coeff'};
+                    'specific_heat_capacity', 'perfusion', 'absorption_coeff', ...
+                    'absorption_fraction'}; % brain absorption as fraction, skull as coefficient
 
 %% ── Build the design table + job specs ──────────────────────────────────────
 
@@ -127,6 +128,7 @@ for row_i = 1:n_rows
                                          strcmp(params_table.level, level_name));
         end
     end
+    parameters.medium_properties = itrusst_resolve_absorption(parameters.medium_properties);
 
     parameters.io.output_affix = affix;
     prestus_pipeline_start(parameters);

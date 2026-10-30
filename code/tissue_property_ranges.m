@@ -19,6 +19,7 @@ pn.code    = fullfile(rootpath, 'code'); addpath(fullfile(pn.code, 'functions'))
 if ~exist(pn.figures, 'dir'), mkdir(pn.figures); end
 
 params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));
+params_table = itrusst_level_absorption_coeff(params_table); % brain: absorption fraction x attenuation per level
 
 tissue_labels    = {'brain', 'skull'};
 tissue_suffixes  = {'b', 's'};

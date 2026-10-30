@@ -73,8 +73,8 @@ for subject_id = all_subjects
         % Define property labels and short suffixes
         property_labels = {'sound_speed', 'density', 'alpha_coeff','thermal_conductivity', ...
                            'specific_heat_capacity', 'perfusion', ...
-                           'absorption_coeff'};
-        property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_'};
+                           'absorption_coeff', 'absorption_fraction'}; % brain absorption as fraction, skull as coefficient
+        property_suffixes = {'_c_', '_rho_', '_a0_', '_k_', '_heatc_', '_perf_', '_abs_', '_absf_'};
 
         % define loops
         magnitude = {'mid'};
@@ -94,6 +94,7 @@ for subject_id = all_subjects
                     params_table.(property_labels{pp})(find(strcmp(params_table.tissue,tissue) & strcmp(params_table.level,'mid')));
             end
         end 
+        parameters.medium_properties = itrusst_resolve_absorption(parameters.medium_properties);
         
         % Create filename affix
         parameters.io.output_affix = "";

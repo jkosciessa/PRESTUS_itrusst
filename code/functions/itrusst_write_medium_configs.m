@@ -7,18 +7,20 @@ function config_files = itrusst_write_medium_configs(pn, setup_names)
 %
 % Inputs:
 %   pn          - path struct from setup_itrusst_paths (uses pn.data, pn.configs)
-%   setup_names - (optional) default {'setup1', 'reference', 'setup2', 'bottom', 'top'}
-%                 (bottom/top: all brain/skull properties at one bound)
+%   setup_names - (optional) default {'heat_max', 'heat_min', 'trans_max',
+%                 'trans_min', 'reference', 'bottom', 'top'} (bottom/top: all
+%                 brain/skull properties at one bound)
 % Output:
 %   config_files - cell array of written file paths
 
 if nargin < 2
-    setup_names = {'setup1', 'reference', 'setup2', 'bottom', 'top'};
+    setup_names = {'heat_max', 'heat_min', 'trans_max', 'trans_min', 'reference', 'bottom', 'top'};
 end
 
 % fields written per tissue (water: no perfusion, as in the tool configs).
 % Heat deposition uses the absorption coefficient (thermal.absorption_model:
-% coefficient); the absorption_fraction column of the CSV is deprecated and not written.
+% coefficient); the brain absorption_fraction of the CSV is written as its
+% coefficient (fraction x alpha_coeff, itrusst_resolve_absorption).
 fields.water = {'sound_speed', 'density', 'alpha_coeff', 'alpha_power', ...
                 'thermal_conductivity', 'specific_heat_capacity', 'absorption_coeff'};
 fields.brain = [fields.water, {'perfusion'}];

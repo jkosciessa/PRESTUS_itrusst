@@ -16,17 +16,25 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 
-% literature setups: config_medium_setup1/reference/setup2.yaml are regenerated
-% here from data/tissue_parameters.csv + tissue_setups.csv
+% literature setups: config_medium_heat_max/heat_min/trans_max/trans_min/
+% reference.yaml are regenerated here from data/tissue_parameters.csv +
+% tissue_setups.csv
 itrusst_write_medium_configs(pn);
 
 setup_list = {
-    'medium_setup1'; ...
-    'medium_setup2'; ...
+    'medium_heat_max'; ...
+    'medium_heat_min'; ...
+    'medium_trans_max'; ...
+    'medium_trans_min'; ...
     'medium_reference'; ...
     'medium_BabelBrain'; ...
     'medium_kPlan'; ...
     'medium_PRESTUS'};
+% subset to submit, e.g. {'medium_kPlan'}; {} = all
+run_setups = {};
+if ~isempty(run_setups); setup_list = run_setups; end
+
+code_type = 'cpp_gpu'; % gpu40g: ~3 min per job (A100, 2026-10-16); cpp_cpu: 70-105+ min
 
 all_subjects = [101, 102];
 intensities = 60;
@@ -82,11 +90,23 @@ for subject_id = all_subjects
         parameters.io.overwrite_simnibs = 0;
         parameters.io.save_heatingvideo = 0;
 
-        parameters.simulation.code_type = 'cpp_gpu';
+        % transmission setups are acoustic-only (no thermal properties in
+        % tissue_setups.csv)
+        if startsWith(setup_name, 'medium_trans_')
+            parameters.modules.run_heating_sims = 0;
+        end
+
+        parameters.simulation.code_type = code_type;
         parameters.simulation.medium = 'phantom';
         parameters.grid.axisymmetric = 1;
-        jobtime = '04:00:00';
-        jobram = 16;
+        % 880 thermal steps, <= 3.8 GB peak RAM. CPU: 70-105+ min on dccn-c07x (node-load
+        % dependent; 1:45 timed out 4/24 jobs on 2026-10-28). GPU: ~3 min.
+        if contains(code_type, 'gpu')
+            parameters.hpc.timelimit = '00:30:00';
+        else
+            parameters.hpc.timelimit = '03:00:00';
+        end
+        parameters.hpc.memorylimit = 8;
 
         % specify GPU setup if requested
         if contains(parameters.simulation.code_type, 'gpu')

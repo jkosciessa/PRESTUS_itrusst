@@ -33,8 +33,8 @@ medium_properties:
     perfusion: 0
     absorption_coeff: 0.52 # = kPlan absorption fraction 1.0 x alpha_coeff 0.52
   skull:
-    sound_speed: 2800
-    density: 1850
+    sound_speed: 2627 # kPlan bone: 1.33 x density + 166.7 at the thermal-simulation density 1850 (k-Plan docs, simulation pipeline); was 2800 until 2026-10-29
+    density: 1850 # kPlan: mapped from HU for acoustics; 1850 for thermal simulations
     alpha_coeff: 13.3
     alpha_power: 1
     thermal_conductivity: 0.32
