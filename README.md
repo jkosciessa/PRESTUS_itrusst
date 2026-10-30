@@ -5,8 +5,6 @@ This simulation uses PRESTUS, a wrapper for k-wave, to perform acoustic and heat
 Different sequences and parameter setups are specified either via dedicated config files, or within the MATLAB call scripts.
 Analyses are run on a GPU-supported HPC cluster hosted at the Donders Institute.
 
-For an overview of the goals and ongoing results (*access restricted*), see [here](https://docs.google.com/document/d/16yBCTZDG966979RLcoQdo9XqpzFn1oSb-pxK2KgR4dM/edit?pli=1&tab=t.0).
-
 The analyses are described under [Methods](#methods); script families map onto them as follows:
 
 | analysis | scripts |
@@ -84,9 +82,9 @@ Thermal simulations were performed using k-Wave's `kWaveDiffusion` solver, which
 
 where ρ is density, c_p is specific heat capacity, k is thermal conductivity, ω is the blood perfusion coefficient [s⁻¹], T_blood = 37°C, and Q is the acoustic heat deposition rate:
 
-> Q = α_abs × p²_max / (ρ × c)  [W/m³]
+> Q = β × p²_max / (ρ × c)  [W/m³]
 
-where c is the sound speed and α_abs is the absorption coefficient [Np/m] at the source frequency, passed to PRESTUS per tissue as `absorption_coeff` [dB/(MHz^y·cm)] with the tissue's attenuation power law y (`thermal.absorption_model: coefficient`, set in `config_itrusst_protocol.yaml` and the medium configs). Brain absorption is specified as a fraction of attenuation (`absorption_fraction`; 29 / 77 / 100 %), skull absorption as a coefficient. `itrusst_resolve_absorption.m` converts the brain fraction with the attenuation it is combined with (α_abs = fraction × α), because PRESTUS applies one absorption model per run.
+where c is the sound speed and β is the absorption coefficient [Np/m] at the source frequency, passed to PRESTUS per tissue as `absorption_coeff` [dB/(MHz^y·cm)] with the tissue's attenuation power law y (`thermal.absorption_model: coefficient`, set in `config_itrusst_protocol.yaml` and the medium configs). Brain absorption is specified as a fraction of attenuation (`absorption_fraction`; 29 / 77 / 100 %), skull absorption as a coefficient. `itrusst_resolve_absorption.m` converts the brain fraction with the attenuation it is combined with (β = fraction × α), because PRESTUS applies one absorption model per run.
 
 The sonication timing followed a pulse-train paradigm: pulse duration (PD) 20 ms, pulse repetition interval (PRI) 200 ms, pulse train duration (PTD) 200 ms, pulse train repetition interval (PTRI) 200 ms, and total pulse-train repetition duration (PTRD) 80 s, followed by an 80 s post-PTRI cooldown. Thermal modelling time steps were 20 ms during the pulse and 1 s post-pulse. Thermal outputs included maximum temperature rise (maxT, riseT), end-of-sonication temperature (endT), and thermal dose expressed as Cumulative Equivalent Minutes at 43°C (CEM43) computed both by the k-Wave native method and per ISO 13 standards. All metrics were extracted per tissue compartment (brain, skull) and written to per-subject CSV summary tables.
 
@@ -104,7 +102,7 @@ To isolate the contribution of individual tissue parameters to simulation output
 | Thermal conductivity | k | W/m/K |
 | Specific heat capacity | c_p | J/kg/K |
 | Blood perfusion | ω | mL/min/kg |
-| Absorption coefficient | α_abs,0 | dB/(MHz^y·cm) |
+| Absorption coefficient | β₀ | dB/(MHz^y·cm) |
 
 Parameter bounds were drawn from a literature-informed tissue property table (`tissue_parameters.csv`). Brain absorption is a fraction of the attenuation it is combined with (`itrusst_resolve_absorption.m`): with attenuation at reference, its bounds are 0.087 and 0.30 dB/cm at 500 kHz (29 and 100 %), and the brain attenuation bounds scale the reference absorption (77 %) to 0.119 and 0.380 dB/cm. Skull absorption is a coefficient, capped at the attenuation. Brain parameters were perturbed for Benchmark 1 (sub-001); both brain and skull parameters were perturbed for Benchmark 2 (sub-002) and for the 2.5 mm thickness phantom (sub-352, the most transmissive skull thickness; see Analysis 2). For each perturbation, a separate simulation was run with a unique output filename affix encoding the tissue, parameter, and bound level (e.g., `_b_c_1` = brain sound speed lower bound; `_s_a0_2` = skull attenuation upper bound). One protocol variant was evaluated (`itrusst_protocol1a`: `config_itrusst_protocol.yaml`, 500 kHz, 60 W/cm²; outputs in `data/tussim/itrusst_protocol1a/`).
 
@@ -141,11 +139,11 @@ The literature values (bottom/reference/top per tissue and property) are kept in
 
 For each configuration, simulations were run on the 3D phantoms of Benchmark 1 (soft tissue only, sub-101) and Benchmark 2 (skull + brain, sub-102) at a target intensity of 60 W/cm² (`PRESTUS_pipeline_01_benchmark1_sim.m`; axisymmetric acoustics, thermal simulation on the radially expanded 3D field; Trans-H/L without the thermal simulation). `PRESTUS_pipeline_02_benchmark1_plot.m` compares the temperature rise at the focus and the maximum brain and skull temperature rise (riseT_brain, riseT_skull) across Temp-H, Temp-L and the tools, and the maximum brain intensity (Isppa_brain) across Trans-H, Trans-L and the tools.
 
-Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 MHz coefficients α₀ = α(500 kHz) / 0.5^y and α_abs,0 = α_abs(500 kHz) / 0.5^y (dB/(MHz^y·cm); y = 1 for brain and skull). Both are listed below. PRESTUS uses its v05 default absorption coefficients (`config/config_default.yaml`; brain = attenuation, a conservative and provisional default; skull 3.78 dB/(MHz·cm) after Pinton et al., 2012) and its default brain power law y = 1.2. BabelBrain and kPlan specify absorption as a fraction of attenuation; their absorption coefficients are that fraction × the tool's own α₀ (BabelBrain: brain 0.85, skull 0.163; kPlan: 1.0, 1.0). All tool configurations are simulated with `thermal.absorption_model: coefficient` like the literature setups.
+Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 MHz coefficients α₀ = α(500 kHz) / 0.5^y and β₀ = β(500 kHz) / 0.5^y (dB/(MHz^y·cm); y = 1 for brain and skull). Both are listed below. PRESTUS uses its v05 default absorption coefficients (`config/config_default.yaml`; brain = attenuation, a conservative and provisional default; skull 3.78 dB/(MHz·cm) after Pinton et al., 2012) and its default brain power law y = 1.2. BabelBrain and kPlan specify absorption as a fraction of attenuation; their absorption coefficients are that fraction × the tool's own α₀ (BabelBrain: brain 0.85, skull 0.163; kPlan: 1.0, 1.0). All tool configurations are simulated with `thermal.absorption_model: coefficient` like the literature setups.
 
 **Brain properties by configuration** (Trans-H/L: thermal properties and absorption not used, –):
 
-| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | α_abs @ 500 kHz (dB/cm) | α_abs,0 (dB/(MHz·cm)) |
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | β @ 500 kHz (dB/cm) | β₀ (dB/(MHz·cm)) |
 |---|---|---|---|---|---|---|---|---|---|
 | Temp-H | 1573 | 1040 | 0.493 | 0.986 | 0.48 | 3525 | 196 | 0.493 | 0.986 |
 | Temp-L | 1520 | 1050 | 0.154 | 0.308 | 0.55 | 3718 | 809 | 0.045 | 0.089 |
@@ -158,7 +156,7 @@ Attenuation and absorption are specified at 500 kHz and converted to PRESTUS' 1 
 
 **Skull properties by configuration:**
 
-| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | α_abs @ 500 kHz (dB/cm) | α_abs,0 (dB/(MHz·cm)) |
+| Setup | Sound speed (m/s) | Density (kg/m³) | α @ 500 kHz (dB/cm) | α₀ (dB/(MHz·cm)) | k (W/m/K) | c_p (J/kg/K) | Perfusion (mL/min/kg) | β @ 500 kHz (dB/cm) | β₀ (dB/(MHz·cm)) |
 |---|---|---|---|---|---|---|---|---|---|
 | Temp-H | 2871 | 1080 | 4.02 | 8.04 | 0.30 | 826 | 0 | 4.02 | 8.04 |
 | Temp-L | 2190 | 1991 | 11.7 | 23.4 | 0.36 | 2524 | 30 | 1.05 | 2.10 |
