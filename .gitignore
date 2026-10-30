@@ -31,3 +31,7 @@ figures_ppw12/
 *.asv
 # SMB pending-delete stubs (file open elsewhere while replaced)
 .smbdelete*
+
+# side analyses and numerical checks: kept locally, not part of the release
+/code/explore/
+/code/debug/
