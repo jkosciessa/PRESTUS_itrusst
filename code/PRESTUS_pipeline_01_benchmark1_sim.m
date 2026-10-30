@@ -16,9 +16,9 @@ pn = setup_itrusst_paths(rootpath, user);
 
 %% define variables to loop
 
-% literature setups: config_medium_heat_max/heat_min/trans_max/trans_min/
-% reference.yaml are regenerated here from data/tissue_parameters.csv +
-% tissue_setups.csv
+% literature setups: config_medium_heat_max/heat_min/trans_max/trans_min.yaml
+% are regenerated here from data/tissue_parameters.csv + tissue_setups.csv
+% (the reference medium is not part of this comparison)
 itrusst_write_medium_configs(pn);
 
 setup_list = {
@@ -26,7 +26,6 @@ setup_list = {
     'medium_heat_min'; ...
     'medium_trans_max'; ...
     'medium_trans_min'; ...
-    'medium_reference'; ...
     'medium_BabelBrain'; ...
     'medium_kPlan'; ...
     'medium_PRESTUS'};
