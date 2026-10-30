@@ -38,7 +38,6 @@ params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));
 cd(fullfile(rootpath, 'data', 'configs'))
 base_parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-base_parameters.startup.simnibs_bin_path = pn.simnibs;
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";

@@ -3,9 +3,10 @@ function pn = setup_itrusst_paths(rootpath, user)
 %
 % Inputs:
 %   rootpath - root directory of the PRESTUS_itrusst project
-%   user     - (optional) username string; sets pn.simnibs for known users
+%   user     - (optional) username string; not used (the digital phantoms
+%              need no SimNIBS segmentation, so no user-specific paths)
 %
-% Also sets pn.platform (job submission) and pn.simnibs ('' unless user is known).
+% Also sets pn.platform (job submission).
 
 % On macOS the volume may be accessed via /project/ alias; normalize to /Volumes/
 if ismac
@@ -17,7 +18,6 @@ pn.prestus_fun     = fullfile(pn.prestus, 'functions');
 pn.prestus_tools   = fullfile(pn.prestus, 'external');
 pn.kwave           = fullfile(pn.prestus_tools, 'k-wave', 'k-Wave');
 pn.minimize        = fullfile(pn.prestus_tools, 'FEX-minimize');
-pn.nifti           = fullfile(rootpath, '..', 'v05', 'tools', 'nifti_toolbox');
 pn.configs         = fullfile(rootpath, 'data', 'configs');
 pn.data_path       = fullfile(rootpath, 'data', 'bids');
 pn.path_seg        = fullfile(rootpath, 'data', 'simnibs');
@@ -29,7 +29,6 @@ addpath(genpath(pn.prestus_fun));
 addpath(genpath(pn.prestus_tools));
 addpath(pn.kwave);
 addpath(pn.minimize);
-addpath(pn.nifti);
 addpath(fullfile(pn.code, 'functions'));
 
 % the configs set thermal.absorption_model: coefficient; an older PRESTUS ignores
@@ -38,16 +37,6 @@ if exist('thermal_absorption_model', 'file') ~= 2
     error('setup_itrusst_paths:noAbsorptionCoeff', ...
         ['PRESTUS in %s does not support thermal.absorption_model (functions/thermal/' ...
          'thermal_absorption_model.m missing); update the submodule from ../v05/tools/PRESTUS.'], pn.prestus);
-end
-
-% SimNIBS binaries: only needed to segment new heads, not for the phantoms here
-pn.simnibs = '';
-if nargin >= 2 && strcmp(user, 'julkos')
-    if ismac
-        pn.simnibs = '/Users/julian.kosciessa/SimNIBS/bin/';
-    else
-        pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
-    end
 end
 
 % job submission: the scheduler on the PATH (slurm/qsub), otherwise in MATLAB

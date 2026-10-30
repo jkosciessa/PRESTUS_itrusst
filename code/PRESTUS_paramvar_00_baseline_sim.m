@@ -31,7 +31,6 @@ for subject_id = all_subjects
     cd(fullfile(rootpath, 'data', 'configs'));
     parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-    parameters.startup.simnibs_bin_path = pn.simnibs;
 
     pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
     if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end

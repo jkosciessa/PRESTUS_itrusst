@@ -31,7 +31,6 @@ for subject_id = all_subjects
         cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
-        parameters.startup.simnibs_bin_path = pn.simnibs;
         pn.path_sim = fullfile(rootpath, 'data', 'tussim', [transducer_name]);
             if ~exist(pn.path_sim); mkdir(pn.path_sim); end
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";

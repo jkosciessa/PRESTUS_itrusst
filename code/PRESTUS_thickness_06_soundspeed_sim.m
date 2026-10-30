@@ -50,7 +50,6 @@ c_values = unique(round([linspace(skull_c('bottom'), skull_c('top'), n_steps), s
 cd(fullfile(rootpath, 'data', 'configs'))
 base_parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-base_parameters.startup.simnibs_bin_path = pn.simnibs;
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";

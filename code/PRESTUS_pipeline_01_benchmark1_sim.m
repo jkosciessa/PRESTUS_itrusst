@@ -55,7 +55,6 @@ for subject_id = all_subjects
 
         parameters = load_parameters(base_config, pwd, ['config_',setup_name,'.yaml'], pwd);
 
-        parameters.startup.simnibs_bin_path = pn.simnibs;
         pn.path_sim = fullfile(rootpath, 'data', 'tussim', [setup_name]);
             if ~exist(pn.path_sim); mkdir(pn.path_sim); end
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";

@@ -26,7 +26,6 @@ for i_variant = 1:length(variant_configs)
     cd(fullfile(rootpath, 'data', 'configs'))
     parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-    parameters.startup.simnibs_bin_path = pn.simnibs;
     pn.path_sim = fullfile(rootpath, 'data', 'tussim', setup_name);
         if ~exist(pn.path_sim); mkdir(pn.path_sim); end
     parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";

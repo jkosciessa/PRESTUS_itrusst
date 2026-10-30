@@ -90,8 +90,7 @@ for s = 1:numel(subjects)
         warning('No intensity NII files found for %s — skipping.', sub_str);
         continue;
     end
-    ref_img = load_nii(fullfile(nii_dir, ref_files(1).name));
-    ref_vol = double(ref_img.img);
+    ref_vol = double(niftiread(fullfile(nii_dir, ref_files(1).name)));
     % Phantoms are true 2-D arrays [x (lateral), z (axial)] — no singleton
     % y-dimension (see createPhantom.m array-layout header) — so the axial
     % axis is dim 2, not dim 3.
@@ -152,8 +151,7 @@ for s = 1:numel(subjects)
                         continue;
                     end
 
-                    nii  = load_nii(nii_path);
-                    vol  = double(nii.img);
+                    vol  = double(niftiread(nii_path));
                     prof = vol(cx, :)';
                     prof(prof < 0) = 0;
 
