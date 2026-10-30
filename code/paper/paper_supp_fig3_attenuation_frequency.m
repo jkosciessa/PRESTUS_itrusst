@@ -14,10 +14,12 @@
 % and Riis 2022, whose reflection term is a fitted intercept) are flagged in
 % the reflection_included column and drawn with open markers and dotted
 % lines, as they are not attenuation coefficients. Where a paper reports one
-% value per skull or location (Ammi 2008, Riis 2022, Albelda Gimeno 2019)
+% value per skull or location (Ammi 2008, Riis 2022, Gimeno 2019)
 % the mean ± SD across skulls/locations is computed here. Series and legend
 % entries follow the label column of the data file. Error bars elsewhere are
-% as reported (SD, or ± of undefined type for White 2006 and Ammi 2008).
+% as reported (SD, or ± of undefined type for White 2006). Ammi 2008 gives
+% a ± of undefined type per skull (Table 5, p. 1586); it is not plotted, as
+% the mean ± SD across the five skulls is computed here.
 %
 % Background: the shaded band marks frequencies common in neuromodulation
 % (0.2-0.65 MHz); the dotted line marks 0.5 MHz, the simulation frequency.

@@ -17,7 +17,7 @@
 % are given at 500 kHz in dB/cm (alpha_coeff * 0.5^alpha_power); beta/alpha
 % is the absorbed fraction of attenuation implied by the two coefficients.
 % k-Plan perfusion is not reported and simulated as 0 (shown as n.r.).
-% Water is identical across setups and given in a footnote.
+% Water is identical across setups (checked below) and given in a footnote.
 %
 % Output: figures/paper/supp_table/supptable_setups.{csv,md}
 
