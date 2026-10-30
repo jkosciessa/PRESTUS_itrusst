@@ -26,11 +26,7 @@ for i_variant = 1:length(variant_configs)
     cd(fullfile(rootpath, 'data', 'configs'))
     parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-    if ismac
-        parameters.startup.simnibs_bin_path = '/Users/julian.kosciessa/SimNIBS/bin/';
-    else
-        parameters.startup.simnibs_bin_path = pn.simnibs;
-    end
+    parameters.startup.simnibs_bin_path = pn.simnibs;
     pn.path_sim = fullfile(rootpath, 'data', 'tussim', setup_name);
         if ~exist(pn.path_sim); mkdir(pn.path_sim); end
     parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";
@@ -43,7 +39,7 @@ for i_variant = 1:length(variant_configs)
     pn.outputs_folder = fullfile(pn.path_sim, sprintf('sub-%03d', subject_id));
         if ~exist(pn.outputs_folder); mkdir(pn.outputs_folder); end
     parameters.pct.enabled = 0;
-    parameters.platform = 'slurm';
+    parameters.platform = pn.platform;
 
     itrusst_calibrate(pn, parameters, subject_id, desired_intensity, setup_name);
 

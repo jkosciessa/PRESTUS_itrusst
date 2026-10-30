@@ -31,12 +31,7 @@ for subject_id = all_subjects
         cd(fullfile(rootpath, 'data', 'configs'))
         parameters = load_parameters(['config_',transducer_name,'.yaml']);
 
-        if ismac
-            % reset paths to local mac install; NOTE: horrible not to have this be dynamic
-            parameters.startup.simnibs_bin_path = '/Users/julian.kosciessa/SimNIBS/bin/';
-        else
-            parameters.startup.simnibs_bin_path = pn.simnibs;
-        end
+        parameters.startup.simnibs_bin_path = pn.simnibs;
         pn.path_sim = fullfile(rootpath, 'data', 'tussim', [transducer_name]);
             if ~exist(pn.path_sim); mkdir(pn.path_sim); end
         parameters.hpc.ld_library_path ="/opt/gcc/7.2.0/lib64";
@@ -116,6 +111,7 @@ for subject_id = all_subjects
         parameters.hpc.memorylimit = 6;        % peak RAM <= 2.4 GB
 
         parameters.subject_id = subject_id;
+        parameters.platform = pn.platform;
         prestus_pipeline_start(parameters);
 
         % end loop

@@ -39,15 +39,6 @@ variant_name  = 'itrusst_protocol1a_soundspeed_thickness';
 [thickness_subjects, thicknesses_mm] = itrusst_thickness_subjects([3 6.5 9]);
 n_steps       = 9;   % evenly spaced c_skull values from bottom to top (+ mid)
 
-%% ── Detect job-submission platform (auto mode) ──────────────────────────────
-
-try
-    hpc_type = hpc_detect_system();
-catch
-    hpc_type = 'matlab';
-end
-fprintf('Job submission platform: %s\n', hpc_type);
-
 %% ── Load literature bounds + base config ────────────────────────────────────
 
 params_table = readtable(fullfile(pn.data, 'tissue_parameters.csv'));
@@ -59,11 +50,7 @@ c_values = unique(round([linspace(skull_c('bottom'), skull_c('top'), n_steps), s
 cd(fullfile(rootpath, 'data', 'configs'))
 base_parameters = load_parameters(['config_', setup_name, '.yaml']);
 
-if ismac
-    base_parameters.startup.simnibs_bin_path = '/Users/julian.kosciessa/SimNIBS/bin/';
-else
-    base_parameters.startup.simnibs_bin_path = pn.simnibs;
-end
+base_parameters.startup.simnibs_bin_path = pn.simnibs;
 pn.path_sim = fullfile(rootpath, 'data', 'tussim', variant_name);
 if ~exist(pn.path_sim, 'dir'); mkdir(pn.path_sim); end
 base_parameters.hpc.ld_library_path = "/opt/gcc/7.2.0/lib64";
@@ -73,7 +60,7 @@ base_parameters.path.sim  = pn.path_sim;
 base_parameters.startup.paths_to_add = {pn.kwave, pn.minimize};
 base_parameters.pct.enabled = 0;
 
-base_parameters.platform = hpc_type;
+base_parameters.platform = pn.platform;
 base_parameters.simulation.medium = 'phantom';
 base_parameters.simulation.interactive = 0;
 base_parameters.simulation.code_type = 'cpp_cpu';

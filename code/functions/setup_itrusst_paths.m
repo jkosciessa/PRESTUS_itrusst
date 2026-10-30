@@ -4,6 +4,8 @@ function pn = setup_itrusst_paths(rootpath, user)
 % Inputs:
 %   rootpath - root directory of the PRESTUS_itrusst project
 %   user     - (optional) username string; sets pn.simnibs for known users
+%
+% Also sets pn.platform (job submission) and pn.simnibs ('' unless user is known).
 
 % On macOS the volume may be accessed via /project/ alias; normalize to /Volumes/
 if ismac
@@ -38,6 +40,25 @@ if exist('thermal_absorption_model', 'file') ~= 2
          'thermal_absorption_model.m missing); update the submodule from ../v05/tools/PRESTUS.'], pn.prestus);
 end
 
+% SimNIBS binaries: only needed to segment new heads, not for the phantoms here
+pn.simnibs = '';
 if nargin >= 2 && strcmp(user, 'julkos')
-    pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
+    if ismac
+        pn.simnibs = '/Users/julian.kosciessa/SimNIBS/bin/';
+    else
+        pn.simnibs = fullfile('/home', 'neuromod', 'julkos', '.conda', 'envs', 'simnibs_env', 'bin');
+    end
 end
+
+% job submission: the scheduler on the PATH (slurm/qsub), otherwise in MATLAB
+% (PRESTUS platform 'auto' errors without a scheduler);
+% setenv('ITRUSST_PLATFORM', 'matlab') runs locally on a cluster node
+pn.platform = getenv('ITRUSST_PLATFORM');
+if isempty(pn.platform)
+    try
+        pn.platform = hpc_detect_system();
+    catch
+        pn.platform = 'matlab';
+    end
+end
+fprintf('Job submission platform: %s\n', pn.platform);
